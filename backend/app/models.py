@@ -81,3 +81,66 @@ class SeriesCharacters(DocumentWithConfig):
 
     class Config:
         collection = "series_characters"
+
+# users_itemsコレクション(中間テーブル)
+class UserItem(DocumentWithConfig):
+    _id: ObjectId
+    user_id: ObjectId
+    item_id: ObjectId
+
+    class Config:
+        collection = "users_items"
+
+# user_specific_dataコレクション
+class UserSpecificData(DocumentWithConfig):
+    _id: ObjectId
+    user_id: ObjectId
+    custom_items: Optional[List["CustomItem"]]
+    custom_category_names: Optional[List["CustomCategoryName"]]
+    custom_series_names: Optional[List["CustomSeriesName"]]
+    custom_character_names: Optional[List["CustomCharacterName"]] 
+
+    class Config:
+        collection = "user_specific_data"
+
+class CustomItem(DocumentWithConfig):
+    _id: ObjectId
+    item_id: ObjectId
+    custom_images: Optional[List[ObjectId]] = [] # image_id
+    custom_item_name: Optional[str] = None
+    custom_series_name: Optional[ObjectId] = None # CustomSeriesName_id
+    custom_character_name: Optional[ObjectId] = None # CustomCategoryName_id
+    custom_category_name: Optional[ObjectId] = None # CustomCharacterName_id
+    custom_tags: Optional[List[str]] = [] #tag
+    custom_retailer: Optional[str] = None
+    notes: Optional[str] = None
+    created_at: datetime
+    exchange_status: Optional[bool] = None
+    own_status: Optional[bool] = None
+
+    class Config:
+        collection = "user_specific_data"
+
+class CustomCategoryName(DocumentWithConfig):
+    _id: ObjectId
+    category_id: ObjectId
+    custom_category_name: str
+
+    class Config:
+        collection = "user_specific_data"
+
+class CustomSeriesName(DocumentWithConfig):
+    _id: ObjectId
+    series_id: ObjectId
+    custom_series_name: str
+
+    class Config:
+        collection = "user_specific_data"
+
+class CustomCharacterName(DocumentWithConfig):
+    _id: ObjectId
+    character_id: ObjectId
+    custom_character_name: str
+
+    class Config:
+        collection = "user_specific_data"
