@@ -65,3 +65,19 @@ class Series(DocumentWithConfig):
     class Config:
         collection = "series" 
     
+# charactersコレクション
+class Character(DocumentWithConfig):
+    _id: ObjectId
+    character_name: str = Indexed(unique=True) # 共有キャラクター名
+
+    class Config:
+        collection = "characters"
+
+# series_charactersコレクション
+class SeriesCharacters(DocumentWithConfig):
+    _id: ObjectId
+    series_id: ObjectId
+    character_id: ObjectId
+
+    class Config:
+        collection = "series_characters"
