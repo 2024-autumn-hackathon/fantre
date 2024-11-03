@@ -3,11 +3,7 @@ import os
 from motor.motor_asyncio import AsyncIOMotorClient
 
 
-
 # データベースへの接続・切断を管理
-
-
-
 class Database:
     def __init__(self):
         self.client = None # MongoDBクライアント
@@ -16,7 +12,7 @@ class Database:
     # データベースへ接続
     async def connect(self):
         self.client = AsyncIOMotorClient(os.getenv("MONGO_URL"))
-        self.database = self.client.get_default_database()
+        self.database = self.client["teamC"]
         return self.database
     
     # データベースから切断
