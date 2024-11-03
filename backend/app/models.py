@@ -82,6 +82,18 @@ class SeriesCharacters(DocumentWithConfig):
     class Config:
         collection = "series_characters"
 
+# imagesコレクション
+class Image(DocumentWithConfig):
+    _id: ObjectId
+    user_id: ObjectId
+    item_id: Optional[ObjectId] = None
+    image_url: str
+    created_at: Optional[datetime]
+    is_background: bool = False
+   
+    class Config:
+        collection = "images"
+
 # users_itemsコレクション(中間テーブル)
 class UserItem(DocumentWithConfig):
     _id: ObjectId
@@ -95,10 +107,10 @@ class UserItem(DocumentWithConfig):
 class UserSpecificData(DocumentWithConfig):
     _id: ObjectId
     user_id: ObjectId
-    custom_items: Optional[List["CustomItem"]]
-    custom_category_names: Optional[List["CustomCategoryName"]]
-    custom_series_names: Optional[List["CustomSeriesName"]]
-    custom_character_names: Optional[List["CustomCharacterName"]] 
+    custom_items: Optional[List["CustomItem"]] = []
+    custom_category_names: Optional[List["CustomCategoryName"]] = []
+    custom_series_names: Optional[List["CustomSeriesName"]] = []
+    custom_character_names: Optional[List["CustomCharacterName"]] = [] 
 
     class Config:
         collection = "user_specific_data"
@@ -119,7 +131,7 @@ class CustomItem(DocumentWithConfig):
     own_status: Optional[bool] = None
 
     class Config:
-        collection = "user_specific_data"
+        collection = "custom_items"
 
 class CustomCategoryName(DocumentWithConfig):
     _id: ObjectId
@@ -127,7 +139,7 @@ class CustomCategoryName(DocumentWithConfig):
     custom_category_name: str
 
     class Config:
-        collection = "user_specific_data"
+        collection = "custom_categories"
 
 class CustomSeriesName(DocumentWithConfig):
     _id: ObjectId
@@ -135,7 +147,7 @@ class CustomSeriesName(DocumentWithConfig):
     custom_series_name: str
 
     class Config:
-        collection = "user_specific_data"
+        collection = "custom_series"
 
 class CustomCharacterName(DocumentWithConfig):
     _id: ObjectId
@@ -143,4 +155,62 @@ class CustomCharacterName(DocumentWithConfig):
     custom_character_name: str
 
     class Config:
-        collection = "user_specific_data"
+        collection = "custom_characters"
+
+############### MVPここまで ########################
+
+# users_chatsコレクション
+class UserItem(DocumentWithConfig):
+    _id: ObjectId
+    user_id: ObjectId
+    item_id: ObjectId
+
+    class Config:
+        collection = "users_items"
+
+# chatコレクション
+class Chat(DocumentWithConfig):
+    _id: ObjectId
+    chat_name: str = Indexed(unique=True)
+    participants: List[ObjectId] # user_idのリスト
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    messages: Optional[List["Message"]] = []
+
+    class Config:
+        collection = "chats"
+
+# messagesコレクション
+class Message(DocumentWithConfig):
+    _id: ObjectId
+    sender_id: ObjectId # user_id
+    content: str
+    timestamp: datetime    
+
+    class Config:
+        collection = "messages"
+
+# users_chatsコレクション
+class UserChat(DocumentWithConfig):
+    _id: ObjectId
+    user_id: ObjectId
+    chat_id: ObjectId
+
+    class Config:
+        collection = "users_chats"
+
+# calender_eventsコレクション
+class Event(DocumentWithConfig):
+    _id: ObjectId
+    event_name: str
+    event_details: Optional[str] = None
+    start_time: datetime
+    end_time: Optional[datetime] = None
+    created_by: ObjectId # user_id
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    related_series: Optional[List[ObjectId]] = [] # series_id
+    related_characters: Optional[List[ObjectId]] = [] # character_id
+
+    class Config:
+        collection = "events"
