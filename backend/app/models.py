@@ -29,6 +29,7 @@ class CollectionList(DocumentWithConfig):
     list_name: str = Indexed(unique=True, fields=["user_id"]) # user_idと組み合わせてユニークに
     created_at: Optional[datetime] = None
     list_items: Optional[List[ObjectId]] = []  # item_idのリスト
+
     class Config:
         collection = "users"  
 
@@ -48,5 +49,19 @@ class Item(DocumentWithConfig):
     class Config:
         collection = "items" 
 
+# categoriesコレクション
+class Category(DocumentWithConfig):
+    _id: ObjectId
+    category_name: str = Indexed(unique=True) # 共有グッズジャンル名
 
+    class Config:
+        collection = "categories"
+
+# seriesコレクション
+class Series(DocumentWithConfig):
+    _id: ObjectId
+    series_name: str = Indexed(unique=True) # 共有作品名
+
+    class Config:
+        collection = "series" 
     
