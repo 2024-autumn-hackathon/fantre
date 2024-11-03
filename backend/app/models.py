@@ -1,7 +1,6 @@
-# models.py
+# backend/app/models.py
 from datetime import date, datetime
 from typing import List, Optional
-# import uuid
 from beanie import Document, Indexed
 from bson import ObjectId
 
