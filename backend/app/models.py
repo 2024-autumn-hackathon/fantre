@@ -31,4 +31,22 @@ class CollectionList(DocumentWithConfig):
     list_items: Optional[List[ObjectId]] = []  # item_idのリスト
     class Config:
         collection = "users"  
+
+# itemsコレクション
+class Item(DocumentWithConfig):
+    _id: ObjectId
+    item_images: Optional[List[ObjectId]] = [] # image_idのリスト
+    item_name: str = Indexed(unique=True)
+    item_series: Optional[ObjectId] = None # series_id
+    item_character: Optional[ObjectId] = None # character_id
+    category: Optional[ObjectId] = None # category_id
+    tags: Optional[list[str]] = []
+    jan_code: Optional[str] = None
+    release_date: Optional[date] = None
+    retailers: Optional[List[str]] = []
+
+    class Config:
+        collection = "items" 
+
+
     
