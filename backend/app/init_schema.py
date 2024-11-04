@@ -74,6 +74,20 @@ async def init_schema(database):
     # ユーザー独自データをデータベースに追加
     await user_specific_data.insert() 
 
+    # Test Collection Listという名前のコレクションリストが存在しない場合コレクションリストを作成
+    if not await User.find_one({"collection_lists": {"$elemMatch": {"list_name": "Test Collection"}}}): 
+
+        collection_list = CollectionList(
+            _id=ObjectId(), # リストIDを自動生成
+            list_name="Test Collection",
+            created_at=datetime.now(),
+            list_items=[ObjectId("67179fe7e405ba2805aebca2")]         
+        )
+    await collection_list.insert() # コレクションリストをデータベースに追加
+    # 作成したコレクションリストをユーザーのリストに追加
+    test_user.collection_lists.append(collection_list) # コレクションリストを追加
+    await test_user.save() # 更新されたユーザーを再度保存
+
     # グッズを挿入
     # Test Itemという名前のグッズが存在しない場合グッズを作成
     test_item = await Item.find_one({"item_name": "Test Item"}) 
