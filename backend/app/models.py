@@ -31,7 +31,7 @@ class CollectionList(DocumentWithConfig):
     list_items: Optional[List[ObjectId]] = []  # item_idのリス
 
     class Settings:
-        name = "users"  
+        name = "collection_lists"
 
 # itemsコレクション
 class Item(DocumentWithConfig):
