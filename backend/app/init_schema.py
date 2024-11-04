@@ -75,7 +75,7 @@ async def init_schema(database):
     # ユーザー独自データをデータベースに追加
     await user_specific_data.insert() 
 
-    # Test Collection Listという名前のコレクションリストが存在しない場合コレクションリストを作成
+    # Test Collection Listという名前のコレクションリストが存在しない場合コレクションリストを作成    
     if not await User.find_one({"collection_lists": {"$elemMatch": {"list_name": "Test Collection"}}}): 
 
         collection_list = CollectionList(
@@ -83,9 +83,19 @@ async def init_schema(database):
             created_at=datetime.now(),
             list_items=[ObjectId("6728433b3bdeccb81751047a")]         
         )
-    # 作成したコレクションリストをユーザーのリストに追加
-    test_user.collection_lists.append(collection_list) # コレクションリストを追加
-    await test_user.save() # 更新されたユーザーを再度保存
+    else:
+        # 既存のコレクションリストを取得する
+        existing_user = await User.find_one({"collection_lists": {"$elemMatch": {"list_name": "Test Collection"}}})
+        if existing_user:
+            collection_list = existing_user.collection_lists[0]  # 既存のリストを使用
+
+    # collection_list が None でないことを確認してから追加
+    if collection_list is not None:
+        test_user.collection_lists.append(collection_list)  # コレクションリストを追加
+        await test_user.save()  # 更新されたユーザーを再度保存
+    else:
+        print("コレクションリストが作成されていないか、既存のリストが取得できませんでした。")
+
 
     # グッズを挿入
     # Test Itemという名前のグッズが存在しない場合グッズを作成
@@ -142,11 +152,9 @@ async def init_schema(database):
         await test_users_items.insert() 
 
     # 画像を挿入
-    test_image = await Image.find_one({"item_id": "61f5f484a2d21a1d4cf1b0e6"}) 
+    test_image = await Image.find_one({"image_url": "https://example.com/images/image1.jpg"}) 
 
-    if not await Image.find_one({"image_url": str("https://example.com/images/image1.jpg")}):  
-    
-    # test_image: 
+    if not test_image:
         test_image = Image(
             user_id=ObjectId("6728433a3bdeccb817510476"), 
             item_id=ObjectId("61f5f484a2d21a1d4cf1b0e6"), 
@@ -154,7 +162,7 @@ async def init_schema(database):
             created_at=datetime.now(), 
             is_background=False 
         )
-    await test_image.insert()  # 画像をデータベースに挿入
+        await test_image.insert()  # 画像をデータベースに挿入
 
 if __name__ == "__main__":
     asyncio.run(init_schema())
