@@ -162,3 +162,6 @@ async def init_schema(database):
             is_background=False 
         )
     await test_image.insert()  # 画像をデータベースに挿入
+
+if __name__ == "__main__":
+    asyncio.run(init_schema())
