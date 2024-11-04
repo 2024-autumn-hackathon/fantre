@@ -6,14 +6,14 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from beanie import init_beanie
 import asyncio
 from app.database.db_connection import Database
-from app.models import Category, Character, CustomCategoryName, CustomCharacterName, CustomItem, CustomSeriesName, Item, Series, SeriesCharacters, User, CollectionList, UserSpecificData
+from app.models import Category, Character, CustomCategoryName, CustomCharacterName, CustomItem, CustomSeriesName, Image, Item, Series, SeriesCharacters, User, CollectionList, UserItem, UserSpecificData
 
 # 初期設定
 async def init_schema(database):
     db = Database()
     database = await db.connect()  # データベースに接続
     
-    await init_beanie(database, document_models=[Category, Character, CustomCategoryName, CustomCharacterName, CustomItem, CustomSeriesName, Item, Series, SeriesCharacters, User, CollectionList, UserSpecificData])
+    await init_beanie(database, document_models=[Category, Character, CustomCategoryName, CustomCharacterName, CustomItem, CustomSeriesName, Image, Item, Series, SeriesCharacters, User, CollectionList, UserItem, UserSpecificData])
 
 # 初期データを挿入
     # ユーザーを挿入
@@ -25,7 +25,7 @@ async def init_schema(database):
             user_name="Test User",
             email="test@example.com",
             password="hashed_password",
-            bg_image_id=ObjectId("60d5f484a2d21a1d4cf1b0e4")
+            bg_image_id=ObjectId("61f5f484a2d21a1d4cf1b0e6")
         )
     await test_user.insert()  # データベースにユーザーを追加
 
@@ -37,7 +37,7 @@ async def init_schema(database):
             CustomItem(
                 _id=ObjectId("6728433a3bdeccb817510477"),
                 item_id=ObjectId("6728433b3bdeccb81751047a"),
-                custom_images=[ObjectId("60d61015a2d21a1d4cf1b0eb")],
+                custom_images=[ObjectId("61f5f484a2d21a1d4cf1b0e6")],
                 custom_item_name="My Test Custom Item",
                 custom_series_name=ObjectId("672840afd9dc1d815343faa6"),
                 custom_character_name=ObjectId("672840afd9dc1d815343faa7"),
@@ -96,6 +96,7 @@ async def init_schema(database):
         test_item = Item(
             _id=ObjectId("61f5f484a2d21a1d4cf1b0e6"),
             item_name="Test Item",
+            item_images=[ObjectId("61f5f484a2d21a1d4cf1b0e6")],
             item_series=ObjectId("6728433b3bdeccb81751047c"),
             item_character=ObjectId("6728433b3bdeccb81751047d"),
             category=ObjectId("6728433b3bdeccb81751047b"),
@@ -136,3 +137,28 @@ async def init_schema(database):
             character_id=ObjectId("6728433b3bdeccb81751047d")
         )
         await test_series_characters.insert()
+
+    # UserItem中間テーブルを挿入
+    if not await UserItem.find_one({"item_id": ObjectId("61f5f484a2d21a1d4cf1b0e6")}): 
+
+        test_users_items = UserItem(
+            user_id=ObjectId("6728433a3bdeccb817510476"),
+            item_id=ObjectId("61f5f484a2d21a1d4cf1b0e6") 
+        )
+        await test_users_items.insert() 
+
+    # 画像を挿入
+    test_image = await Image.find_one({"item_id": "61f5f484a2d21a1d4cf1b0e6"}) 
+
+    if not await Image.find_one({"image_url": str("https://example.com/images/image1.jpg")}):  
+    
+    # test_image: 
+        test_image = Image(
+            _id=ObjectId("61f5f484a2d21a1d4cf1b0e6"), 
+            user_id=ObjectId("6728433a3bdeccb817510476"), 
+            item_id=ObjectId("61f5f484a2d21a1d4cf1b0e6"), 
+            image_url="https://example.com/images/image1.jpg", 
+            created_at=datetime.now(), 
+            is_background=False 
+        )
+    await test_image.insert()  # 画像をデータベースに挿入
