@@ -6,14 +6,14 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from beanie import init_beanie
 import asyncio
 from app.database.db_connection import Database
-from app.models import CustomCategoryName, CustomCharacterName, CustomItem, CustomSeriesName, Item, User, CollectionList, UserSpecificData
+from app.models import Category, Character, CustomCategoryName, CustomCharacterName, CustomItem, CustomSeriesName, Item, Series, SeriesCharacters, User, CollectionList, UserSpecificData
 
 # 初期設定
 async def init_schema(database):
     db = Database()
     database = await db.connect()  # データベースに接続
     
-    await init_beanie(database, document_models=[CustomCategoryName, CustomCharacterName, CustomItem, CustomSeriesName, Item, User, CollectionList, UserSpecificData])
+    await init_beanie(database, document_models=[Category, Character, CustomCategoryName, CustomCharacterName, CustomItem, CustomSeriesName, Item, Series, SeriesCharacters, User, CollectionList, UserSpecificData])
 
 # 初期データを挿入
     # ユーザーを挿入
@@ -21,7 +21,7 @@ async def init_schema(database):
     test_user = await User.find_one({"user_name": "Test User"}) 
     if not test_user:  # ユーザーが存在しない場合
         test_user = User(
-            _id=ObjectId(),
+            _id=ObjectId("6728433a3bdeccb817510476"),
             user_name="Test User",
             email="test@example.com",
             password="hashed_password",
@@ -31,16 +31,17 @@ async def init_schema(database):
 
     # ユーザー独自データを作成
     user_specific_data = UserSpecificData(
-        _id=ObjectId(),
+        _id=ObjectId("6728433a3bdeccb817510477"),
         user_id=test_user.id,
         custom_items=[
             CustomItem(
-                _id=ObjectId(),
-                item_id=ObjectId("61f5f484a2d21a1d4cf1b0e6"),
+                _id=ObjectId("6728433a3bdeccb817510477"),
+                item_id=ObjectId("6728433b3bdeccb81751047a"),
                 custom_images=[ObjectId("60d61015a2d21a1d4cf1b0eb")],
                 custom_item_name="My Test Custom Item",
-                custom_series_names=["My Test Series"],
-                custom_character_names=["My Test Character"],
+                custom_series_name=ObjectId("672840afd9dc1d815343faa6"),
+                custom_character_name=ObjectId("672840afd9dc1d815343faa7"),
+                custom_category_name=ObjectId("67283c42caab231ed09c55a4"),
                 custom_tags=["Mytag1", "Mytag2"],
                 custom_retailer="My Test Local Store",
                 notes="This is a personal note.",
@@ -51,22 +52,22 @@ async def init_schema(database):
         ],
         custom_category_names=[
             CustomCategoryName(
-                _id=ObjectId(),
-                category_id=ObjectId("60d5f484a2d21a1d4cf1b0e3"),
+                _id=ObjectId("67283c42caab231ed09c55a4"),
+                category_id=ObjectId("6728433b3bdeccb81751047b"),
                 custom_category_name="My Custom Category"
             )
         ],
         custom_series_names=[
             CustomSeriesName(
-                _id=ObjectId(),
-                series_id=ObjectId("60d5f484a2d21a1d4cf1b0e4"),
+                _id=ObjectId("672840afd9dc1d815343faa6"),
+                series_id=ObjectId("6728433b3bdeccb81751047c"),
                 custom_series_name="My Custom Series"
             )
         ],
         custom_character_names=[
             CustomCharacterName(
-                _id=ObjectId(),
-                character_id=ObjectId("60d5f484a2d21a1d4cf1b0e5"),
+                _id=ObjectId("672840afd9dc1d815343faa7"),
+                character_id=ObjectId("6728433b3bdeccb81751047d"),
                 custom_character_name="My Custom Character"
             )
         ]
@@ -78,10 +79,10 @@ async def init_schema(database):
     if not await User.find_one({"collection_lists": {"$elemMatch": {"list_name": "Test Collection"}}}): 
 
         collection_list = CollectionList(
-            _id=ObjectId(), # リストIDを自動生成
+            _id=ObjectId("6728433a3bdeccb817510479"), 
             list_name="Test Collection",
             created_at=datetime.now(),
-            list_items=[ObjectId("67179fe7e405ba2805aebca2")]         
+            list_items=[ObjectId("6728433b3bdeccb81751047a")]         
         )
     await collection_list.insert() # コレクションリストをデータベースに追加
     # 作成したコレクションリストをユーザーのリストに追加
@@ -93,13 +94,45 @@ async def init_schema(database):
     test_item = await Item.find_one({"item_name": "Test Item"}) 
     if not test_item:   
         test_item = Item(
-            _id=ObjectId(),
+            _id=ObjectId("61f5f484a2d21a1d4cf1b0e6"),
             item_name="Test Item",
-            item_series=ObjectId("60d5f484a2d21a1d4cf1b0e6"),
-            item_character=ObjectId("60d5f484a2d21a1d4cf1b0e7"),
-            category=ObjectId("60d5f484a2d21a1d4cf1b0e8"),
+            item_series=ObjectId("6728433b3bdeccb81751047c"),
+            item_character=ObjectId("6728433b3bdeccb81751047d"),
+            category=ObjectId("6728433b3bdeccb81751047b"),
             tags=["#test1", "#test2"],
             jan_code="4991567672501",
             retailers=["Test Shop"]
         )
         await test_item.insert()  # データベースにグッズを追加
+
+    #  Test Categoryという名前のグッズジャンルが存在しない場合グッズジャンルを作成
+    if not await Category.find_one({"category_name": "Test Category"}): 
+        test_category = Category(
+            _id=ObjectId("6728433b3bdeccb81751047b"),
+            category_name="Test Category"
+        )
+        await test_category.insert()
+
+    # Test Seriesという名前の作品名が存在しない場合作品を作成
+    if not await Series.find_one({"series_name": "Test Series"}):
+        test_series = Series(
+            _id=ObjectId("6728433b3bdeccb81751047c"),
+            series_name="Test Series"
+        )
+        await test_series.insert()
+
+    # Test Characterという名前のキャラクターが存在しない場合キャラクターを作成
+    if not await Character.find_one({"character_name": "Test Character"}): 
+        test_character = Character(
+            _id=ObjectId("6728433b3bdeccb81751047d"),
+            character_name="Test Character"
+        )
+        await test_character.insert()  # データベースにキャラクターを追加
+
+    # Ttestseriescharacter1という名前の作品キャラクターが存在しない場合作品キャラクターを作成
+    if not await SeriesCharacters.find_one({"series_id": ObjectId("60d5f484a2d21a1d4cf1b0e6")}):
+        test_series_characters = SeriesCharacters(
+            series_id=ObjectId("6728433b3bdeccb81751047c"),
+            character_id=ObjectId("6728433b3bdeccb81751047d")
+        )
+        await test_series_characters.insert()
