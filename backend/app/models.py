@@ -19,19 +19,19 @@ class User(DocumentWithConfig):
     email: str = Indexed(unique=True)
     password: str
     bg_image_id: Optional[ObjectId] = None
-    lists: Optional[List["CollectionList"]] = []
+    collection_lists: Optional[List["CollectionList"]] = []
 
-    class Config:
-        collection = "users"  # MongoDBのコレクション名
+    class Settings:
+        name = "users"  # MongoDBのコレクション名
 
 class CollectionList(DocumentWithConfig):
     _id: ObjectId
     list_name: str = Indexed(unique=True, fields=["user_id"]) # user_idと組み合わせてユニークに
     created_at: Optional[datetime] = None
-    list_items: Optional[List[ObjectId]] = []  # item_idのリスト
+    list_items: Optional[List[ObjectId]] = []  # item_idのリス
 
-    class Config:
-        collection = "users"  
+    class Settings:
+        name = "users"  
 
 # itemsコレクション
 class Item(DocumentWithConfig):
@@ -46,32 +46,32 @@ class Item(DocumentWithConfig):
     release_date: Optional[date] = None
     retailers: Optional[List[str]] = []
 
-    class Config:
-        collection = "items" 
+    class Settings:
+        name = "items" 
 
 # categoriesコレクション
 class Category(DocumentWithConfig):
     _id: ObjectId
     category_name: str = Indexed(unique=True) # 共有グッズジャンル名
 
-    class Config:
-        collection = "categories"
+    class Settings:
+        name = "categories"
 
 # seriesコレクション
 class Series(DocumentWithConfig):
     _id: ObjectId
     series_name: str = Indexed(unique=True) # 共有作品名
 
-    class Config:
-        collection = "series" 
+    class Settings:
+        name = "series" 
     
 # charactersコレクション
 class Character(DocumentWithConfig):
     _id: ObjectId
     character_name: str = Indexed(unique=True) # 共有キャラクター名
 
-    class Config:
-        collection = "characters"
+    class Settings:
+        name = "characters"
 
 # series_charactersコレクション
 class SeriesCharacters(DocumentWithConfig):
@@ -79,8 +79,8 @@ class SeriesCharacters(DocumentWithConfig):
     series_id: ObjectId
     character_id: ObjectId
 
-    class Config:
-        collection = "series_characters"
+    class Settings:
+        name = "series_characters"
 
 # imagesコレクション
 class Image(DocumentWithConfig):
@@ -91,8 +91,8 @@ class Image(DocumentWithConfig):
     created_at: Optional[datetime]
     is_background: bool = False
    
-    class Config:
-        collection = "images"
+    class Settings:
+        name = "images"
 
 # users_itemsコレクション(中間テーブル)
 class UserItem(DocumentWithConfig):
@@ -100,8 +100,8 @@ class UserItem(DocumentWithConfig):
     user_id: ObjectId
     item_id: ObjectId
 
-    class Config:
-        collection = "users_items"
+    class Settings:
+        name = "users_items"
 
 # user_specific_dataコレクション
 class UserSpecificData(DocumentWithConfig):
@@ -112,8 +112,8 @@ class UserSpecificData(DocumentWithConfig):
     custom_series_names: Optional[List["CustomSeriesName"]] = []
     custom_character_names: Optional[List["CustomCharacterName"]] = [] 
 
-    class Config:
-        collection = "user_specific_data"
+    class Settings:
+        name = "user_specific_data"
 
 class CustomItem(DocumentWithConfig):
     _id: ObjectId
@@ -130,32 +130,32 @@ class CustomItem(DocumentWithConfig):
     exchange_status: Optional[bool] = None
     own_status: Optional[bool] = None
 
-    class Config:
-        collection = "custom_items"
+    class Settings:
+        name = "custom_items"
 
 class CustomCategoryName(DocumentWithConfig):
     _id: ObjectId
     category_id: ObjectId
     custom_category_name: str
 
-    class Config:
-        collection = "custom_categories"
+    class Settings:
+        name = "custom_categories"
 
 class CustomSeriesName(DocumentWithConfig):
     _id: ObjectId
     series_id: ObjectId
     custom_series_name: str
 
-    class Config:
-        collection = "custom_series"
+    class Settings:
+        name = "custom_series"
 
 class CustomCharacterName(DocumentWithConfig):
     _id: ObjectId
     character_id: ObjectId
     custom_character_name: str
 
-    class Config:
-        collection = "custom_characters"
+    class Settings:
+        name = "custom_characters"
 
 ############### MVPここまで ########################
 
@@ -165,8 +165,8 @@ class UserItem(DocumentWithConfig):
     user_id: ObjectId
     item_id: ObjectId
 
-    class Config:
-        collection = "users_items"
+    class Settings:
+        name = "users_items"
 
 # chatコレクション
 class Chat(DocumentWithConfig):
@@ -177,8 +177,8 @@ class Chat(DocumentWithConfig):
     updated_at: Optional[datetime] = None
     messages: Optional[List["Message"]] = []
 
-    class Config:
-        collection = "chats"
+    class Settings:
+        name = "chats"
 
 # messagesコレクション
 class Message(DocumentWithConfig):
@@ -187,8 +187,8 @@ class Message(DocumentWithConfig):
     content: str
     timestamp: datetime    
 
-    class Config:
-        collection = "messages"
+    class Settings:
+        name = "messages"
 
 # users_chatsコレクション
 class UserChat(DocumentWithConfig):
@@ -196,8 +196,8 @@ class UserChat(DocumentWithConfig):
     user_id: ObjectId
     chat_id: ObjectId
 
-    class Config:
-        collection = "users_chats"
+    class Settings:
+        name = "users_chats"
 
 # calender_eventsコレクション
 class Event(DocumentWithConfig):
@@ -212,5 +212,5 @@ class Event(DocumentWithConfig):
     related_series: Optional[List[ObjectId]] = [] # series_id
     related_characters: Optional[List[ObjectId]] = [] # character_id
 
-    class Config:
-        collection = "events"
+    class Settings:
+        name = "events"
