@@ -37,7 +37,7 @@ async def init_schema(database):
             CustomItem(
                 _id=ObjectId("6728433a3bdeccb817510477"),
                 item_id=ObjectId("6728433b3bdeccb81751047a"),
-                custom_images=[ObjectId("61f5f484a2d21a1d4cf1b0e6")],
+                custom_item_images=[ObjectId("61f5f484a2d21a1d4cf1b0e6")],
                 custom_item_name="My Test Custom Item",
                 custom_item_series_name=ObjectId("672840afd9dc1d815343faa6"),
                 custom_item_character_name=ObjectId("672840afd9dc1d815343faa7"),
