@@ -118,14 +118,14 @@ class UserSpecificData(DocumentWithConfig):
 class CustomItem(DocumentWithConfig):
     _id: ObjectId
     item_id: ObjectId
-    custom_images: Optional[List[ObjectId]] = [] # image_id
+    custom_item_images: Optional[List[ObjectId]] = [] # image_id
     custom_item_name: Optional[str] = None
     custom_item_series_name: Optional[ObjectId] = None # CustomSeriesName_id
     custom_item_character_name: Optional[ObjectId] = None # CustomCategoryName_id
     custom_item_category_name: Optional[ObjectId] = None # CustomCharacterName_id
-    custom__item_tags: Optional[List[str]] = [] #tag
-    custom__item_retailer: Optional[str] = None
-    custom__item_notes: Optional[str] = None
+    custom_item_tags: Optional[List[str]] = [] #tag
+    custom_item_retailer: Optional[str] = None
+    custom_item_notes: Optional[str] = None
     created_at: datetime
     exchange_status: Optional[bool] = None
     own_status: Optional[bool] = None
