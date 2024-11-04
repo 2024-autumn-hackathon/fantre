@@ -44,7 +44,7 @@ async def init_schema(database):
                 custom_item_category_name=ObjectId("67283c42caab231ed09c55a4"),
                 custom_item_tags=["Mytag1", "Mytag2"],
                 custom_item_retailer="My Test Local Store",
-                custom_item_rnotes="This is a personal note.",
+                custom_item_notes="This is a personal note.",
                 created_at=datetime.now(),
                 exchange_status=False,
                 own_status=True
@@ -84,7 +84,7 @@ async def init_schema(database):
             created_at=datetime.now(),
             list_items=[ObjectId("6728433b3bdeccb81751047a")]         
         )
-    await collection_list.insert() # コレクションリストをデータベースに追加
+    # await collection_list.insert() # コレクションリストをデータベースに追加
     # 作成したコレクションリストをユーザーのリストに追加
     test_user.collection_lists.append(collection_list) # コレクションリストを追加
     await test_user.save() # 更新されたユーザーを再度保存
