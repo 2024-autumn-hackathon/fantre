@@ -6,14 +6,14 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from beanie import init_beanie
 import asyncio
 from app.database.db_connection import Database
-from app.models import Item, User, CollectionList
+from app.models import CustomCategoryName, CustomCharacterName, CustomItem, CustomSeriesName, Item, User, CollectionList, UserSpecificData
 
 # 初期設定
 async def init_schema(database):
     db = Database()
     database = await db.connect()  # データベースに接続
     
-    await init_beanie(database, document_models=[Item, User, CollectionList])
+    await init_beanie(database, document_models=[CustomCategoryName, CustomCharacterName, CustomItem, CustomSeriesName, Item, User, CollectionList, UserSpecificData])
 
 # 初期データを挿入
     # ユーザーを挿入
@@ -29,9 +29,55 @@ async def init_schema(database):
         )
     await test_user.insert()  # データベースにユーザーを追加
 
+    # ユーザー独自データを作成
+    user_specific_data = UserSpecificData(
+        _id=ObjectId(),
+        user_id=test_user.id,
+        custom_items=[
+            CustomItem(
+                _id=ObjectId(),
+                item_id=ObjectId("61f5f484a2d21a1d4cf1b0e6"),
+                custom_images=[ObjectId("60d61015a2d21a1d4cf1b0eb")],
+                custom_item_name="My Test Custom Item",
+                custom_series_names=["My Test Series"],
+                custom_character_names=["My Test Character"],
+                custom_tags=["Mytag1", "Mytag2"],
+                custom_retailer="My Test Local Store",
+                notes="This is a personal note.",
+                created_at=datetime.now(),
+                exchange_status=False,
+                own_status=True
+            )
+        ],
+        custom_category_names=[
+            CustomCategoryName(
+                _id=ObjectId(),
+                category_id=ObjectId("60d5f484a2d21a1d4cf1b0e3"),
+                custom_category_name="My Custom Category"
+            )
+        ],
+        custom_series_names=[
+            CustomSeriesName(
+                _id=ObjectId(),
+                series_id=ObjectId("60d5f484a2d21a1d4cf1b0e4"),
+                custom_series_name="My Custom Series"
+            )
+        ],
+        custom_character_names=[
+            CustomCharacterName(
+                _id=ObjectId(),
+                character_id=ObjectId("60d5f484a2d21a1d4cf1b0e5"),
+                custom_character_name="My Custom Character"
+            )
+        ]
+    )
+    # ユーザー独自データをデータベースに追加
+    await user_specific_data.insert() 
+
     # グッズを挿入
     # Test Itemという名前のグッズが存在しない場合グッズを作成
-    if not await Item.find_one({"item_name": "Test Item"}):        
+    test_item = await Item.find_one({"item_name": "Test Item"}) 
+    if not test_item:   
         test_item = Item(
             _id=ObjectId(),
             item_name="Test Item",
