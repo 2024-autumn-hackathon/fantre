@@ -1,4 +1,5 @@
 # backend/app/models.py
+from pydantic import Field
 from datetime import date, datetime
 from typing import List, Optional
 from beanie import Document, Indexed
@@ -19,7 +20,7 @@ class User(DocumentWithConfig):
     email: str = Indexed(unique=True)
     password: str
     bg_image_id: Optional[ObjectId] = None
-    collection_lists: Optional[List["CollectionList"]] = []
+    collection_lists: Optional[List["CollectionList"]] = Field(default_factory=list)
 
     class Settings:
         name = "users"  # MongoDBのコレクション名
@@ -28,7 +29,7 @@ class CollectionList(DocumentWithConfig):
     _id: ObjectId
     list_name: str = Indexed(unique=True, fields=["user_id"]) # user_idと組み合わせてユニークに
     created_at: Optional[datetime] = None
-    list_items: Optional[List[ObjectId]] = []  # item_idのリス
+    list_items: Optional[List[ObjectId]] = Field(default_factory=list)  # item_idのリス
 
     class Settings:
         name = "collection_lists"
@@ -36,15 +37,15 @@ class CollectionList(DocumentWithConfig):
 # itemsコレクション
 class Item(DocumentWithConfig):
     _id: ObjectId
-    item_images: Optional[List[ObjectId]] = [] # image_idのリスト
+    item_images: Optional[List[ObjectId]] = Field(default_factory=list) # image_idのリスト
     item_name: str = Indexed(unique=True)
     item_series: Optional[ObjectId] = None # series_id
     item_character: Optional[ObjectId] = None # character_id
     category: Optional[ObjectId] = None # category_id
-    tags: Optional[list[str]] = []
+    tags: Optional[list[str]] = Field(default_factory=list)
     jan_code: Optional[str] = None
     release_date: Optional[date] = None
-    retailers: Optional[List[str]] = []
+    retailers: Optional[List[str]] = Field(default_factory=list)
 
     class Settings:
         name = "items" 
@@ -107,10 +108,10 @@ class UserItem(DocumentWithConfig):
 class UserSpecificData(DocumentWithConfig):
     _id: ObjectId
     user_id: ObjectId
-    custom_items: Optional[List["CustomItem"]] = []
-    custom_category_names: Optional[List["CustomCategoryName"]] = []
-    custom_series_names: Optional[List["CustomSeriesName"]] = []
-    custom_character_names: Optional[List["CustomCharacterName"]] = [] 
+    custom_items: Optional[List["CustomItem"]] = Field(default_factory=list)
+    custom_category_names: Optional[List["CustomCategoryName"]] = Field(default_factory=list)
+    custom_series_names: Optional[List["CustomSeriesName"]] = Field(default_factory=list)
+    custom_character_names: Optional[List["CustomCharacterName"]] = Field(default_factory=list) 
 
     class Settings:
         name = "user_specific_data"
@@ -118,12 +119,12 @@ class UserSpecificData(DocumentWithConfig):
 class CustomItem(DocumentWithConfig):
     _id: ObjectId
     item_id: ObjectId
-    custom_item_images: Optional[List[ObjectId]] = [] # image_id
+    custom_item_images: Optional[List[ObjectId]] = Field(default_factory=list) # image_id
     custom_item_name: Optional[str] = None
     custom_item_series_name: Optional[ObjectId] = None # CustomSeriesName_id
     custom_item_character_name: Optional[ObjectId] = None # CustomCategoryName_id
     custom_item_category_name: Optional[ObjectId] = None # CustomCharacterName_id
-    custom_item_tags: Optional[List[str]] = [] #tag
+    custom_item_tags: Optional[List[str]] = Field(default_factory=list) #tag
     custom_item_retailer: Optional[str] = None
     custom_item_notes: Optional[str] = None
     created_at: datetime
@@ -175,7 +176,7 @@ class Chat(DocumentWithConfig):
     participants: List[ObjectId] # user_idのリスト
     created_at: datetime
     updated_at: Optional[datetime] = None
-    messages: Optional[List["Message"]] = []
+    messages: Optional[List["Message"]] = Field(default_factory=list)
 
     class Settings:
         name = "chats"
@@ -209,8 +210,8 @@ class Event(DocumentWithConfig):
     created_by: ObjectId # user_id
     created_at: datetime
     updated_at: Optional[datetime] = None
-    related_series: Optional[List[ObjectId]] = [] # series_id
-    related_characters: Optional[List[ObjectId]] = [] # character_id
+    related_series: Optional[List[ObjectId]] = Field(default_factory=list) # series_id
+    related_characters: Optional[List[ObjectId]] = Field(default_factory=list) # character_id
 
     class Settings:
         name = "events"
