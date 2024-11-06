@@ -7,14 +7,14 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from beanie import init_beanie
 import asyncio
 from app.database.db_connection import Database
-from app.models import Category, Character, CustomCategoryName, CustomCharacterName, CustomItem, CustomSeriesName, Image, Item, Series, SeriesCharacters, User, CollectionList, UserItem, UserSpecificData
+from app.models import Category, Character, CustomCategoryName, CustomCharacterName, CustomItem, CustomSeriesName, Image, Item, Series, SeriesCharacters, User, CollectionList, UserSpecificData
 
 # 初期設定
 async def init_schema(database):
     db = Database()
     database = await db.connect()  # データベースに接続
     
-    await init_beanie(database, document_models=[Category, Character, CustomCategoryName, CustomCharacterName, CustomItem, CustomSeriesName, Image, Item, Series, SeriesCharacters, User, CollectionList, UserItem, UserSpecificData])
+    await init_beanie(database, document_models=[Category, Character, CustomCategoryName, CustomCharacterName, CustomItem, CustomSeriesName, Image, Item, Series, SeriesCharacters, User, CollectionList, UserSpecificData])
 
 # 初期データを挿入
     # ユーザーを挿入
@@ -109,7 +109,8 @@ async def init_schema(database):
             category=ObjectId("6728433b3bdeccb81751047b"),
             tags=["#test1", "#test2"],
             jan_code="4991567672501",
-            retailers=["Test Shop"]
+            retailers=["Test Shop"],
+            user_data=[ObjectId("6728433a3bdeccb817510476")]
         )
         await test_item.insert()  # データベースにグッズを追加
 
@@ -142,14 +143,14 @@ async def init_schema(database):
         )
         await test_series_characters.insert()
 
-    # UserItem中間テーブルを挿入
-    if not await UserItem.find_one({"item_id": ObjectId("61f5f484a2d21a1d4cf1b0e6")}): 
+    # # UserItem中間テーブルを挿入
+    # if not await UserItem.find_one({"item_id": ObjectId("61f5f484a2d21a1d4cf1b0e6")}): 
 
-        test_users_items = UserItem(
-            user_id=ObjectId("6728433a3bdeccb817510476"),
-            item_id=ObjectId("61f5f484a2d21a1d4cf1b0e6") 
-        )
-        await test_users_items.insert() 
+    #     test_users_items = UserItem(
+    #         user_id=ObjectId("6728433a3bdeccb817510476"),
+    #         item_id=ObjectId("61f5f484a2d21a1d4cf1b0e6") 
+    #     )
+    #     await test_users_items.insert() 
 
     # 画像を挿入
     test_image = await Image.find_one({"image_url": "https://example.com/images/image1.jpg"}) 
