@@ -46,6 +46,7 @@ class Item(DocumentWithConfig):
     jan_code: Optional[str] = None
     release_date: Optional[date] = None
     retailers: Optional[List[str]] = Field(default_factory=list)
+    user_data: List[ObjectId] = Field(default_factory=list)
 
     class Settings:
         name = "items" 
@@ -95,14 +96,14 @@ class Image(DocumentWithConfig):
     class Settings:
         name = "images"
 
-# users_itemsコレクション(中間テーブル)
-class UserItem(DocumentWithConfig):
-    _id: ObjectId
-    user_id: ObjectId
-    item_id: ObjectId
+# # users_itemsコレクション(中間テーブル)
+# class UserItem(DocumentWithConfig):
+#     _id: ObjectId
+#     user_id: ObjectId
+#     item_id: ObjectId
 
-    class Settings:
-        name = "users_items"
+#     class Settings:
+#         name = "users_items"
 
 # user_specific_dataコレクション
 class UserSpecificData(DocumentWithConfig):
@@ -159,15 +160,6 @@ class CustomCharacterName(DocumentWithConfig):
         name = "custom_characters"
 
 ############### MVPここまで ########################
-
-# users_chatsコレクション
-class UserItem(DocumentWithConfig):
-    _id: ObjectId
-    user_id: ObjectId
-    item_id: ObjectId
-
-    class Settings:
-        name = "users_items"
 
 # chatコレクション
 class Chat(DocumentWithConfig):
