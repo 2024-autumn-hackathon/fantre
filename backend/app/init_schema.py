@@ -7,14 +7,14 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from beanie import init_beanie
 import asyncio
 from app.database.db_connection import Database
-from app.models import Category, Character, CustomCategoryName, CustomCharacterName, CustomItem, CustomSeriesName, Image, Item, Series, User, CollectionList, UserSpecificData
+from app.models import Category, Character, ContentCatalog, CustomCategoryName, CustomCharacterName, CustomItem, CustomSeriesName, Image, Item, Series, SeriesCharacter, User, CollectionList, UserSpecificData
 
 # 初期設定
 async def init_schema(database):
     db = Database()
     database = await db.connect()  # データベースに接続
     
-    await init_beanie(database, document_models=[Category, Character, CustomCategoryName, CustomCharacterName, CustomItem, CustomSeriesName, Image, Item, Series, User, CollectionList, UserSpecificData
+    await init_beanie(database, document_models=[Category, Character, ContentCatalog, CustomCategoryName, CustomCharacterName, CustomItem, CustomSeriesName, Image, Item, Series, SeriesCharacter, User, CollectionList, UserSpecificData
 ])
 
 # 初期データを挿入
@@ -119,27 +119,59 @@ async def init_schema(database):
         )
         await test_item.insert()  # データベースにグッズを追加
 
-    # カテゴリが存在しない場合、作成する
-    category = await Category.find_one({"category_name": "Test Category"})
-    if not category:
-        category = Category(category_name="Test Category")
-        await category.insert()
-
-    # シリーズが存在しない場合、作成する
-    series = await Series.find_one({"series_name": "Test Series"})
-    if not series:
-        series = Series(series_name="Test Series")
-        await series.insert()
-
-    # キャラクターが存在しない場合、作成する
-    character = await Character.find_one({"character_name": "Test Character"})
-    if not character:
-        character = Character(
-            character_name="Test Character",
-            series=[series.id]
+    # ContentCatalog
+    # 存在しない場合ContentCatalogを作成
+    test_content_catalog = await ContentCatalog.find_one()
+    if not test_content_catalog:
+        test_content_catalog = ContentCatalog(
+            categories=[],
+            series=[],
+            characters=[],
+            series_characters=[]
         )
 
-        await character.insert()
+    # カテゴリが存在しない場合、作成する
+    test_category = await Category.find_one({"category_name": "Test Category"})
+    if not test_category:
+        test_category = Category(category_name="Test Category")
+        test_category.id = ObjectId()
+        
+        test_content_catalog.categories.append(test_category)
+
+    # シリーズが存在しない場合、作成する
+    test_series = await Series.find_one({"series_name": "Test Series"})
+    if not test_series:
+        test_series = Series(series_name="Test Series")
+        test_series.id = ObjectId()
+
+        test_content_catalog.series.append(test_series)
+
+    # キャラクターが存在しない場合、作成する
+    test_character = await Character.find_one({"character_name": "Test Character"})
+    if not test_character:
+        test_character = Character(character_name="Test Character")
+        test_character.id = ObjectId()
+
+        test_content_catalog.characters.append(test_character)
+
+    # 作品とキャラクターの組み合わせが存在しない場合、作成して追加
+    series_id = test_series.id if test_series and test_series.id else ObjectId("64f93b28dcadf9d53f99ef44")
+    character_id = test_character.id if test_character and test_character.id else ObjectId("64f93b28dcadf9d53f99ef45")
+
+    test_series_character = await SeriesCharacter.find_one({
+        "series_id": series_id,
+        "character_id": character_id
+    })    
+    if not test_series_character:
+        test_series_character = SeriesCharacter(            
+            series_id=series_id,
+            character_id=character_id
+        )
+        test_series_character.id = ObjectId()
+        
+        test_content_catalog.series_characters.append(test_series_character)
+
+        await test_content_catalog.save()
     
     # 画像を挿入
     test_image = await Image.find_one({"image_url": "https://example.com/images/image1.jpg"}) 
