@@ -47,7 +47,7 @@ class Item(DocumentWithConfig):
     jan_code: Optional[str] = None
     release_date: Optional[date] = None
     retailers: Optional[List[str]] = Field(default_factory=list)
-    user_data: List[ObjectId] = Field(default_factory=list)
+    user_data: Optional[List[ObjectId]] = Field(default_factory=list) # user_specific_data_id
 
     class Settings:
         name = "items" 
@@ -141,32 +141,20 @@ class CustomItem(DocumentWithConfig):
     exchange_status: Optional[bool] = None
     own_status: Optional[bool] = None
 
-    # class Settings:
-    #     name = "custom_items"
-
 class CustomCategoryName(DocumentWithConfig):
     _id: ObjectId
     category_id: ObjectId
     custom_category_name: str
-
-    # class Settings:
-    #     name = "custom_categories"
 
 class CustomSeriesName(DocumentWithConfig):
     _id: ObjectId
     series_id: ObjectId
     custom_series_name: str
 
-    # class Settings:
-    #     name = "custom_series"
-
 class CustomCharacterName(DocumentWithConfig):
     _id: ObjectId
     character_id: ObjectId
     custom_character_name: str
-
-    # class Settings:
-    #     name = "custom_characters"
 
 ############### MVPここまで ########################
 

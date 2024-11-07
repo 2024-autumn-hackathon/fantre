@@ -102,7 +102,6 @@ async def init_schema(database):
     else:
         print("コレクションリストが作成されていないか、既存のリストが取得できませんでした。")
 
-
     # グッズを挿入
     # Test Itemという名前のグッズが存在しない場合グッズを作成
     test_item = await Item.find_one({"item_name": "Test Item"}) 
@@ -141,70 +140,7 @@ async def init_schema(database):
         )
 
         await character.insert()
-
-    # Ttestseriescharacter1という名前の作品キャラクターが存在しない場合作品キャラクターを作成
-    # series_character = await SeriesCharacter.find_one({"series_id": ObjectId("6728433b3bdeccb81751047c")})
-    # if not series_character:
-    #     series_character = SeriesCharacter(
-    #         series_id=ObjectId("6728433b3bdeccb81751047c"),
-    #         character_id=ObjectId("6728433b3bdeccb81751047d")
-    #     )
-    #     await series_character.insert()
-        
-    # # ContentCatalogの作成
-    # content_catalog = await ContentCatalog.find_one({
-    #     "categories": {"$in": [category.id]},
-    #     "series": {"$in": [series.id]},
-    #     "characters": {"$in": [character.id]},
-    #     "series_characters": {"$in": [series_character.id]}
-    # })
-
-    # if not content_catalog:
-    #     content_catalog = ContentCatalog(
-    #         categories=[category.id],
-    #         series=[series.id],
-    #         characters=[character.id],
-    #         series_characters=[series_character.id] 
-    #     )
-    #     await content_catalog.insert()
-    #     print("ContentCatalog created")
-    # else:
-    #     print("ContentCatalog already exists")
-
-    # #  Test Categoryという名前のグッズジャンルが存在しない場合グッズジャンルを作成
-    # if not await Category.find_one({"category_name": "Test Category"}): 
-    #     test_category = Category(
-    #         category_name="Test Category"
-    #     )
-    #     # await test_category.insert()
-
-
-    # # Test Seriesという名前の作品名が存在しない場合作品を作成
-    # if not await Series.find_one({"series_name": "Test Series"}):
-    #     test_series = Series(
-    #         series_name="Test Series"
-    #     )
-    #     # await test_series.insert()
-
-    # # Test Characterという名前のキャラクターが存在しない場合キャラクターを作成
-    # if not await Character.find_one({"character_name": "Test Character"}): 
-    #     test_character = Character(
-    #         character_name="Test Character"
-    #     )
-        # await test_character.insert()  # データベースにキャラクターを追加
-
-    # Ttestseriescharacter1という名前の作品キャラクターが存在しない場合作品キャラクターを作成
-    # if not await SeriesCharacter.find_one({"series_id": ObjectId("60d5f484a2d21a1d4cf1b0e6")}):
-    #     test_series_characters = SeriesCharacters(
-    #         series_id=ObjectId("6728433b3bdeccb81751047c"),
-    #         character_id=ObjectId("6728433b3bdeccb81751047d")
-    #     )
-    #     await test_series_characters.insert()
-
-    # if not await ContentCatalog.find_one():
-
-
-
+    
     # 画像を挿入
     test_image = await Image.find_one({"image_url": "https://example.com/images/image1.jpg"}) 
 
