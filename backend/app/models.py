@@ -117,7 +117,7 @@ class Image(DocumentWithConfig):
 # user_specific_dataコレクション
 class UserSpecificData(DocumentWithConfig):
     _id: ObjectId
-    user_id: ObjectId
+    user_id: ObjectId = Indexed(unique=True)
     custom_items: Optional[List["CustomItem"]] = Field(default_factory=list)
     custom_category_names: Optional[List["CustomCategoryName"]] = Field(default_factory=list)
     custom_series_names: Optional[List["CustomSeriesName"]] = Field(default_factory=list)
