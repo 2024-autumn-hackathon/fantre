@@ -4,6 +4,7 @@ from datetime import date, datetime
 from typing import List, Optional
 from beanie import Document, Indexed
 from bson import ObjectId
+from pymongo import IndexModel
 
 # PydanticがObjectId型を受け入れるようにする
 class DocumentWithConfig(Document):
@@ -31,9 +32,6 @@ class CollectionList(DocumentWithConfig):
     created_at: Optional[datetime] = None
     list_items: Optional[List[ObjectId]] = Field(default_factory=list)  # item_idのリス
 
-    class Settings:
-        name = "collection_lists"
-
 # itemsコレクション
 class Item(DocumentWithConfig):
     _id: ObjectId
@@ -46,42 +44,39 @@ class Item(DocumentWithConfig):
     jan_code: Optional[str] = None
     release_date: Optional[date] = None
     retailers: Optional[List[str]] = Field(default_factory=list)
+    user_data: Optional[List[ObjectId]] = Field(default_factory=list) # user_specific_data_id
 
     class Settings:
         name = "items" 
 
-# categoriesコレクション
+# content_catalogsコレクション
+class ContentCatalog(DocumentWithConfig):
+    _id: ObjectId
+    categories: Optional[List["Category"]] = Field(default_factory=list)
+    series: Optional[List["Series"]] = Field(default_factory=list)
+    characters: Optional[List["Character"]] = Field(default_factory=list)
+    series_characters: Optional[List["SeriesCharacter"]] = Field(default_factory=list)
+
+# categories
 class Category(DocumentWithConfig):
     _id: ObjectId
     category_name: str = Indexed(unique=True) # 共有グッズジャンル名
-
-    class Settings:
-        name = "categories"
-
-# seriesコレクション
+ 
+# series
 class Series(DocumentWithConfig):
     _id: ObjectId
     series_name: str = Indexed(unique=True) # 共有作品名
-
-    class Settings:
-        name = "series" 
     
-# charactersコレクション
+# characters
 class Character(DocumentWithConfig):
     _id: ObjectId
-    character_name: str = Indexed(unique=True) # 共有キャラクター名
+    character_name: str = Indexed(unique=True)  # キャラクター名
 
-    class Settings:
-        name = "characters"
-
-# series_charactersコレクション
-class SeriesCharacters(DocumentWithConfig):
+# series_characters
+class SeriesCharacter(DocumentWithConfig):
     _id: ObjectId
     series_id: ObjectId
     character_id: ObjectId
-
-    class Settings:
-        name = "series_characters"
 
 # imagesコレクション
 class Image(DocumentWithConfig):
@@ -95,19 +90,10 @@ class Image(DocumentWithConfig):
     class Settings:
         name = "images"
 
-# users_itemsコレクション(中間テーブル)
-class UserItem(DocumentWithConfig):
-    _id: ObjectId
-    user_id: ObjectId
-    item_id: ObjectId
-
-    class Settings:
-        name = "users_items"
-
 # user_specific_dataコレクション
 class UserSpecificData(DocumentWithConfig):
     _id: ObjectId
-    user_id: ObjectId
+    user_id: ObjectId = Indexed(unique=True)
     custom_items: Optional[List["CustomItem"]] = Field(default_factory=list)
     custom_category_names: Optional[List["CustomCategoryName"]] = Field(default_factory=list)
     custom_series_names: Optional[List["CustomSeriesName"]] = Field(default_factory=list)
@@ -131,43 +117,22 @@ class CustomItem(DocumentWithConfig):
     exchange_status: Optional[bool] = None
     own_status: Optional[bool] = None
 
-    class Settings:
-        name = "custom_items"
-
 class CustomCategoryName(DocumentWithConfig):
     _id: ObjectId
     category_id: ObjectId
     custom_category_name: str
-
-    class Settings:
-        name = "custom_categories"
 
 class CustomSeriesName(DocumentWithConfig):
     _id: ObjectId
     series_id: ObjectId
     custom_series_name: str
 
-    class Settings:
-        name = "custom_series"
-
 class CustomCharacterName(DocumentWithConfig):
     _id: ObjectId
     character_id: ObjectId
     custom_character_name: str
 
-    class Settings:
-        name = "custom_characters"
-
 ############### MVPここまで ########################
-
-# users_chatsコレクション
-class UserItem(DocumentWithConfig):
-    _id: ObjectId
-    user_id: ObjectId
-    item_id: ObjectId
-
-    class Settings:
-        name = "users_items"
 
 # chatコレクション
 class Chat(DocumentWithConfig):
