@@ -49,46 +49,34 @@ class Item(DocumentWithConfig):
     class Settings:
         name = "items" 
 
-# categoriesコレクション
+# content_catalogsコレクション
+class ContentCatalog(DocumentWithConfig):
+    _id: ObjectId
+    categories: Optional[List["Category"]] = Field(default_factory=list)
+    series: Optional[List["Series"]] = Field(default_factory=list)
+    characters: Optional[List["Character"]] = Field(default_factory=list)
+    series_characters: Optional[List["SeriesCharacter"]] = Field(default_factory=list)
+
+# categories
 class Category(DocumentWithConfig):
     _id: ObjectId
     category_name: str = Indexed(unique=True) # 共有グッズジャンル名
-
-    class Settings:
-        name = "categories"
-
-# seriesコレクション
+ 
+# series
 class Series(DocumentWithConfig):
     _id: ObjectId
     series_name: str = Indexed(unique=True) # 共有作品名
-
-    class Settings:
-        name = "series" 
     
-# charactersコレクション
+# characters
 class Character(DocumentWithConfig):
     _id: ObjectId
     character_name: str = Indexed(unique=True)  # キャラクター名
-    series: Optional[List[ObjectId]] = Field(default_factory=list)  # 登場シリーズのリスト
 
-    # series フィールドにインデックスを追加（シリーズの検索効率を向上させる）
-    class Settings:
-        name = "characters"
-        indexes = [
-            IndexModel([("series", 1)])  # series フィールドにインデックス
-        ]
-
-# # series_charactersコレクション
-# class SeriesCharacter(DocumentWithConfig):
-#     _id: ObjectId
-#     series_id: ObjectId
-#     character_id: ObjectId
-
-#     class Settings:
-#         name = "series_characters"
-#         indexes = [
-#             IndexModel([("series_id", 1), ("character_id", 1)], unique=True)
-#         ]
+# series_characters
+class SeriesCharacter(DocumentWithConfig):
+    _id: ObjectId
+    series_id: ObjectId
+    character_id: ObjectId
 
 # imagesコレクション
 class Image(DocumentWithConfig):
@@ -101,15 +89,6 @@ class Image(DocumentWithConfig):
    
     class Settings:
         name = "images"
-
-# # users_itemsコレクション(中間テーブル)
-# class UserItem(DocumentWithConfig):
-#     _id: ObjectId
-#     user_id: ObjectId
-#     item_id: ObjectId
-
-#     class Settings:
-#         name = "users_items"
 
 # user_specific_dataコレクション
 class UserSpecificData(DocumentWithConfig):
