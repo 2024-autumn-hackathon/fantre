@@ -36,7 +36,7 @@ async def init_schema(database):
         print("User 'Test User' already exists, skipping insertion.")
 
     # ユーザー独自データを作成
-    user_specific_data = await UserSpecificData.find_one({"user_id": "test_user.id"}) 
+    user_specific_data = await UserSpecificData.find_one({"user_id": test_user.id}) 
     if not user_specific_data:
         user_specific_data = UserSpecificData(
             user_id=test_user.id,
@@ -74,11 +74,14 @@ async def init_schema(database):
                     custom_character_name="My Custom Character"
                 )
             ]
-        )
-        # ユーザー独自データをデータベースに追加
+            )
+            # ユーザー独自データをデータベースに追加
         await user_specific_data.insert() 
+    else:
+        # 既にデータが存在している場合は何もしない
+        print("ユーザー独自データはすでに存在しています。再起動時には追加しません。")   
 
-    # Test Collection Listという名前のコレクションリストが存在しない場合コレクションリストを作成    
+       # Test Collection Listという名前のコレクションリストが存在しない場合コレクションリストを作成    
     if not await User.find_one({"collection_lists": {"$elemMatch": {"list_name": "Test Collection"}}}): 
 
         collection_list = CollectionList(
