@@ -32,8 +32,8 @@ class CollectionList(DocumentWithConfig):
     created_at: Optional[datetime] = None
     list_items: Optional[List[ObjectId]] = Field(default_factory=list)  # item_idのリス
 
-    class Settings:
-        name = "collection_lists"
+    # class Settings:
+    #     name = "collection_lists"
 
 # itemsコレクション
 class Item(DocumentWithConfig):
@@ -141,32 +141,32 @@ class CustomItem(DocumentWithConfig):
     exchange_status: Optional[bool] = None
     own_status: Optional[bool] = None
 
-    class Settings:
-        name = "custom_items"
+    # class Settings:
+    #     name = "custom_items"
 
 class CustomCategoryName(DocumentWithConfig):
     _id: ObjectId
     category_id: ObjectId
     custom_category_name: str
 
-    class Settings:
-        name = "custom_categories"
+    # class Settings:
+    #     name = "custom_categories"
 
 class CustomSeriesName(DocumentWithConfig):
     _id: ObjectId
     series_id: ObjectId
     custom_series_name: str
 
-    class Settings:
-        name = "custom_series"
+    # class Settings:
+    #     name = "custom_series"
 
 class CustomCharacterName(DocumentWithConfig):
     _id: ObjectId
     character_id: ObjectId
     custom_character_name: str
 
-    class Settings:
-        name = "custom_characters"
+    # class Settings:
+    #     name = "custom_characters"
 
 ############### MVPここまで ########################
 
