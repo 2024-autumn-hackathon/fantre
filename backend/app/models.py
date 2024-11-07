@@ -4,6 +4,7 @@ from datetime import date, datetime
 from typing import List, Optional
 from beanie import Document, Indexed
 from bson import ObjectId
+from pymongo import IndexModel
 
 # PydanticがObjectId型を受け入れるようにする
 class DocumentWithConfig(Document):
@@ -70,19 +71,27 @@ class Series(DocumentWithConfig):
 # charactersコレクション
 class Character(DocumentWithConfig):
     _id: ObjectId
-    character_name: str = Indexed(unique=True) # 共有キャラクター名
+    character_name: str = Indexed(unique=True)  # キャラクター名
+    series: Optional[List[ObjectId]] = Field(default_factory=list)  # 登場シリーズのリスト
 
+    # series フィールドにインデックスを追加（シリーズの検索効率を向上させる）
     class Settings:
         name = "characters"
+        indexes = [
+            IndexModel([("series", 1)])  # series フィールドにインデックス
+        ]
 
-# series_charactersコレクション
-class SeriesCharacters(DocumentWithConfig):
-    _id: ObjectId
-    series_id: ObjectId
-    character_id: ObjectId
+# # series_charactersコレクション
+# class SeriesCharacter(DocumentWithConfig):
+#     _id: ObjectId
+#     series_id: ObjectId
+#     character_id: ObjectId
 
-    class Settings:
-        name = "series_characters"
+#     class Settings:
+#         name = "series_characters"
+#         indexes = [
+#             IndexModel([("series_id", 1), ("character_id", 1)], unique=True)
+#         ]
 
 # imagesコレクション
 class Image(DocumentWithConfig):
