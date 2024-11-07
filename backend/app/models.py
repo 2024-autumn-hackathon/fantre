@@ -32,9 +32,6 @@ class CollectionList(DocumentWithConfig):
     created_at: Optional[datetime] = None
     list_items: Optional[List[ObjectId]] = Field(default_factory=list)  # item_idのリス
 
-    # class Settings:
-    #     name = "collection_lists"
-
 # itemsコレクション
 class Item(DocumentWithConfig):
     _id: ObjectId
