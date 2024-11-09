@@ -1,11 +1,12 @@
 # backend/app/api/item.py
-from typing import List
+from typing import List, Optional
 from app.models import Item
-from app.database.db_item import create_item
-from pydantic import BaseModel, field_validator
+from app.database.db_item import create_item, get_items
+from pydantic import BaseModel, field_validator, ValidationError, Field
 from datetime import date
 from bson import ObjectId
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, status
+from beanie import Indexed
 
 # PydanticがObjectId型を受け入れるようにする
 class BaseModelWithConfig(BaseModel):
@@ -18,29 +19,56 @@ class BaseModelWithConfig(BaseModel):
 router = APIRouter()
 
 class ItemRequest(BaseModelWithConfig):    
+    item_images: Optional[List[str]] = Field(default_factory=list) # image_idのリスト
     item_name: str
-    item_images: List[str] # image_id
-    category: str #category_id
-    item_series: str # series_id
-    item_character: str #character_id
-    tags: List[str]
-    jan_code: str
-    release_date: date
-    retailers: List[str]
-    user_data: List[str] #user_id UserSpecificDataでこのアイテムを持っているユーザー
+    item_series: Optional[str] = None # series_id
+    item_character: Optional[str] = None # character_id
+    category: Optional[str] = None # category_id
+    tags: Optional[List[str]] = Field(default_factory=list)
+    jan_code: Optional[str] = None
+    release_date: Optional[date] = None
+    retailers: Optional[List[str]] = Field(default_factory=list)
+    user_data: Optional[List[str]] = Field(default_factory=list) # user_specific_data_id
 
     # カスタムバリデーションで文字列をObjectIdに変換
-    @field_validator("item_images", "user_data")
-    def validate_item_images(cls, v):
-        return [ObjectId(i) if isinstance(i, str) else i for i in v]
-
-    @field_validator("item_series", "item_character", "category")
+    @field_validator("item_images", "user_data", mode="before", check_fields=False) 
+    def validate_object_id_lists(cls, v): 
+        if v is None: 
+            return [] 
+        return [ObjectId(i) if ObjectId.is_valid(i) else i for i in v]
+        
+    @field_validator("item_series", "item_character", "category", mode="before", check_fields=False)
     def validate_object_id(cls, v):
-        return ObjectId(v) if isinstance(v, str) else v
+        if v is None or not ObjectId.is_valid(v): 
+            return v 
+        return ObjectId(v)
 
 # グッズ（アイテム）登録
 @router.post("/api/items")
 async def create_item_endpoint(item_request: ItemRequest):
-    item = Item(**item_request.model_dump())
-    created_item = await create_item(item)
-    return created_item
+    try:
+        item_data = item_request.model_dump()
+
+        # 既存のアイテムとitem_nameの重複を確認
+        existing_items = await get_items()
+        for item in existing_items:
+            if item.item_name == item_data["item_name"]:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Item with the same name already exists."
+                )
+
+        item = Item(**item_data)
+        created_item = await create_item(item)
+        return created_item
+    
+    except ValidationError as e:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=e.errors()
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
