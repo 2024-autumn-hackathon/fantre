@@ -57,6 +57,9 @@ class ContentCatalog(DocumentWithConfig):
     characters: Optional[List["Character"]] = Field(default_factory=list)
     series_characters: Optional[List["SeriesCharacter"]] = Field(default_factory=list)
 
+    class Settings:
+        name = "content_catalogs" 
+
 # categories
 class Category(DocumentWithConfig):
     _id: ObjectId
