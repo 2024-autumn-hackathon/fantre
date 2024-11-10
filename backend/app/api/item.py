@@ -31,18 +31,14 @@ class ItemRequest(BaseModel):
     user_data: Optional[List[str]] = Field(default_factory=list) # user_specific_data_id
 
     # カスタムバリデーションで文字列をObjectIdに変換
-    @field_validator("item_images", "user_data", mode="before", check_fields=False) 
-    def validate_object_id_lists(cls, v): 
-        if v is None: 
-            return [] 
-        return [ObjectId(i) if ObjectId.is_valid(i) else i for i in v]
+    @field_validator('item_images', 'user_data')
+    def validate_item_images(cls, v):
+        return [ObjectId(i) if isinstance(i, str) else i for i in v]
         
-    @field_validator("item_series", "item_character", "category", mode="before", check_fields=False)
+    @field_validator('item_series', 'item_character', 'category')
     def validate_object_id(cls, v):
-        if v is None or not ObjectId.is_valid(v): 
-            return v 
-        return ObjectId(v)
-
+        return ObjectId(v) if isinstance(v, str) else v
+    
     # カスタムバリデーションでJANコードの形式を検証
     @field_validator("jan_code")
     def validate_jan_code(cls, v):
@@ -76,12 +72,14 @@ async def create_item_endpoint(item_request: ItemRequest):
         return created_item
     
     except ValidationError as e:
+        print(f"Validation error: {e.errors()}")  # エラーの詳細を出力
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=e.errors()
+            detail={"errors": e.errors()}
         )
     except Exception as e:
+        print(f"Unexpected error when creating item: {str(e)}")  # 詳細なエラーをログに出力
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
+            detail="An error occured while creating the item"
         )
