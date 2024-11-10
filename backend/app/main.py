@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse
 
 from app.init_schema import init_schema
 from app.api.user import router as user_router  # ユーザー用のルーターをインポート
+from app.api.item import router as item_router  # アイテム用のルーターをインポート
 
 
 @asynccontextmanager
@@ -21,12 +22,13 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 
-# ValidationErrorでの422エラーのレスポンス変更
-@app.exception_handler(RequestValidationError)
-async def error_handler(request: Request, exc: RequestValidationError):
-    return JSONResponse(
-        content={"detail": "There was an error in your input. Please"}, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY
-    )
+# # ValidationErrorでの422エラーのレスポンス変更
+# @app.exception_handler(RequestValidationError)
+# async def error_handler(request: Request, exc: RequestValidationError):
+#     return JSONResponse(
+#         content={"detail": "There was an error in your input. Please"}, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY
+#     )
 
 # ルーター追加
 app.include_router(user_router)  # ユーザー関連のルーターを追加
+app.include_router(item_router)  # アイテム関連のルーターを追加
