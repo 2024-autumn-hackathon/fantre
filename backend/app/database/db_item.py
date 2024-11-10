@@ -2,7 +2,7 @@
 from app.models import Item
 from bson import ObjectId
 from fastapi import HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 from app.database.db_connection import Database
 
 
@@ -15,6 +15,8 @@ async def create_item(item: Item):
     try:
         await item.insert()
         return item
+    except ValidationError as ve:
+        raise HTTPException(status_code=422, detail=ve.errors())
     except Exception as e:
         raise Exception(f"Error fetching items: {str(e)}") # エラーログを出力
     finally:
