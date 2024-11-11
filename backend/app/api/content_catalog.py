@@ -1,51 +1,38 @@
 # backend/app/api/content_catalog.py
-from typing import List, Optional
-from app.models import Category, Character, Series, SeriesCharacter
-from app.database.db_content_catalog import get_categories, get_content_catalog, get_series,  save_content_catalog, search_series_character
-from pydantic import BaseModel, field_validator, ValidationError, model_validator
+from typing import Optional
+from app.models import Character, Series, SeriesCharacter
+from app.database.db_content_catalog import get_categories, get_content_catalog, get_series,  save_content_catalog, search_series_character, create_category
+from pydantic import BaseModel, field_validator,  model_validator
 from bson import ObjectId
 from fastapi import APIRouter, HTTPException, status
-# from beanie import Indexed
-# import re
+
 
 router = APIRouter()
 
-class CategoryRequeset(BaseModel):
-    category_name: str
-
 # グッズジャンル（カテゴリー）登録
 @router.post("/api/categories")
-async def create_category_endpoint(category_request: CategoryRequeset):
-    try:
-        category_data = category_request.model_dump()
-        # ContentCatalogを取得
-        content_catalog = await get_content_catalog() 
-        # 既存のcategory_nameと重複を確認
-        for existing_category in content_catalog.categories:
-            if existing_category.category_name == category_data["category_name"]:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Category with the same name already exists."
-                )
-                        
-        # 新しいカテゴリを追加
-        new_category = Category(_id=ObjectId(), **category_data)
-        content_catalog.categories.append(new_category)
-        await save_content_catalog(content_catalog)
+async def create_category_endpoint(category_name: str):
+    try:  
+        # category_nameが空白でないことを確認
+        if not category_name or len(category_name.strip()) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Category name is required."
+            )                                    
+        new_category = await create_category(category_name)
         return {
             "category_id": str(new_category.id),
             "category_name": str(new_category.category_name)
-        }
-        
-    except ValidationError as e:
+        }    
+    except HTTPException as e:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=e.errors()
-        )
+            status_code=e.status_code,
+            detail=e.detail
+            )           
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
+            detail="An error occurred whil creating the category."
         )
 
 # グッズジャンル（カテゴリー）一覧取得
