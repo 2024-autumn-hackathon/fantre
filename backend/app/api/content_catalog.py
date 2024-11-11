@@ -125,7 +125,7 @@ async def add_series_character(series_id: ObjectId, character_id: ObjectId):
                 # 既存のペアがあればスキップ
                 return{"Series and character pair already exists."}            
         # 新しいペアを作成
-        new_pair = SeriesCharacter(series_id=series_id, character_id=character_id)
+        new_pair = SeriesCharacter(_id=ObjectId(),series_id=series_id, character_id=character_id)
         content_catalog.series_characters.append(new_pair)
         await save_content_catalog(content_catalog)
         return new_pair
@@ -206,7 +206,12 @@ async def create_series_character_endpoint(series_character_request: SeriesChara
         # 既存の同じ組み合わせがあるか確認
         existing_pair = await search_series_character(series_id_for_use, character_id_for_use)
         if existing_pair:
-            return{"Series&Character pair already exists."}
+            # 既存のペアがあればエラーメッセージとIDを返す
+            return {
+                "message": "Series and character pair already exists.",
+                "series_id": str(series_id),
+                "character_id": str(character_id)
+            }
         # ContentCatalogのseries_charactersリストに追加
         await add_series_character(series_id_for_use, character_id_for_use)
 
