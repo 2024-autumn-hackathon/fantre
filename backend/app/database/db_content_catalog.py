@@ -1,5 +1,5 @@
 # backend/app/database/db_content_catalog.py
-from app.models import Category, ContentCatalog
+from app.models import ContentCatalog
 from app.database.db_connection import Database
 
 db = Database()
