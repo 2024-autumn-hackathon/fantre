@@ -236,4 +236,40 @@ async def get_all_series_endpoint():
             detail=str(e)
         )
 
+# 作品名一覧取得(一覧ページ用)
+@router.get("/api/series/page/{current_page}")	
+async def get_all_series_with_pagenation(current_page: int):
+    try:
+        series = await get_series()
+        # ページごとのアイテム数
+        series_per_page = 2
+        # 現在ページが1以下の場合、1ページ目を表示
+        if current_page < 1:
+            current_page = 1        
+        # ページに分けるためにsiriesリストをスライス
+        start_index = (current_page - 1) * series_per_page
+        end_index = start_index + series_per_page
+        pagenated_series = series[start_index:end_index]
+        # 何ページできるか計算
+        total_series_count = len(series)
+        all_pages = (total_series_count + series_per_page - 1) // series_per_page # 切り上げ
+        # レスポンスをリストから辞書形式に変換、整形
+        print(series)
+        series_response = {
+            "series": [
+                {"id": str(series.id), "series_name": series.series_name}
+                for series in pagenated_series
+            ],
+            "all_pages": all_pages
+        }
+        return series_response
+    
+    except Exception as e:
+        print(f"Error in get_series_with_pagination: {str(e)}")  # 詳細なエラーを出力
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+            )
+
+
 
