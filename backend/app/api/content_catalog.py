@@ -53,9 +53,10 @@ async def create_category_endpoint(category_request: CategoryRequeset):
 async def get_all_categories_endpoint():
     try:
         categories = await get_categories()
-        print(categories)
+        # 新しい順に並べ替え
+        categories_sorted = sorted(categories, key=lambda x: x.id.generation_time, reverse=True)
         # リスト形式を辞書形式に変換する （id:name形式）
-        category_dict = {str(category.id): category.category_name for category in categories}
+        category_dict = {str(category.id): category.category_name for category in categories_sorted}
         return category_dict
     except Exception as e:
         raise HTTPException(
@@ -225,8 +226,10 @@ async def create_series_character_endpoint(series_character_request: SeriesChara
 async def get_all_series_endpoint():
     try:
         series = await get_series()
+        # 新しい順に並べ替え
+        series_sorted = sorted(series, key=lambda x: x.id.generation_time, reverse=True)
         # リスト形式を辞書形式に変換
-        series_dict = {str(series.id): series.series_name for series in series}
+        series_dict = {str(series.id): series.series_name for series in series_sorted}
         return series_dict
     
     except Exception as e:
@@ -243,18 +246,19 @@ async def get_all_series_with_pagenation(current_page: int):
         series = await get_series()
         # ページごとのアイテム数
         series_per_page = 2
+        # 新しい順に並べ替え
+        series_sorted = sorted(series, key=lambda x: x.id.generation_time, reverse=True)
         # 現在ページが1以下の場合、1ページ目を表示
         if current_page < 1:
             current_page = 1        
         # ページに分けるためにsiriesリストをスライス
         start_index = (current_page - 1) * series_per_page
         end_index = start_index + series_per_page
-        pagenated_series = series[start_index:end_index]
+        pagenated_series = series_sorted[start_index:end_index]
         # 何ページできるか計算
         total_series_count = len(series)
         all_pages = (total_series_count + series_per_page - 1) // series_per_page # 切り上げ
         # レスポンスをリストから辞書形式に変換、整形
-        print(series)
         series_response = {
             "series": [
                 {"id": str(series.id), "series_name": series.series_name}
