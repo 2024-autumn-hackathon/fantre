@@ -1,13 +1,12 @@
 # backend/app/api/content_catalog.py
 from typing import List, Optional
-from app.models import Category, Character, ContentCatalog, Item, Series, SeriesCharacter
-from app.database.db_content_catalog import get_content_catalog, get_series_characters, save_content_catalog, search_series_character
-from pydantic import BaseModel, field_validator, ValidationError
-from datetime import date
+from app.models import Category, Character, Series, SeriesCharacter
+from app.database.db_content_catalog import get_content_catalog,  save_content_catalog, search_series_character
+from pydantic import BaseModel, field_validator, ValidationError, model_validator
 from bson import ObjectId
 from fastapi import APIRouter, HTTPException, status
-from beanie import Indexed
-import re
+# from beanie import Indexed
+# import re
 
 router = APIRouter()
 
@@ -33,8 +32,11 @@ async def create_category_endpoint(category_request: CategoryRequeset):
         new_category = Category(_id=ObjectId(), **category_data)
         content_catalog.categories.append(new_category)
         await save_content_catalog(content_catalog)
-        return new_category
-    
+        return {
+            "category_id": str(new_category.id),
+            "category_name": str(new_category.category_name)
+        }
+        
     except ValidationError as e:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -126,13 +128,46 @@ class SeriesCharacterRequest(BaseModel):
     is_new_character: bool = False
 
     # カスタムバリデーションで文字列をObjectIdに変換      
-    @field_validator("series_id", "character_id", mode="before")
+    @field_validator("series_id", "character_id")
     def validate_object_id(cls, v):
-        if v is None or not ObjectId.is_valid(v): 
-            return v 
-        return ObjectId(v)
-    
-
+        if v is None:
+            return v
+        if not ObjectId.is_valid(v):
+            raise ValueError(f"Invalid ObjectId format for {v}")
+        return ObjectId(v)  
+    # is_new_series, is_new_characterに基づく必須条件バリデーション
+    @model_validator(mode="before")
+    def validate_series_character_fields(cls, values):    
+        try:
+            #series trueの時は_name必須、_id不要　falseの時は反対
+            if values.get("is_new_series"):
+                if not values.get("series_name"):
+                    raise ValueError("series_name is required when is_new_series is True.")
+                if values.get("series_id"):
+                    raise ValueError("series_id should not be provided when is_new_series is True")
+            else:
+                if not values.get("series_id"):
+                    raise ValueError("series_id is required when is_new_series is False.")
+                if values.get("series_name"):
+                    raise ValueError("series_name should not be provided when is_new_series is False.")
+            #character trueの時は_name必須、_id不要　falseの時は反対
+            if values.get("is_new_character"):
+                if not values.get("character_name"):
+                    raise ValueError("character_name is required when is_new_character is True.")
+                if values.get("character_id"):
+                    raise ValueError("character_id should not be provided when is_new_character is True")
+            else:
+                if not values.get("character_id"):
+                    raise ValueError("character_id is required when is_new_character is False.")
+                if values.get("character_name"):
+                    raise ValueError("character_name should not be provided when is_new_character is False.")
+                
+            return values
+        
+        except ValueError as e:
+            print(f"Validation error: {e}")
+            raise e
+            
 @router.post("/api/series-characters")
 async def create_series_character_endpoint(series_character_request: SeriesCharacterRequest):
     try:
