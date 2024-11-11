@@ -1,7 +1,7 @@
 # backend/app/api/content_catalog.py
 from typing import List, Optional
 from app.models import Category, Character, Series, SeriesCharacter
-from app.database.db_content_catalog import get_categories, get_content_catalog,  save_content_catalog, search_series_character
+from app.database.db_content_catalog import get_categories, get_content_catalog, get_series,  save_content_catalog, search_series_character
 from pydantic import BaseModel, field_validator, ValidationError, model_validator
 from bson import ObjectId
 from fastapi import APIRouter, HTTPException, status
@@ -50,7 +50,7 @@ async def create_category_endpoint(category_request: CategoryRequeset):
 
 # グッズジャンル（カテゴリー）一覧取得
 @router.get("/api/category")
-async def get_categories_endpoint():
+async def get_all_categories_endpoint():
     try:
         categories = await get_categories()
         print(categories)
@@ -220,6 +220,20 @@ async def create_series_character_endpoint(series_character_request: SeriesChara
             detail=str(e)
         )
     
-
+# 作品名一覧取得(検索用)   
+@router.get("/api/series")
+async def get_all_series_endpoint():
+    try:
+        series = await get_series()
+        # リスト形式を辞書形式に変換
+        series_dict = {str(series.id): series.series_name for series in series}
+        return series_dict
+    
+    except Exception as e:
+        print(f"Error in create_series_character_endpoint: {str(e)}")  # 詳細なエラーを出力
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
 
 
