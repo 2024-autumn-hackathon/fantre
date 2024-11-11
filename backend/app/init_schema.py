@@ -42,6 +42,7 @@ async def init_schema(database):
             user_id=test_user.id,
             custom_items=[
                 CustomItem(
+                    _id=ObjectId(),
                     item_id=ObjectId("6728433b3bdeccb81751047a"),
                     custom_item_images=[ObjectId("61f5f484a2d21a1d4cf1b0e6")],
                     custom_item_name="My Test Custom Item",
@@ -58,18 +59,21 @@ async def init_schema(database):
             ],
             custom_category_names=[
                 CustomCategoryName(
+                    _id=ObjectId(),
                     category_id=ObjectId("6728433b3bdeccb81751047b"),
                     custom_category_name="My Custom Category"
                 )
             ],
             custom_series_names=[
                 CustomSeriesName(
+                    _id=ObjectId(),
                     series_id=ObjectId("6728433b3bdeccb81751047c"),
                     custom_series_name="My Custom Series"
                 )
             ],
             custom_character_names=[
                 CustomCharacterName(
+                    _id=ObjectId(),
                     character_id=ObjectId("6728433b3bdeccb81751047d"),
                     custom_character_name="My Custom Character"
                 )
@@ -85,6 +89,7 @@ async def init_schema(database):
     # if not await User.find_one({"collection_lists": {"$elemMatch": {"list_name": "Test Collection"}}}): 
     if not await User.find_one({"_id": test_user.id, "collection_lists.list_name": "Test Collection"}): 
         collection_list = CollectionList(
+            _id=ObjectId(),
             list_name="Test Collection",
             created_at=datetime.now(),
             list_items=[ObjectId("6728433b3bdeccb81751047a")]         
@@ -136,6 +141,7 @@ async def init_schema(database):
             ],
             series_characters=[
                 SeriesCharacter(
+                   _id=ObjectId(), 
                    series_id=ObjectId("64f93b28dcadf9d53f99ef44"),
                    character_id=ObjectId("64f93b28dcadf9d53f99ef45") 
                 )
