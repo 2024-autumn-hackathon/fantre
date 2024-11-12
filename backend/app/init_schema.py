@@ -129,13 +129,13 @@ async def init_schema(database):
             ],
             series=[
                 Series(
-                    _id=ObjectId(),
+                    _id=ObjectId("6731371a31c29bb05c8a1275"),
                     series_name="Test Series"
                 )
             ],
             characters=[
                 Character(
-                    _id=ObjectId(),
+                    _id=ObjectId("6731371a31c29bb05c8a1276"),
                     character_name="Test Character"
                 )
             ],
