@@ -12,6 +12,14 @@ const config: Config = {
         background: "var(--background)",
         foreground: "var(--foreground)",
       },
+      screens: {
+        "monitor": {
+          "raw": "(min-aspect-ratio: 1 / 1) and (max-aspect-ratio: 2 / 1)",
+        },
+        "wide": {
+          "raw": "(min-aspect-ratio: 2 / 1)",
+        },
+      }
     },
   },
   plugins: [],
