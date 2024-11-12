@@ -40,8 +40,8 @@ class Item(DocumentWithConfig):
     item_series: Optional[ObjectId] = None # series_id
     item_character: Optional[ObjectId] = None # character_id
     category: Optional[ObjectId] = None # category_id
-    tags: Optional[list[str]] = Field(default_factory=list)
-    jan_code: Optional[str] = None
+    tags: Optional[List[str]] = Field(default_factory=list)
+    jan_code: Optional[str] = Indexed(unique=True), None
     release_date: Optional[date] = None
     retailers: Optional[List[str]] = Field(default_factory=list)
     user_data: Optional[List[ObjectId]] = Field(default_factory=list) # user_specific_data_id
@@ -56,6 +56,9 @@ class ContentCatalog(DocumentWithConfig):
     series: Optional[List["Series"]] = Field(default_factory=list)
     characters: Optional[List["Character"]] = Field(default_factory=list)
     series_characters: Optional[List["SeriesCharacter"]] = Field(default_factory=list)
+
+    class Settings:
+        name = "content_catalogs" 
 
 # categories
 class Category(DocumentWithConfig):

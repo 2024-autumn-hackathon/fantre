@@ -8,6 +8,8 @@ from fastapi.responses import JSONResponse
 
 from app.init_schema import init_schema
 from app.api.user import router as user_router  # ユーザー用のルーターをインポート
+from app.api.item import router as item_router  # アイテム用のルーターをインポート
+from app.api.content_catalog import router as content_catalog_router  # ContentCatalog用のルーターをインポート
 
 
 @asynccontextmanager
@@ -21,7 +23,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 
-# ValidationErrorでの422エラーのレスポンス変更
+# # ValidationErrorでの422エラーのレスポンス変更
 # @app.exception_handler(RequestValidationError)
 # async def error_handler(request: Request, exc: RequestValidationError):
 #     return JSONResponse(
@@ -30,3 +32,5 @@ app = FastAPI(lifespan=lifespan)
 
 # ルーター追加
 app.include_router(user_router)  # ユーザー関連のルーターを追加
+app.include_router(item_router)  # アイテム関連のルーターを追加
+app.include_router(content_catalog_router)  # アイテム関連のルーターを追加
