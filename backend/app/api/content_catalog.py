@@ -1,7 +1,6 @@
 # backend/app/api/content_catalog.py
 from typing import Optional
-from app.models import Character, Series, SeriesCharacter
-from app.database.db_content_catalog import get_categories, get_content_catalog, get_series,  save_content_catalog, search_series_character, create_category
+from app.database.db_content_catalog import create_character, create_series, create_series_character, get_categories, get_series, create_category
 from pydantic import BaseModel, field_validator,  model_validator
 from bson import ObjectId
 from fastapi import APIRouter, HTTPException, status
@@ -50,76 +49,6 @@ async def get_all_categories_endpoint():
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error fetching categories: {str(e)}"
         )
-
-
-# 作品を追加
-async def add_series(series_name: str):
-    try:
-        # ContentCatalogを取得
-        content_catalog = await get_content_catalog()
-        # 既存のseries_nameと重複を確認
-        for existing_series in content_catalog.series:
-            if existing_series.series_name == series_name:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Series with the same name already exists."
-                )            
-        # 新しい作品を追加
-        new_series = Series(_id=ObjectId(), series_name=series_name)
-        content_catalog.series.append(new_series)
-        await save_content_catalog(content_catalog)
-        return new_series
-    
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
-        )
-    
-# キャラクターを追加
-async def add_character(character_name: str):
-    try:
-        # ContentCatalogを取得
-        content_catalog = await get_content_catalog()
-        # 既存のseries_nameと重複を確認
-        for existing_character in content_catalog.characters:
-            if existing_character.character_name == character_name:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Character with the same name already exists."
-                )
-            
-        # 新しいキャラクターを追加
-        new_character = Character(_id=ObjectId(), character_name=character_name)
-        content_catalog.characters.append(new_character)
-        await save_content_catalog(content_catalog)
-        return new_character
-    
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
-        )
-
-# 作品キャラクターを追加
-async def add_series_character(series_id: ObjectId, character_id: ObjectId):
-    try:        # ContentCatalogを取得
-        content_catalog = await get_content_catalog()
-        print("Current series_characters:", content_catalog.series_characters)  # デバッグ用
-        # 同じ作品とキャラクターのペアがすでに存在するか確認
-        for pair in content_catalog.series_characters:
-            if pair.series_id == series_id and pair.character_id == character_id:
-                # 既存のペアがあればスキップ
-                return{"Series and character pair already exists."}            
-        # 新しいペアを作成
-        new_pair = SeriesCharacter(_id=ObjectId(),series_id=series_id, character_id=character_id)
-        content_catalog.series_characters.append(new_pair)
-        await save_content_catalog(content_catalog)
-        return new_pair
-    
-    except Exception as e:
-        print(f"Error in add_series_character: {str(e)}")  # 詳細なエラーを出力
-        raise Exception(f"Error adding series_character pair: {str(e)}")
 
 
 # 作品・キャラクター登録
@@ -177,37 +106,33 @@ async def create_series_character_endpoint(series_character_request: SeriesChara
     try:
         series_id = series_character_request.series_id
         character_id = series_character_request.character_id
-        content_catalog = await get_content_catalog()
         # フラグがTrueの時だけ作品登録処理
         if series_character_request.is_new_series:
-            new_series = await add_series(series_character_request.series_name)
+            new_series = await create_series(series_character_request.series_name)
             series_id_for_use = new_series.id
         else:
             series_id_for_use = series_id
         # フラグがTrueの時だけキャラクター登録処理
         if series_character_request.is_new_character:
-            new_character = await add_character(series_character_request.character_name)
+            new_character = await create_character(series_character_request.character_name)
             character_id_for_use = new_character.id
         else:
             character_id_for_use = character_id
-        # 既存の同じ組み合わせがあるか確認
-        existing_pair = await search_series_character(series_id_for_use, character_id_for_use)
-        if existing_pair:
-            # 既存のペアがあればエラーメッセージとIDを返す
-            return {
-                "message": "Series and character pair already exists.",
-                "series_id": str(series_id),
-                "character_id": str(character_id)
-            }
-        # ContentCatalogのseries_charactersリストに追加
-        await add_series_character(series_id_for_use, character_id_for_use)
 
+        result =await create_series_character(series_id_for_use, character_id_for_use)
+
+        if isinstance(result, dict) and "message" in result:
+            return {
+                "message": result["message"],
+                "series_id": result["series_id"],
+                "character_id": result["character_id"]
+            }
+        
         return {
             "series_id": str(series_id_for_use),
             "character_id": str(character_id_for_use)
         }
     except Exception as e:
-        print(f"Error in create_series_character_endpoint: {str(e)}")  # 詳細なエラーを出力
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e)
