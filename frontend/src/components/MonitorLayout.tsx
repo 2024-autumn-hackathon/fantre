@@ -20,10 +20,6 @@ const MonitorLayout = ({
       >
         <section
           className="bg-yellow-500 bg-opacity-50 col-start-3 col-end-4 monitor:col-end-6 wide:col-start-2 wide:col-end-3"
-          style={{
-            background:"orange",
-            opacity:0.5
-          }}
         >
           { headerContent }
         </section>
@@ -39,10 +35,6 @@ const MonitorLayout = ({
         </section>
         <section
           className="row-start-5 col-start-3 col-end-4 monitor:row-start-3 monitor:col-end-6 wide:row-start-1 wide:row-end-2 wide:col-start-4 wide:col-end-5"
-          style={{
-            background:"orange",
-            opacity:0.5
-          }}
         >
           { footerContent }
         </section>
