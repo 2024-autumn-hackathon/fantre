@@ -9,6 +9,7 @@ from fastapi.responses import JSONResponse
 from app.init_schema import init_schema
 from app.api.user import router as user_router  # ユーザー用のルーターをインポート
 from app.api.item import router as item_router  # アイテム用のルーターをインポート
+from app.api.content_catalog import router as content_catalog_router  # ContentCatalog用のルーターをインポート
 
 
 @asynccontextmanager
@@ -32,3 +33,4 @@ app = FastAPI(lifespan=lifespan)
 # ルーター追加
 app.include_router(user_router)  # ユーザー関連のルーターを追加
 app.include_router(item_router)  # アイテム関連のルーターを追加
+app.include_router(content_catalog_router)  # アイテム関連のルーターを追加
