@@ -4,10 +4,9 @@ Dockerfile
 __test__
 .next
 .swc
-/*/app
 node_modules
 public
-# src
+src
 .md
 *.js*
 *.mjs
