@@ -1,6 +1,6 @@
 # backend/app/api/content_catalog.py
 from typing import Optional
-from app.database.db_content_catalog import create_character, create_series, create_series_character, get_categories, get_series, create_category
+from app.database.db_content_catalog import create_character, create_series, create_series_character, get_all_categories, get_all_characters, get_all_series, create_category, get_series_characters
 from pydantic import BaseModel, field_validator,  model_validator
 from bson import ObjectId
 from fastapi import APIRouter, HTTPException, status
@@ -38,11 +38,11 @@ async def create_category_endpoint(category_name: str):
 @router.get("/api/category")
 async def get_all_categories_endpoint():
     try:
-        categories = await get_categories()
+        categories = await get_all_categories()
         # 新しい順に並べ替え
-        categories_sorted = sorted(categories, key=lambda x: x.id.generation_time, reverse=True)
+        sorted_categories = sorted(categories, key=lambda x: x.id.generation_time, reverse=True)
         # リスト形式を辞書形式に変換する （id:name形式）
-        category_dict = {str(category.id): category.category_name for category in categories_sorted}
+        category_dict = {str(category.id): category.category_name for category in sorted_categories}
         return category_dict
     except Exception as e:
         raise HTTPException(
@@ -142,36 +142,35 @@ async def create_series_character_endpoint(series_character_request: SeriesChara
 @router.get("/api/series")
 async def get_all_series_endpoint():
     try:
-        series = await get_series()
+        series = await get_all_series()
         # 新しい順に並べ替え
-        series_sorted = sorted(series, key=lambda x: x.id.generation_time, reverse=True)
+        sorted_series = sorted(series, key=lambda x: x.id.generation_time, reverse=True)
         # リスト形式を辞書形式に変換
-        series_dict = {str(series.id): series.series_name for series in series_sorted}
+        series_dict = {str(series.id): series.series_name for series in sorted_series}
         return series_dict
     
     except Exception as e:
-        print(f"Error in create_series_character_endpoint: {str(e)}")  # 詳細なエラーを出力
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
+            detail=f"Error fetching series: {str(e)}"
         )
 
 # 作品名一覧取得(一覧ページ用)
 @router.get("/api/series/page/{current_page}")	
 async def get_all_series_with_pagenation(current_page: int):
     try:
-        series = await get_series()
+        series = await get_all_series()
         # ページごとのアイテム数
         series_per_page = 2
         # 新しい順に並べ替え
-        series_sorted = sorted(series, key=lambda x: x.id.generation_time, reverse=True)
+        sorted_series = sorted(series, key=lambda x: x.id.generation_time, reverse=True)
         # 現在ページが1以下の場合、1ページ目を表示
         if current_page < 1:
             current_page = 1        
         # ページに分けるためにsiriesリストをスライス
         start_index = (current_page - 1) * series_per_page
         end_index = start_index + series_per_page
-        pagenated_series = series_sorted[start_index:end_index]
+        pagenated_series = sorted_series[start_index:end_index]
         # 何ページできるか計算
         total_series_count = len(series)
         all_pages = (total_series_count + series_per_page - 1) // series_per_page # 切り上げ
@@ -186,11 +185,49 @@ async def get_all_series_with_pagenation(current_page: int):
         return series_response
     
     except Exception as e:
-        print(f"Error in get_series_with_pagination: {str(e)}")  # 詳細なエラーを出力
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
+            detail=f"Error fetching series with pagination: {str(e)}"
+        )
+
+
+# 作品名で絞ったキャラ一覧取得(検索用)
+@router.get("/api/series/{series_id}/characters")
+async def get_filterd_characters(series_id: str):
+    try:
+        # DBから指定したシリーズIDのシリーズキャラクターを取得
+        series_characters = await get_series_characters(series_id)
+
+        if not series_characters:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Characters not found for this series"
             )
+        # キャラクターIDをリスト化
+        character_ids = [character.character_id for character in series_characters]
+        print(character_ids)
+        # キャラクター詳細情報（キャラクター名）を取得
+        characters_with_name = await get_all_characters()
+        print(characters_with_name)
+        # キャラクター情報をキャラクターIDでフィルタリングし辞書形式に整形
+        characters_dict = {
+            str(character.id): character.character_name
+            for character in characters_with_name
+            if character.id in character_ids
+        }
+        sorted_characters = dict(sorted(characters_dict.items(), key=lambda item: item[1]))
+        return sorted_characters
 
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error fetching sorted characters by series_id: {str(e)}"
+        )
 
+# 作品名で絞った
+# キャラ一覧取得
+# (一覧ページ用)
+# GET	/api/series
+# /{series_id}
+# /characters/page/{current_page}?	
 
