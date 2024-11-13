@@ -205,29 +205,25 @@ async def get_filterd_characters(series_id: str):
             )
         # キャラクターIDをリスト化
         character_ids = [character.character_id for character in series_characters]
-        print(character_ids)
         # キャラクター詳細情報（キャラクター名）を取得
         characters_with_name = await get_all_characters()
-        print(characters_with_name)
-        # キャラクター情報をキャラクターIDでフィルタリングし辞書形式に整形
+        # キャラクター情報をキャラクターIDでフィルタリング
+        filtered_characters = [
+            character for character in characters_with_name
+            if character.id in character_ids
+        ]
+        # あいうえお順にソート
+        sorted_characters = sorted(filtered_characters, key=lambda character: character.character_name)
+        # 辞書形式に変換
         characters_dict = {
             str(character.id): character.character_name
-            for character in characters_with_name
-            if character.id in character_ids
+            for character in sorted_characters
         }
-        sorted_characters = dict(sorted(characters_dict.items(), key=lambda item: item[1]))
-        return sorted_characters
+
+        return characters_dict
 
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error fetching sorted characters by series_id: {str(e)}"
         )
-
-# 作品名で絞った
-# キャラ一覧取得
-# (一覧ページ用)
-# GET	/api/series
-# /{series_id}
-# /characters/page/{current_page}?	
-
