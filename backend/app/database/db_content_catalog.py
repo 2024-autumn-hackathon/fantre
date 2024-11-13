@@ -62,7 +62,7 @@ async def create_category(category_name: str):
         )
 
 # すべてのグッズジャンル（詳細を含む）を取得する
-async def get_categories():
+async def get_all_categories():
     try:
         content_catalog = await get_content_catalog()
         if content_catalog:
@@ -98,7 +98,7 @@ async def create_series(series_name: str):
         )
     
 # すべての作品（詳細を含む）を取得する
-async def get_series():
+async def get_all_series():
     try:
         content_catalog = await get_content_catalog()
         if content_catalog:
@@ -133,7 +133,7 @@ async def create_character(character_name: str):
         )
     
 # すべてのキャラクター（詳細含む）を取得する
-async def get_characters():
+async def get_all_characters():
     try:
         content_catalog = await get_content_catalog()
         if content_catalog:
@@ -142,15 +142,6 @@ async def get_characters():
     except Exception as e:
         raise Exception(f"Error fetching characters: {str(e)}") 
 
-# すべての作品＆キャラクターの組み合わせを取得する
-async def get_series_characters():
-    try:
-        content_catalog = await get_content_catalog()
-        if content_catalog:
-            return content_catalog.series_characters
-        return None
-    except Exception as e:
-        raise Exception(f"Error fetching series_characters: {str(e)}") 
 
 # 新しい作品＆キャラクターの組み合わせを作成する
 async def create_series_character(series_id: ObjectId, character_id: ObjectId):
@@ -179,3 +170,34 @@ async def create_series_character(series_id: ObjectId, character_id: ObjectId):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An unexpected error occurd while creating the series_character."
         )
+    
+
+# すべての作品＆キャラクターの組み合わせを取得する
+async def get_all_series_characters():
+    try:
+        content_catalog = await get_content_catalog()
+        if content_catalog:
+            return content_catalog.series_characters
+        return None
+    except Exception as e:
+        raise Exception(f"Error fetching series_characters: {str(e)}") 
+    
+    
+# 指定した作品またはキャラクターに関連している相手方の名前一覧を取得
+async def get_series_characters(series_id: str):
+    try:
+        content_catalog = await get_content_catalog()
+        if content_catalog:
+            filtered_characters = [
+                character for character in content_catalog.series_characters 
+                if character.series_id == ObjectId(series_id)
+            ]
+            return filtered_characters
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="No characters found for this series")
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error fetching filtered characters by series_id: {str(e)}"
+            ) 
