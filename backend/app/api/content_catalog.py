@@ -193,7 +193,7 @@ async def get_all_series_with_pagenation(current_page: int):
 
 # 作品名で絞ったキャラ一覧取得(検索用)
 @router.get("/api/series/{series_id}/characters")
-async def get_filterd_characters(series_id: str):
+async def get_filtered_characters(series_id: str):
     try:
         # DBから指定したシリーズIDのシリーズキャラクターを取得
         series_characters = await get_series_characters(series_id)
@@ -221,6 +221,47 @@ async def get_filterd_characters(series_id: str):
         }
 
         return characters_dict
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error fetching sorted characters by series_id: {str(e)}"
+        )
+    
+
+# 作品名で絞ったキャラ一覧取得(一覧ページ用)
+@router.get("/api/series/{series_id}/characters/page/{current_page}")
+async def get_filterd_characters_with_pagenation(series_id: str, current_page: int):
+    try:
+        # 既存の関数を利用
+        characters_dict = await get_filtered_characters(series_id)
+        print(characters_dict)
+        # リストに変換
+        characters_list = list(characters_dict.items())
+        # 新しい順にソート
+        sorted_characters_list = sorted(characters_list, key=lambda x: ObjectId(x[0]).generation_time, reverse=True)
+
+        characters_per_page = 2
+        # 現在ページが1以下の場合、1ページ目を表示
+        if current_page < 1:
+            current_page = 1        
+        # ページに分けるためにsorted_characters_listをスライス
+        start_index = (current_page - 1) * characters_per_page
+        end_index = start_index + characters_per_page
+        pagenated_characters = sorted_characters_list[start_index:end_index]
+        # 何ページできるか計算
+        total_characters_count = len(sorted_characters_list)
+        all_pages = (total_characters_count + characters_per_page - 1) // characters_per_page # 切り上げ
+
+        # レスポンスを整形
+        characters_response = {
+                "characters": [
+                    {"id": str(character[0]), "character_name": character[1]}
+                    for character in pagenated_characters
+                ],
+                "all_pages": all_pages
+            }
+        return characters_response
 
     except Exception as e:
         raise HTTPException(
