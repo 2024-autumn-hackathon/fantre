@@ -201,3 +201,55 @@ async def get_series_characters(series_id: ObjectId):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error fetching filtered characters by series_id: {str(e)}"
             ) 
+
+
+# category_idからcategory_nameを取得する
+async def get_category_name(category_id: ObjectId):
+    try:
+        content_catalog = await get_content_catalog()
+
+        for category in content_catalog.categories:
+            if category.id == category_id:
+                return category.category_name
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="Category not found.")
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error fetching category name by category_id: {str(e)}"
+            )
+    
+# series_idからseries_nameを取得する
+async def get_series_name(series_id: ObjectId):
+    try:
+        content_catalog = await get_content_catalog()
+
+        for series in content_catalog.series:
+            if series.id == series_id:
+                return series.series_name
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="Series not found.")
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error fetching series name by series_id: {str(e)}"
+            )
+    
+# character_idからcharacter_nameを取得する
+async def get_character_name(character_id: ObjectId):
+    try:
+        content_catalog = await get_content_catalog()
+
+        for character in content_catalog.characters:
+            if character.id == character_id:
+                return character.character_name
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="Character not found.")
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error fetching character name by character_id: {str(e)}"
+            )
