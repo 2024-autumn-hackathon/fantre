@@ -40,6 +40,7 @@ async def init_schema(database):
     user_specific_data = await UserSpecificData.find_one({"user_id": test_user.id}) 
     if not user_specific_data:
         user_specific_data = UserSpecificData(
+            _id=ObjectId("6736a36adf3ac469905b2afc"),
             user_id=test_user.id,
             custom_items=[
                 CustomItem(
