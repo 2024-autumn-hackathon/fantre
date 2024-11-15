@@ -132,39 +132,61 @@ async def get_filtered_items(
     release_date: str = Query(None),
     retailers: str = Query(None),
 ):	
-    # クエリ用の辞書を作成
-    query = {}
-    # クエリを部分一致に対応させる
+    # クエリは１つ以上必須入力
+    if not any([item_series, item_character, item_name, tags, jan_code, release_date, retailers]):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="At least one of the query parameters must be provided."
+            )
+    try:
+        # クエリ用の辞書を作成
+        query = {}
+        # クエリを部分一致に対応させる
 
-    if item_series:
-        query["item_series"] = ObjectId(item_series)
-    if item_character:
-        query["item_character"] = ObjectId(item_character)   
-    if item_name:
-        query["item_name"] = item_name
-    if tags:
-        query["tags"] = {"$in": tags.split(",")}
-    if jan_code:
-        query["jan_code"] = jan_code
-    if release_date:
-        query["release_date"] = release_date
-    if retailers:
-        query["retailers"] = retailers
+        if item_series:
+            query["item_series"] = ObjectId(item_series)
+        if item_character:
+            query["item_character"] = ObjectId(item_character)   
+        if item_name:
+            query["item_name"] = {"$regex": item_name, "$options": "i"}
+        if tags:
+            query["tags"] = {"$elemMatch": {"$regex": tags, "$options": "i"}}
+        if jan_code:
+            query["jan_code"] = {"$regex": jan_code, "$options": "i"}
+        if release_date:
+            query["release_date"] = release_date
+        if retailers:
+            query["retailers"] = {"$elemMatch": {"$regex": retailers, "$options": "i"}}
 
-    # クエリを使ってアイテム取得
-    filtered_items = await Item.find(query).to_list()
+        # クエリを使ってアイテム取得
+        filtered_items = await Item.find(query).to_list()
 
-    response = {
-            "items": [
-                    {
-                        "id": str(filtered_item.id), 
-                        "item_name": filtered_item.item_name
+        if not filtered_items:
+            return{
+                "message": "No items found matching the queries."
+            }
+
+        response = {
+                "items": [
+                        {
+                            "id": str(filtered_item.id), 
+                            "item_name": filtered_item.item_name
+                        }
+                        for filtered_item in filtered_items
+                        ],                    
+                        "all_pages": "notyet"
                     }
-                    for filtered_item in filtered_items
-                    ],                    
-                    "all_pages": "notyet"
-                }
-    
-    return response
+        
+        return response
 
-
+    except ValidationError as e:
+        raise HTTPException(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        detail={"errors": e.errors()}
+        )
+    except Exception as e:
+        print(f"Unexpected error when fetching the filtered_items: {str(e)}")  # 詳細なエラーをログに出力
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occured while fetching the filtered_items"
+        )
