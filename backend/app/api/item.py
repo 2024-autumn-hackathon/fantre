@@ -1,21 +1,14 @@
 # backend/app/api/item.py
 from typing import List, Optional
 from app.models import Item
-from app.database.db_item import create_item, get_items
+from app.database.db_item import create_item, get_item, get_all_items
+from app.database.db_content_catalog import get_category_name, get_character_name, get_series_name
 from pydantic import BaseModel, field_validator, ValidationError, Field, StringConstraints
 from datetime import date
 from bson import ObjectId
 from fastapi import APIRouter, HTTPException, status
 from beanie import Indexed
 import re
-
-# # PydanticがObjectId型を受け入れるようにする
-# class BaseModelWithConfig(BaseModel):
-#     class Config:
-#         arbitrary_types_allowed = True # 任意の型を許可
-#         json_encoders = {
-#             ObjectId: str # ObjectIdを文字列に変換する設定
-#         }
 
 router = APIRouter()
 
@@ -53,7 +46,7 @@ async def create_item_endpoint(item_request: ItemRequest):
         item_data = item_request.model_dump()
 
         # 既存のアイテムとitem_nameとjan_codeの重複を確認
-        existing_items = await get_items()
+        existing_items = await get_all_items()
         for item in existing_items:
             if item.item_name == item_data["item_name"]:
                 raise HTTPException(
@@ -83,3 +76,55 @@ async def create_item_endpoint(item_request: ItemRequest):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An error occured while creating the item"
         )
+    
+# グッズ詳細取得
+@router.get("/api/items/{item_id}")
+async def get_item_details(item_id: str):
+    try:
+        item = await get_item(ObjectId(item_id))
+
+        # この部分あとから実装
+        # ログインしたユーザーの独自データIDがitem.user_dataにあったら独自データのcustom_itemをとりにいく
+        # なくても、ログインしたユーザーの独自データでcustom_seriesなどを確認にいく
+        # 独自データがあった場合はそのcustom_nameをとってくる
+
+
+        # 独自データがまったく設定されていない場合それぞれのidから共有名を取ってくる
+        series_name = await get_series_name(ObjectId(item.item_series))
+        character_name = await get_character_name(ObjectId(item.item_character))
+        category_name = await get_category_name(ObjectId(item.category))
+
+        response = {
+            "item_name": item.item_name,
+            "series_name": series_name,
+            "character_name": character_name,
+            "category_name": category_name,
+            "tags": item.tags,
+            "jan_code": item.jan_code,
+            "release_date": item.release_date,
+            "retailers": item.retailers
+        }
+        return response
+    
+    except ValidationError as e:
+        print(f"Validation error: {e.errors()}")  # エラーの詳細を出力
+        raise HTTPException(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        detail={"errors": e.errors()}
+        )
+    except Exception as e:
+        print(f"Unexpected error when fetching the item: {str(e)}")  # 詳細なエラーをログに出力
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occured while fetching the item"
+        )
+
+#         item_name: str
+# series_name: str catalogから持ってこないといけない
+# character_name: str catalogから持ってこないといけない
+# category_name: str catalogから持ってこないといけない
+# tags: [str]
+# JAN_code: int
+# release_date: datetime
+# retailers: [str]
+# own_status: bool
