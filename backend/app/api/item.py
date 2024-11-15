@@ -6,7 +6,7 @@ from app.database.db_content_catalog import get_category_name, get_character_nam
 from pydantic import BaseModel, field_validator, ValidationError, Field, StringConstraints
 from datetime import date
 from bson import ObjectId
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Query
 from beanie import Indexed
 import re
 
@@ -119,12 +119,52 @@ async def get_item_details(item_id: str):
             detail="An error occured while fetching the item"
         )
 
-#         item_name: str
-# series_name: str catalogから持ってこないといけない
-# character_name: str catalogから持ってこないといけない
-# category_name: str catalogから持ってこないといけない
-# tags: [str]
-# JAN_code: int
-# release_date: datetime
-# retailers: [str]
-# own_status: bool
+
+# 検索・一覧画面用グッズ情報取得
+@router.get("/api/items/page/{current_page}")
+async def get_filtered_items(
+    current_page: int,
+    item_series: str = Query(None),
+    item_character: str = Query(None),
+    item_name: str = Query(None),
+    tags: str = Query(None),
+    jan_code: str = Query(None),
+    release_date: str = Query(None),
+    retailers: str = Query(None),
+):	
+    # クエリ用の辞書を作成
+    query = {}
+    # クエリを部分一致に対応させる
+
+    if item_series:
+        query["item_series"] = ObjectId(item_series)
+    if item_character:
+        query["item_character"] = ObjectId(item_character)   
+    if item_name:
+        query["item_name"] = item_name
+    if tags:
+        query["tags"] = {"$in": tags.split(",")}
+    if jan_code:
+        query["jan_code"] = jan_code
+    if release_date:
+        query["release_date"] = release_date
+    if retailers:
+        query["retailers"] = retailers
+
+    # クエリを使ってアイテム取得
+    filtered_items = await Item.find(query).to_list()
+
+    response = {
+            "items": [
+                    {
+                        "id": str(filtered_item.id), 
+                        "item_name": filtered_item.item_name
+                    }
+                    for filtered_item in filtered_items
+                    ],                    
+                    "all_pages": "notyet"
+                }
+    
+    return response
+
+
