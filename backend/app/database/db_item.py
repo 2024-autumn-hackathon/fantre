@@ -23,7 +23,7 @@ async def create_item(item: Item):
         await db.disconnect()  # 接続を切断
 
 # すべてのアイテム（詳細含む）を取得する
-async def get_items():
+async def get_all_items():
     await db.connect()
     try:
         items = await Item.find_all().to_list()
@@ -33,3 +33,13 @@ async def get_items():
     finally:
         await db.disconnect()  # 接続を切断
 
+# 指定したアイテムの詳細を取得する
+async def get_item(item_id: ObjectId):
+    await db. connect()
+    try:
+        item = await Item.get(item_id)
+        return item
+    except Exception as e:
+        raise Exception(f"Error fetching item: {str(e)}")
+    finally:
+        await db.disconnect()
