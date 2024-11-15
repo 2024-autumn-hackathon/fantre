@@ -8,7 +8,8 @@ from datetime import date
 from bson import ObjectId
 from fastapi import APIRouter, HTTPException, status, Query
 from beanie import Indexed
-import re
+import re, calendar
+from datetime import datetime
 
 router = APIRouter()
 
@@ -20,6 +21,7 @@ class ItemRequest(BaseModel):
     category: Optional[str] = None # category_id
     tags: Optional[List[str]] = Field(default_factory=list)
     jan_code: Optional[str] = Field(None, description="JAN code (8 or 13 degits)") 
+    release_date: Optional[str] = None
     retailers: Optional[List[str]] = Field(default_factory=list)
     user_data: Optional[List[str]] = Field(default_factory=list) # user_specific_data_id
 
@@ -38,6 +40,13 @@ class ItemRequest(BaseModel):
         if v is not None and not re.match(r'^\d{8}$|^\d{13}$', v):
             raise ValueError("jan_code must be 8 or 13 digits")
         return v
+    
+    # カスタムバリデーションで日付を検証
+    @field_validator("release_date")
+    def validate_release_date(cls, v):
+        if v is not None and not re.match(r'^\d{4}-\d{2}-\d{2}$', v):
+            raise ValueError("release_date must be in the format YYYY-MM-DD.")
+        return v 
     
 # グッズ（アイテム）登録
 @router.post("/api/items")
@@ -84,9 +93,10 @@ async def get_item_details(item_id: str):
         item = await get_item(ObjectId(item_id))
 
         # この部分あとから実装
-        # ログインしたユーザーの独自データIDがitem.user_dataにあったら独自データのcustom_itemをとりにいく
-        # なくても、ログインしたユーザーの独自データでcustom_seriesなどを確認にいく
+        # ログインしたユーザーの独自データIDがitem.user_dataにあったら独自データのcustom_itemをとりにいく　→直接独自データをuser_idで検索でいいかも。その場合は、item_idを要確認　どちらがいいかな。
+        # なくても、ログインしたユーザーの独自データでcustom_seriesなどを確認にいく　→どっちにしても独自データ見にいくんだから、user_idからuser_specific_data_idへの変換は無駄だな
         # 独自データがあった場合はそのcustom_nameをとってくる
+        # そもそも、Itemにuser_specific_data_idのデータなくてもよかったかな？
 
 
         # 独自データがまったく設定されていない場合それぞれのidから共有名を取ってくる
@@ -120,6 +130,25 @@ async def get_item_details(item_id: str):
         )
 
 
+# 発売日入力値を解析
+async def parse_release_date(release_date: str):
+    try:
+        if len(release_date) == 4:  # YYYY
+            return datetime(year=int(release_date), month=12, day=31).date()  # その年の最終日を返す
+        elif len(release_date) == 7:  # YYYY-MM
+            year = int(release_date[:4])
+            month = int(release_date[5:7])
+            last_day = calendar.monthrange(year, month)[1]  # 最終日を取得
+            return datetime(year, month, last_day).date()  # その月の最終日の日付を返す
+        elif len(release_date) == 10:  # YYYY-MM-DD
+            return datetime.strptime(release_date, "%Y-%m-%d").date()            
+        else:
+            raise ValueError("Invalid date format. Please use YYYY, YYYY-MM, or YYYY-MM-DD.")
+    
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
+
+
 # 検索・一覧画面用グッズ情報取得
 @router.get("/api/items/page/{current_page}")
 async def get_filtered_items(
@@ -138,6 +167,8 @@ async def get_filtered_items(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="At least one of the query parameters must be provided."
             )
+       
+
     try:
         # クエリ用の辞書を作成
         query = {}
@@ -153,7 +184,11 @@ async def get_filtered_items(
         if jan_code:
             query["jan_code"] = jan_code
         if release_date:
-            query["release_date"] = release_date
+            parsed_release_date = await parse_release_date(release_date)
+            query = {"$or": [
+                {"release_date": {"$lt": parsed_release_date}},  # 指定された日付より前
+                {"release_date": None}  # 空白も検索結果に含める
+                ]}
         if retailers:
             query["retailers"] = {"$elemMatch": {"$regex": retailers, "$options": "i"}}
         # クエリを使ってアイテム取得
@@ -162,8 +197,7 @@ async def get_filtered_items(
         if not filtered_items:
             return{
                 "message": "No items found matching the queries."
-            }
-        
+            }        
         sorted_items =  sorted(filtered_items, key=lambda x: x.id.generation_time, reverse=True)
         # ページネーション
         items_per_page = 2
@@ -184,8 +218,7 @@ async def get_filtered_items(
                         for sorted_item in pagenated_items
                         ],                    
                         "all_pages": all_pages
-                    }
-        
+                    }        
         return response
 
     except ValidationError as e:
