@@ -53,7 +53,7 @@ async def create_item_endpoint(item_request: ItemRequest):
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Item with the same name already exists."
                 )
-            if item.jan_code == item_data["jan_code"]:
+            if item_data["jan_code"] and item.jan_code == item_data["jan_code"]:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Item with the same JAN code already exists."
@@ -142,7 +142,6 @@ async def get_filtered_items(
         # クエリ用の辞書を作成
         query = {}
         # クエリを部分一致に対応させる
-
         if item_series:
             query["item_series"] = ObjectId(item_series)
         if item_character:
@@ -152,12 +151,11 @@ async def get_filtered_items(
         if tags:
             query["tags"] = {"$elemMatch": {"$regex": tags, "$options": "i"}}
         if jan_code:
-            query["jan_code"] = {"$regex": jan_code, "$options": "i"}
+            query["jan_code"] = jan_code
         if release_date:
             query["release_date"] = release_date
         if retailers:
             query["retailers"] = {"$elemMatch": {"$regex": retailers, "$options": "i"}}
-
         # クエリを使ってアイテム取得
         filtered_items = await Item.find(query).to_list()
 
@@ -165,16 +163,27 @@ async def get_filtered_items(
             return{
                 "message": "No items found matching the queries."
             }
+        
+        sorted_items =  sorted(filtered_items, key=lambda x: x.id.generation_time, reverse=True)
+        # ページネーション
+        items_per_page = 2
+   
+        start_index = (current_page - 1) * items_per_page
+        end_index = start_index + items_per_page
+        pagenated_items = sorted_items[start_index:end_index]
+
+        total_items_count = len(sorted_items)
+        all_pages = (total_items_count + items_per_page - 1) // items_per_page
 
         response = {
                 "items": [
                         {
-                            "id": str(filtered_item.id), 
-                            "item_name": filtered_item.item_name
+                            "id": str(sorted_item.id), 
+                            "item_name": sorted_item.item_name
                         }
-                        for filtered_item in filtered_items
+                        for sorted_item in pagenated_items
                         ],                    
-                        "all_pages": "notyet"
+                        "all_pages": all_pages
                     }
         
         return response
