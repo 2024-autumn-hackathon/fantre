@@ -184,7 +184,7 @@ async def get_all_series_characters():
     
     
 # 指定した作品またはキャラクターに関連している相手方の名前一覧を取得
-async def get_series_characters(series_id: str):
+async def get_series_characters(series_id: ObjectId):
     try:
         content_catalog = await get_content_catalog()
         if content_catalog:
