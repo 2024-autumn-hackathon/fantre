@@ -19,11 +19,12 @@ async def init_schema(database):
 
 # 初期データを挿入
     # ユーザーを挿入
-    # Test Userという名前のユーザーが存在しない場合アイテムを作成
+    # Test Userという名前のユーザーが存在しない場合アイテムを作成    
     test_user = await User.find_one({"user_name": "Test User"}) 
     if not test_user:  # ユーザーが存在しない場合
         try:            
             test_user = User(
+                _id=ObjectId("507f1f77bcf86cd799439011"),
                 user_name="Test User",
                 email="test@example.com",
                 password="hashed_password",
