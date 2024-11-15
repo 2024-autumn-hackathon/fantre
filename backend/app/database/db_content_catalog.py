@@ -205,6 +205,8 @@ async def get_series_characters(series_id: ObjectId):
 
 # category_idからcategory_nameを取得する
 async def get_category_name(category_id: ObjectId):
+    if category_id is None:
+        return None
     try:
         content_catalog = await get_content_catalog()
 
@@ -222,6 +224,8 @@ async def get_category_name(category_id: ObjectId):
     
 # series_idからseries_nameを取得する
 async def get_series_name(series_id: ObjectId):
+    if series_id is None:
+        return None
     try:
         content_catalog = await get_content_catalog()
 
@@ -239,6 +243,8 @@ async def get_series_name(series_id: ObjectId):
     
 # character_idからcharacter_nameを取得する
 async def get_character_name(character_id: ObjectId):
+    if character_id is None:
+        return None
     try:
         content_catalog = await get_content_catalog()
 

@@ -16,12 +16,12 @@ router = APIRouter()
 class ItemRequest(BaseModel):    
     item_images: Optional[List[str]] = Field(default_factory=list) # image_idのリスト
     item_name: str
-    item_series: Optional[str] = None # series_id
-    item_character: Optional[str] = None # character_id
+    item_series: str = None # series_id
+    item_character: str = None # character_id
     category: Optional[str] = None # category_id
     tags: Optional[List[str]] = Field(default_factory=list)
     jan_code: Optional[str] = Field(None, description="JAN code (8 or 13 degits)") 
-    release_date: Optional[str] = None
+    release_date: Optional[str] = Field(None, description="Release date YYYY-MM-DD)") 
     retailers: Optional[List[str]] = Field(default_factory=list)
     user_data: Optional[List[str]] = Field(default_factory=list) # user_specific_data_id
 
@@ -92,17 +92,9 @@ async def get_item_details(item_id: str):
     try:
         item = await get_item(ObjectId(item_id))
 
-        # この部分あとから実装
-        # ログインしたユーザーの独自データIDがitem.user_dataにあったら独自データのcustom_itemをとりにいく　→直接独自データをuser_idで検索でいいかも。その場合は、item_idを要確認　どちらがいいかな。
-        # なくても、ログインしたユーザーの独自データでcustom_seriesなどを確認にいく　→どっちにしても独自データ見にいくんだから、user_idからuser_specific_data_idへの変換は無駄だな
-        # 独自データがあった場合はそのcustom_nameをとってくる
-        # そもそも、Itemにuser_specific_data_idのデータなくてもよかったかな？
-
-
-        # 独自データがまったく設定されていない場合それぞれのidから共有名を取ってくる
-        series_name = await get_series_name(ObjectId(item.item_series))
-        character_name = await get_character_name(ObjectId(item.item_character))
-        category_name = await get_category_name(ObjectId(item.category))
+        series_name = await get_series_name(ObjectId(item.item_series)) if item.item_series else None
+        character_name = await get_character_name(ObjectId(item.item_character)) if item.item_character else None
+        category_name = await get_category_name(ObjectId(item.category)) if item.category else None
 
         response = {
             "item_name": item.item_name,

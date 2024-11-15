@@ -37,8 +37,8 @@ class Item(DocumentWithConfig):
     _id: ObjectId
     item_images: Optional[List[ObjectId]] = Field(default_factory=list) # image_idのリスト
     item_name: str = Indexed(unique=True)
-    item_series: Optional[ObjectId] = None # series_id
-    item_character: Optional[ObjectId] = None # character_id
+    item_series: ObjectId = None # series_id
+    item_character: ObjectId = None # character_id
     category: Optional[ObjectId] = None # category_id
     tags: Optional[List[str]] = Field(default_factory=list)
     jan_code: Optional[str] = Indexed(unique=True), None
