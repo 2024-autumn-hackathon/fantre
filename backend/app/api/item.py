@@ -52,6 +52,17 @@ class ItemRequest(BaseModel):
 @router.post("/api/items")
 async def create_item_endpoint(item_request: ItemRequest):
     try:
+        if not item_request.item_series:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Item series must be provided."
+            )
+        if not item_request.item_character:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Item character must be provided."
+            )
+        
         item_data = item_request.model_dump()
 
         # 既存のアイテムとitem_nameとjan_codeの重複を確認
