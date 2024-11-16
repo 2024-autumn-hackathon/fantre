@@ -259,3 +259,30 @@ async def get_character_name(character_id: ObjectId):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error fetching character name by character_id: {str(e)}"
             )
+    
+# series_nameの部分一致検索
+async def series_name_partial_match(series_name: str):
+    content_catalog = await get_content_catalog()
+
+    matched_series_ids = []
+
+    for series in content_catalog["series"]:
+        if series_name.lower() in series["series_name"].lower():
+            matched_series_ids.append(series["_id"])
+    print(matched_series_ids)
+    return matched_series_ids
+
+
+
+# character_nameの部分一致検索
+async def character_name_partial_match(character_name: str):
+    content_catalog = await get_content_catalog()
+    print("Content Catalog:", content_catalog) 
+    
+    matched_character_ids = []
+
+    for character in content_catalog["characters"]:
+        if character_name.lower() in character["character_name"].lower():
+            matched_character_ids.append(character["_id"])
+    
+    return matched_character_ids

@@ -66,3 +66,5 @@ async def existing_item_check(item_name: str, jan_code: str) -> bool:
         return False  # 重複がなければFalseを返す
     finally:
         await db.disconnect()
+
+

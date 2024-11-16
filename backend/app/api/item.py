@@ -2,7 +2,7 @@
 from typing import List, Optional
 from app.models import Item
 from app.database.db_item import create_item, existing_item_check, get_item, get_all_items
-from app.database.db_content_catalog import get_category_name, get_character_name, get_series_name
+from app.database.db_content_catalog import character_name_partial_match, get_category_name, get_character_name, get_series_name, series_name_partial_match
 from pydantic import BaseModel, field_validator, ValidationError, Field, StringConstraints
 from datetime import date
 from bson import ObjectId
@@ -153,8 +153,8 @@ async def parse_release_date(release_date: str):
 @router.get("/api/items/page/{current_page}")
 async def get_filtered_items(
     current_page: int,
-    item_series: str = Query(None),
-    item_character: str = Query(None),
+    series_name: str = Query(None),
+    character_name: str = Query(None),
     item_name: str = Query(None),
     tags: str = Query(None),
     jan_code: str = Query(None),
@@ -162,34 +162,57 @@ async def get_filtered_items(
     retailers: str = Query(None),
 ):	
     # クエリは１つ以上必須入力
-    if not any([item_series, item_character, item_name, tags, jan_code, release_date, retailers]):
+    if not any([series_name, character_name, item_name, tags, jan_code, release_date, retailers]):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="At least one of the query parameters must be provided."
             )      
 
     try:
-        # クエリ用の辞書を作成
-        query = {}
+        # and検索のためのクエリ用のリストを作成
+        query_conditions = []
         # クエリを部分一致に対応させる
-        if item_series:
-            query["item_series"] = ObjectId(item_series)
-        if item_character:
-            query["item_character"] = ObjectId(item_character)   
+        # if item_series:
+        #     query["series_name"] = str(series_name)
+        # if item_character:
+        #     query["character_name"] = str(character_name)   
+
+
+        # if series_name:
+        #     # 別関数で部分検索
+        #     series_ids = await series_name_partial_match(series_name)
+        #     # 返ってきたseries_idを使い対応するitemを取得
+        #     if series_ids:
+        #         items_with_series = await Item.find({"series_id": {"$in": series_ids}})
+        #         # item_idのクエリ作成
+        #         query["item_id"] = {"$in": items_with_series}
+
+        # if character_name:
+        #     character_ids = await character_name_partial_match(character_name)
+        #     if character_ids:
+        #         items_with_character = await Item.find({"character_id": {"$in": character_ids}})
+        #         query["item_id"] = {"$in": items_with_character}
+
         if item_name:
-            query["item_name"] = {"$regex": item_name, "$options": "i"}
+            query_conditions.append({"item_name":  {"$regex": item_name, "$options": "i"}})
         if tags:
-            query["tags"] = {"$elemMatch": {"$regex": tags, "$options": "i"}}
+            query_conditions.append({"tags": {"$elemMatch": {"$regex": tags, "$options": "i"}}})
         if jan_code:
-            query["jan_code"] = jan_code
+            query_conditions.append({"jan_code": jan_code})
         if release_date:
             parsed_release_date = await parse_release_date(release_date)
-            query = {"$or": [
-                {"release_date": {"$lt": parsed_release_date}},  # 指定された日付より前
-                {"release_date": None}  # 空白も検索結果に含める
-                ]}
+            query_conditions.append({  # 正しいappendの使い方
+                "$or": [
+                    {"release_date": {"$lt": parsed_release_date}},  # 指定された日付より前
+                    {"release_date": None}  # 空白も検索結果に含める
+                ]
+            })
         if retailers:
-            query["retailers"] = {"$elemMatch": {"$regex": retailers, "$options": "i"}}
+            query_conditions.append({"retailers":  {"$elemMatch": {"$regex": retailers, "$options": "i"}}})
+        # クエリをAND条件で結合絞り込み
+# $and条件を使ってクエリを構築
+        query = {"$and": query_conditions} if query_conditions else {}
+
         # クエリを使ってアイテム取得
         filtered_items = await Item.find(query).to_list()
 
@@ -199,7 +222,7 @@ async def get_filtered_items(
             }        
         sorted_items =  sorted(filtered_items, key=lambda x: x.id.generation_time, reverse=True)
         # ページネーション
-        items_per_page = 2
+        items_per_page = 10
    
         start_index = (current_page - 1) * items_per_page
         end_index = start_index + items_per_page
