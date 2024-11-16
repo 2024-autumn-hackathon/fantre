@@ -16,8 +16,8 @@ router = APIRouter()
 class ItemRequest(BaseModel):    
     item_images: Optional[List[str]] = Field(default_factory=list) # image_idのリスト
     item_name: str
-    item_series: str = None # series_id
-    item_character: str = None # character_id
+    item_series: Optional[str] = None # series_id
+    item_character: Optional[str] = None # character_id
     category: Optional[str] = None # category_id
     tags: Optional[List[str]] = Field(default_factory=list)
     jan_code: Optional[str] = Field(None, description="JAN code (8 or 13 degits)") 
