@@ -1,0 +1,52 @@
+name: Frontend CI
+# 実行トリガーを定義 対象ブランチに対象パス以下の変更を含むプルリクエストが開始されたとき
+# およびクローズ後の再開の時、そのプルリクにコミットがあったとき
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths:
+      - "frontend/**"
+    types:
+      - opened
+      - reopened
+      - synchronize
+# LintとTestの実行を含むワークフローを定義
+jobs:
+  Lint_and_Test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Use Repository
+        uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.11.0"
+      - name: Cache node modules
+        id: cache-npm
+        uses: actions/cache@v4
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
+      - if: ${{ steps.cache-npm.outputs.cache-hit != 'true' }}
+        name: List the state of node modules
+        continue-on-error: true
+        run: npm list
+      - run: npm ci --force
+        working-directory: ./frontend
+
+      - name: Run Lint
+        run: npm run lint
+        working-directory: ./frontend
+      
+      - name: Run Test
+        run: npm run test
+        working-directory: ./frontend
