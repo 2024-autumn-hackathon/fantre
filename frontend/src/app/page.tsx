@@ -1,5 +1,4 @@
 import MonitorLayout from "@/components/MonitorLayout"
-import Test from "./Test"
 
 const Home = () => {
   return (
@@ -7,8 +6,9 @@ const Home = () => {
       headerContent
       navigationContent
       footerContent
-      mainContent={ <Test/> }
+      mainContent
     />
   )
 }
+
 export default Home
