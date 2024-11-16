@@ -6,7 +6,6 @@ const MonitorDecorationsImage = () => {
       fill
       src="/MonitorDecorationsImage.svg"
       alt="モニターの台座・コード・びりびりマークの見た目を表現する画像です"
-      className="hidden monitor:block h-[50px]"
     />
   )
 }

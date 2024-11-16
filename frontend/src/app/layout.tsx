@@ -23,7 +23,7 @@ const RootLayout = ({
     <html lang="ja">
       <body className={ hachiMaruPop.className }>
         <main //画面のサイズを設定
-          className="m-auto w-[100%] h-screen min-w-[352px] min-h-[600px] monitor:min-w-[972px] wide:min-h-[352px]"
+          className="max-w-screen-xl m-auto w-full h-screen min-w-[352px] min-h-[600px] X-mob:min-h-[352px]"
         >
           { children }
         </main>
