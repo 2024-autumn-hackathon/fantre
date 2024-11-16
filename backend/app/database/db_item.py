@@ -43,3 +43,16 @@ async def get_item(item_id: ObjectId):
         raise Exception(f"Error fetching item: {str(e)}")
     finally:
         await db.disconnect()
+
+# アイテム登録時の重複チェック
+async def existing_item_check(item_name: str, jan_code: str) -> bool:
+    await db.connect()
+    try:
+        if await Item.find_one({"item_name": item_name}):
+            return True  # 名前が重複している場合
+        if jan_code and await Item.find_one({"jan_code": jan_code}):
+            return True  # JANコードが重複している場合
+        
+        return False  # 重複がなければFalseを返す
+    finally:
+        await db.disconnect()

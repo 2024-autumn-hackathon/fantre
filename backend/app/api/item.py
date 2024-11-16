@@ -1,7 +1,7 @@
 # backend/app/api/item.py
 from typing import List, Optional
 from app.models import Item
-from app.database.db_item import create_item, get_item, get_all_items
+from app.database.db_item import create_item, existing_item_check, get_item, get_all_items
 from app.database.db_content_catalog import get_category_name, get_character_name, get_series_name
 from pydantic import BaseModel, field_validator, ValidationError, Field, StringConstraints
 from datetime import date
@@ -64,21 +64,13 @@ async def create_item_endpoint(item_request: ItemRequest):
             )
         
         item_data = item_request.model_dump()
-
-        # 既存のアイテムとitem_nameとjan_codeの重複を確認
-        existing_items = await get_all_items()
-        for item in existing_items:
-            if item.item_name == item_data["item_name"]:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Item with the same name already exists."
-                )
-            if item_data["jan_code"] and item.jan_code == item_data["jan_code"]:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Item with the same JAN code already exists."
-                )
-
+        
+        existing_item = await existing_item_check(item_request.item_name, item_request.jan_code)
+        if existing_item:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Item with the same name or JAN code already exists."
+            )
 
         item = Item(**item_data)
         created_item = await create_item(item)
@@ -90,6 +82,8 @@ async def create_item_endpoint(item_request: ItemRequest):
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail={"errors": e.errors()}
         )
+    except HTTPException as e:
+        raise e
     except Exception as e:
         print(f"Unexpected error when creating item: {str(e)}")  # 詳細なエラーをログに出力
         raise HTTPException(
@@ -229,6 +223,8 @@ async def get_filtered_items(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         detail={"errors": e.errors()}
         )
+    except HTTPException as e:
+        raise e
     except Exception as e:
         print(f"Unexpected error when fetching the filtered_items: {str(e)}")  # 詳細なエラーをログに出力
         raise HTTPException(
