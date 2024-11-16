@@ -1,7 +1,7 @@
 # backend/app/database/db_item.py
 from app.models import Item
 from bson import ObjectId
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 from pydantic import BaseModel, ValidationError
 from app.database.db_connection import Database
 
@@ -38,9 +38,19 @@ async def get_item(item_id: ObjectId):
     await db. connect()
     try:
         item = await Item.get(item_id)
+        if item is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Item not found.")
         return item
+    
+    except HTTPException as http_ex:
+        raise http_ex
     except Exception as e:
-        raise Exception(f"Error fetching item: {str(e)}")
+        print(f"Error fetching item: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error fetching item: {str(e)}" 
+        )
     finally:
         await db.disconnect()
 

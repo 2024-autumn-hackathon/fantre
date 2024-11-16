@@ -119,8 +119,11 @@ async def get_item_details(item_id: str):
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         detail={"errors": e.errors()}
         )
+    except HTTPException as e:
+        print(f"HTTP Exception: {str(e.detail)}")
+        raise e
     except Exception as e:
-        print(f"Unexpected error when fetching the item: {str(e)}")  # 詳細なエラーをログに出力
+        print(f"Unexpected error when fetching the item: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An error occured while fetching the item"
@@ -163,8 +166,7 @@ async def get_filtered_items(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="At least one of the query parameters must be provided."
-            )
-       
+            )      
 
     try:
         # クエリ用の辞書を作成
