@@ -171,27 +171,23 @@ async def get_filtered_items(
     try:
         # and検索のためのクエリ用のリストを作成
         query_conditions = []
-        # クエリを部分一致に対応させる
-        # if item_series:
-        #     query["series_name"] = str(series_name)
-        # if item_character:
-        #     query["character_name"] = str(character_name)   
 
+        if series_name:
+            # 別関数で部分検索
+            series_ids = await series_name_partial_match(series_name)
+            # 返ってきたseries_idを使い対応するitemを取得
+            if series_ids:
+                items_with_series = await Item.find({"item_series": {"$in": series_ids}}).to_list()
+                # item_idのをクエリに追加
+                query_conditions.append({"_id": {"$in": [ObjectId(item.id) for item in items_with_series]}})
+                
+        if character_name:
+            character_ids = await character_name_partial_match(character_name)
 
-        # if series_name:
-        #     # 別関数で部分検索
-        #     series_ids = await series_name_partial_match(series_name)
-        #     # 返ってきたseries_idを使い対応するitemを取得
-        #     if series_ids:
-        #         items_with_series = await Item.find({"series_id": {"$in": series_ids}})
-        #         # item_idのクエリ作成
-        #         query["item_id"] = {"$in": items_with_series}
+            if character_ids:
+                items_with_character = await Item.find({"item_character": {"$in": character_ids}}).to_list()
 
-        # if character_name:
-        #     character_ids = await character_name_partial_match(character_name)
-        #     if character_ids:
-        #         items_with_character = await Item.find({"character_id": {"$in": character_ids}})
-        #         query["item_id"] = {"$in": items_with_character}
+                query_conditions.append({"_id": {"$in": [ObjectId(item.id) for item in items_with_character]}})
 
         if item_name:
             query_conditions.append({"item_name":  {"$regex": item_name, "$options": "i"}})
@@ -212,10 +208,9 @@ async def get_filtered_items(
         # クエリをAND条件で結合絞り込み
 # $and条件を使ってクエリを構築
         query = {"$and": query_conditions} if query_conditions else {}
-
+        
         # クエリを使ってアイテム取得
         filtered_items = await Item.find(query).to_list()
-
         if not filtered_items:
             return{
                 "message": "No items found matching the queries."

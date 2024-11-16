@@ -11,7 +11,6 @@ db = Database()
 # 新しいアイテムを作成する
 async def create_item(item: Item):
     await db.connect()
-    print(item)  # 挿入するアイテムの内容を表示
     try:
         await item.insert()
         return item

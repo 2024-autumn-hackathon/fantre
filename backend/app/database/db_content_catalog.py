@@ -266,10 +266,10 @@ async def series_name_partial_match(series_name: str):
 
     matched_series_ids = []
 
-    for series in content_catalog["series"]:
-        if series_name.lower() in series["series_name"].lower():
-            matched_series_ids.append(series["_id"])
-    print(matched_series_ids)
+    for series in content_catalog.series:
+        if series_name.lower() in series.series_name.lower():
+            matched_series_ids.append(series.id)
+
     return matched_series_ids
 
 
@@ -277,12 +277,11 @@ async def series_name_partial_match(series_name: str):
 # character_nameの部分一致検索
 async def character_name_partial_match(character_name: str):
     content_catalog = await get_content_catalog()
-    print("Content Catalog:", content_catalog) 
-    
+
     matched_character_ids = []
 
-    for character in content_catalog["characters"]:
-        if character_name.lower() in character["character_name"].lower():
-            matched_character_ids.append(character["_id"])
-    
+    for character in content_catalog.characters:
+        if character_name.lower() in character.character_name.lower():
+            matched_character_ids.append(character.id)
+
     return matched_character_ids
