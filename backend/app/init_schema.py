@@ -45,12 +45,12 @@ async def init_schema(database):
             custom_items=[
                 CustomItem(
                     _id=ObjectId(),
-                    item_id=ObjectId("6728433b3bdeccb81751047a"),
+                    item_id=ObjectId("6736b102d2bffe77f23d75db"),
                     custom_item_images=[ObjectId("61f5f484a2d21a1d4cf1b0e6")],
                     custom_item_name="My Test Custom Item",
-                    custom_item_series_name=ObjectId("672840afd9dc1d815343faa6"),
-                    custom_item_character_name=ObjectId("672840afd9dc1d815343faa7"),
-                    custom_item_category_name=ObjectId("67283c42caab231ed09c55a4"),
+                    custom_item_series_name=ObjectId("6739c48fc49c15be3d1dccb7"),
+                    custom_item_character_name=ObjectId("6739c48fc49c15be3d1dccb8"),
+                    custom_item_category_name=ObjectId("6739c48fc49c15be3d1dccb6"),
                     custom_item_tags=["Mytag1", "Mytag2"],
                     custom_item_retailer="My Test Local Store",
                     custom_item_notes="This is a personal note.",
