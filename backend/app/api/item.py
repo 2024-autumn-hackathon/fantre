@@ -1,10 +1,10 @@
 # backend/app/api/item.py
 from typing import List, Optional
-from app.models import Item
+from app.models import Item, UserSpecificData
 from app.database.db_item import create_item, existing_item_check, get_item, get_all_items
 from app.database.db_content_catalog import character_name_partial_match, get_category_name, get_character_name, get_series_name, series_name_partial_match
 from pydantic import BaseModel, field_validator, ValidationError, Field, StringConstraints
-from datetime import date
+from datetime import date, timedelta
 from bson import ObjectId
 from fastapi import APIRouter, HTTPException, status, Query
 from beanie import Indexed
@@ -90,27 +90,100 @@ async def create_item_endpoint(item_request: ItemRequest):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An error occured while creating the item"
         )
+
+# 作品IDから独自作品名を取得
+async def get_custom_series_name(user_specific_data, series_id: ObjectId):
+    if series_id is None:
+        return None
+    try:
+        custom_series = next((ser for ser in user_specific_data.custom_series_names if ser.series_id == series_id), None)
+        return custom_series.custom_series_name if custom_series else None
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error fetching custom series name by series_id: {str(e)}"
+        )
     
+
+# キャラクターIDから独自キャラクター名を取得
+async def get_custom_character_name(user_specific_data, character_id: ObjectId):
+    if character_id is None:
+        return None
+    try:
+        custom_character = next((char for char in user_specific_data.custom_character_names if char.character_id == character_id), None)
+        return custom_character.custom_character_name if custom_character else None
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error fetching custom series name by series_id: {str(e)}"
+        )
+
+
+# カテゴリーIDから独自カテゴリー名を取得
+async def get_custom_category_name(user_specific_data, category_id: ObjectId):
+    if category_id is None:
+        return None
+    try:
+        custom_category = next((cat for cat in user_specific_data.custom_category_names if cat.category_id == category_id), None)
+        return custom_category.custom_category_name if custom_category else None
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error fetching custom series name by series_id: {str(e)}"
+        )   
+
 # グッズ詳細取得
 @router.get("/api/items/{item_id}")
 async def get_item_details(item_id: str):
+
+    user_id = ObjectId("507f1f77bcf86cd799439011") # JWTから取得に変更予定
+    
     try:
         item = await get_item(ObjectId(item_id))
 
-        series_name = await get_series_name(ObjectId(item.item_series)) if item.item_series else None
-        character_name = await get_character_name(ObjectId(item.item_character)) if item.item_character else None
-        category_name = await get_category_name(ObjectId(item.category)) if item.category else None
+        user_specific_data = await UserSpecificData.find_one({"user_id": user_id})
+        print(user_specific_data)
 
-        response = {
-            "item_name": item.item_name,
-            "series_name": series_name,
-            "character_name": character_name,
-            "category_name": category_name,
-            "tags": item.tags,
-            "jan_code": item.jan_code,
-            "release_date": item.release_date,
-            "retailers": item.retailers
-        }
+        # item_idが一致するcustom_itemを持っているかチェック
+        custom_item = None
+        if user_specific_data:
+            custom_item = next((ci for ci in user_specific_data.custom_items if ci.item_id == ObjectId(item_id)), None)
+            print(custom_item)
+
+        # カスタム情報を取得
+        custom_series_name = await get_custom_series_name(user_specific_data, item.item_series) if user_specific_data else None
+        custom_character_name = await get_custom_character_name(user_specific_data, item.item_character) if user_specific_data else None
+        custom_category_name = await get_custom_category_name(user_specific_data, item.category) if user_specific_data else None
+        print(custom_series_name, custom_character_name, custom_category_name)
+
+        if custom_item:
+            response = {
+                "custom_item_name": custom_item.custom_item_name,
+                "custom_item_series_name": custom_series_name,
+                "custom_item_character_name": custom_character_name,
+                "custom_item_category_name": custom_category_name,
+                "custom_item_tags": custom_item.custom_item_tags,
+                "jan_code": item.jan_code,
+                "release_date": item.release_date,
+                "custom_item_retailer": custom_item.custom_item_retailer
+            }
+        else:
+            # 共有の名前を取得
+            series_name = await get_series_name(ObjectId(item.item_series)) if item.item_series else None
+            character_name = await get_character_name(ObjectId(item.item_character)) if item.item_character else None
+            category_name = await get_category_name(ObjectId(item.category)) if item.category else None
+            print(series_name, character_name, category_name)
+
+            response = {
+                "item_name": item.item_name,
+                "series_name": series_name,
+                "character_name": character_name,
+                "category_name": category_name,
+                "tags": item.tags,
+                "jan_code": item.jan_code,
+                "release_date": item.release_date,
+                "retailers": item.retailers
+            }
         return response
     
     except ValidationError as e:
@@ -141,7 +214,8 @@ async def parse_release_date(release_date: str):
             last_day = calendar.monthrange(year, month)[1]  # 最終日を取得
             return datetime(year, month, last_day).date()  # その月の最終日の日付を返す
         elif len(release_date) == 10:  # YYYY-MM-DD
-            return datetime.strptime(release_date, "%Y-%m-%d").date()            
+            release_date_obj = datetime.strptime(release_date, "%Y-%m-%d") # datetimeオブジェクトに変換
+            return (release_date_obj + timedelta(days=1)).date()            
         else:
             raise ValueError("Invalid date format. Please use YYYY, YYYY-MM, or YYYY-MM-DD.")
     
