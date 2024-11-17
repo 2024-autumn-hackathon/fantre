@@ -1,12 +1,15 @@
 import MonitorLayout from "@/components/MonitorLayout"
+import BackgroundImageViewer from "@/components/BackgroundImageViewer"
+import LogoutButton from "@/features/routes/LogoutButton"
+import NavigationContent from "@/components/NavigationContent"
 
 const Home = () => {
   return (
     <MonitorLayout
-      headerContent
-      navigationContent
+      headerContent={ <LogoutButton/> }
+      mainContent={ <BackgroundImageViewer/> }
+      navigationContent={ <NavigationContent/> }
       footerContent
-      mainContent
     />
   )
 }
