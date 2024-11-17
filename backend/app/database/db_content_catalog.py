@@ -112,12 +112,12 @@ async def create_character(character_name: str):
     try:
         content_catalog = await get_content_catalog()
         # 既存のseries_nameと重複を確認
-        for existing_character in content_catalog.characters:
-            if existing_character.character_name == character_name:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Character with the same name already exists."
-                )            
+        # for existing_character in content_catalog.characters:
+        #     if existing_character.character_name == character_name:
+        #         raise HTTPException(
+        #             status_code=status.HTTP_400_BAD_REQUEST,
+        #             detail="Character with the same name already exists."
+                # )            
         # 新しいキャラクターを追加
         new_character = Character(_id=ObjectId(), character_name=character_name)
         content_catalog.characters.append(new_character)
