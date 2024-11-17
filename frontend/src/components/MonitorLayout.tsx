@@ -30,7 +30,7 @@ const MonitorLayout = ({
         className={`${ containerBaseClass } ${ container_X_mob } ${ container_X_tab }`}
       >
         <section
-          className="col-start-3 col-end-4 X-tab:col-end-6 Y-tab:col-start-2 Y-tab:col-end-3 X-mob:col-start-2 X-mob:col-end-3"
+          className="col-start-3 col-end-4 X-tab:col-end-6 X-mob:col-start-4 X-mob:col-end-5"
         >
           { headerContent }
         </section>
@@ -45,7 +45,7 @@ const MonitorLayout = ({
           { navigationContent }
         </section>
         <section
-          className="row-start-5 col-start-3 col-end-4 X-tab:row-start-3 X-tab:col-end-6 X-mob:row-start-1 X-mob:row-end-2 X-mob:col-start-4 X-mob:col-end-5"
+          className="row-start-5 col-start-3 col-end-4 X-tab:row-start-3 X-tab:col-end-6 X-mob:row-start-1 X-mob:row-end-2 X-mob:col-start-2 X-mob:col-end-3"
         >
           { footerContent }
         </section>

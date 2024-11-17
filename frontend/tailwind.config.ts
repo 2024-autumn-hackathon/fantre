@@ -2,9 +2,9 @@ import type { Config } from "tailwindcss";
 
 const config: Config = {
   content: [
-    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
@@ -14,6 +14,7 @@ const config: Config = {
         "my-gray": "#C3D5D6",
         "my-green": "#85f2c6",
         "my-light-green": "#c1ff72",
+        "my-yellow": "#FFEC50",
       },
       colors: {
         background: "var(--background)",
