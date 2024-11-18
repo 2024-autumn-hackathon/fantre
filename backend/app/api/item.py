@@ -230,13 +230,14 @@ async def get_filtered_items(
     series_name: str = Query(None),
     character_name: str = Query(None),
     item_name: str = Query(None),
+    category_id: str = Query(None),
     tags: str = Query(None),
     jan_code: str = Query(None),
     release_date: str = Query(None),
     retailers: str = Query(None),
 ):	
     # クエリは１つ以上必須入力
-    if not any([series_name, character_name, item_name, tags, jan_code, release_date, retailers]):
+    if not any([series_name, character_name, item_name, category_id, tags, jan_code, release_date, retailers]):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="At least one of the query parameters must be provided."
@@ -257,14 +258,13 @@ async def get_filtered_items(
                 
         if character_name:
             character_ids = await character_name_partial_match(character_name)
-
             if character_ids:
                 items_with_character = await Item.find({"item_character": {"$in": character_ids}}).to_list()
-
                 query_conditions.append({"_id": {"$in": [ObjectId(item.id) for item in items_with_character]}})
-
         if item_name:
             query_conditions.append({"item_name":  {"$regex": item_name, "$options": "i"}})
+        if category_id:
+            query_conditions.append({"category": ObjectId(category_id)})                
         if tags:
             query_conditions.append({"tags": {"$elemMatch": {"$regex": tags, "$options": "i"}}})
         if jan_code:
@@ -280,9 +280,7 @@ async def get_filtered_items(
         if retailers:
             query_conditions.append({"retailers":  {"$elemMatch": {"$regex": retailers, "$options": "i"}}})
         # クエリをAND条件で結合絞り込み
-# $and条件を使ってクエリを構築
-        query = {"$and": query_conditions} if query_conditions else {}
-        
+        query = {"$and": query_conditions} if query_conditions else {}        
         # クエリを使ってアイテム取得
         filtered_items = await Item.find(query).to_list()
         if not filtered_items:
