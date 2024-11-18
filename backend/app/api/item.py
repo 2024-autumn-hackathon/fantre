@@ -235,8 +235,10 @@ async def get_filtered_items(
     release_date: str = Query(None),
     retailers: str = Query(None),
 ):	
+    # 空白はNoneに変換
+    params = [param.strip() if param else None for param in [series_name, character_name, item_name, tags, jan_code, release_date, retailers, category_id]]
     # クエリは１つ以上必須入力
-    if not any([series_name, character_name, item_name, category_id, tags, jan_code, release_date, retailers]):
+    if not any(param for param in params if param):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="At least one of the query parameters must be provided."
