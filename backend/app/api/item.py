@@ -237,6 +237,12 @@ async def get_filtered_items(
 ):	
     # 空白はNoneに変換
     params = [param.strip() if param else None for param in [series_name, character_name, item_name, tags, jan_code, release_date, retailers, category_id]]
+
+    if params[3]:
+        tags_list = [tag.strip() for tag in params[3].split(",")]
+    else:
+        tags_list = []
+
     # クエリは１つ以上必須入力
     if not any(param for param in params if param):
         raise HTTPException(
@@ -265,8 +271,24 @@ async def get_filtered_items(
             query_conditions.append({"item_name":  {"$regex": item_name, "$options": "i"}})
         if category_id:
             query_conditions.append({"category": ObjectId(category_id)})                
-        if tags:
-            query_conditions.append({"tags": {"$elemMatch": {"$regex": tags, "$options": "i"}}})
+        if tags_list:
+            # query_conditions.append({"tags": {"$all": tags_list}})
+            # regex_conditions = [{"tags": {"$regex": tag, "$options": "i"}} for tag in tags_list]
+            # query_conditions.append({"$or": regex_conditions})
+
+            # ユーザーが1つだけタグを入力した場合
+            if len(tags_list) == 1:
+                # 入力値で部分一致検索
+                tag = tags_list[0].strip()
+                query_conditions.append({"tags": {"$regex": tag, "$options": "i"}})
+            else:
+                # 2つ以上のタグが入力された場合、$all ではなく $or を使って条件を
+                # 各タグ単位では部分一致
+                regex_conditions = [{"tags": {"$regex": tag.strip(), "$options": "i"}} for tag in tags_list]        
+                # すべてのタグが部分一致する場合のみをマッチ
+                query_conditions.append({"$and": regex_conditions})
+
+
         if jan_code:
             query_conditions.append({"jan_code": jan_code})
         if release_date:
