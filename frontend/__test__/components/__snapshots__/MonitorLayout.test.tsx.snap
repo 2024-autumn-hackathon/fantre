@@ -27,7 +27,7 @@ exports[`Monitor Layout Snapshot layout snapshot 1`] = `
     </section>
     <img
       alt="電源ボタンの見た目を表現する画像です"
-      class="hidden monitor:block row-start-3 col-start-6 col-end-7"
+      class="hidden X-tab:block row-start-3 col-start-6 col-end-7"
       data-nimg="fill"
       decoding="async"
       loading="lazy"

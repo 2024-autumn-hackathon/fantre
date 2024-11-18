@@ -1,7 +1,7 @@
-import LinkSet from "./LinkSet"
-import LinkButton from "./LinkButton"
-import ImageUploadButton from "@/features/common/ImageUploadButton"
+import ImageUploadForm from "@/features/common/ImageUploadForm"
 import BackgroundImageResetButton from "@/features/components/BackgroundImageResetButton"
+import LinkButton from "./LinkButton"
+import LinkSet from "./LinkSet"
 
 const NavigationContent = () => {
   return (
@@ -15,7 +15,11 @@ const NavigationContent = () => {
         <LinkButton href=""><p>個別チャット</p></LinkButton>
       </LinkSet>
       <div className="Y-tab:flex">
-        <ImageUploadButton/>
+        <ImageUploadForm
+          formId="top-page-form"
+          buttonText="画像送信"
+          uploadImageText="背景画像を設定する"
+        ></ImageUploadForm>
         <BackgroundImageResetButton/>
       </div>
     </>

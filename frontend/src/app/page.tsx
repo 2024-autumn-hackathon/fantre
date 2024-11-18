@@ -1,7 +1,8 @@
-import MonitorLayout from "@/components/MonitorLayout"
 import BackgroundImageViewer from "@/components/BackgroundImageViewer"
-import LogoutButton from "@/features/routes/LogoutButton"
+import LinkButton from "@/components/LinkButton"
+import MonitorLayout from "@/components/MonitorLayout"
 import NavigationContent from "@/components/NavigationContent"
+import LogoutButton from "@/features/routes/LogoutButton"
 
 const Home = () => {
   return (
@@ -9,7 +10,7 @@ const Home = () => {
       headerContent={ <LogoutButton/> }
       mainContent={ <BackgroundImageViewer/> }
       navigationContent={ <NavigationContent/> }
-      footerContent
+      footerContent={ <LinkButton href="/login">ログインへ(仮置き)</LinkButton> }
     />
   )
 }

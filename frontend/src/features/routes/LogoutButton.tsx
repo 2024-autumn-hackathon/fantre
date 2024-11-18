@@ -3,7 +3,7 @@ import OnClickButton from "../common/OnClickButton"
 const LogoutButton = () => {
   return (
     <OnClickButton
-      addClass="ml-auto bg-my-yellow"
+      addClass="mr-0 bg-my-yellow w-[136px]"
     >
       <p>ログアウト</p>
     </OnClickButton>

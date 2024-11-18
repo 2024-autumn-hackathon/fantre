@@ -1,5 +1,5 @@
-import Link from "next/link"
 import concatClassName from "@/utils/concatClassName"
+import Link from "next/link"
 
 const LinkButton = ({
   children,
@@ -10,7 +10,7 @@ const LinkButton = ({
   href: string
   addClass?: string
 }>) => {
-  const baseClass = "block bg-my-yellow w-44 h-[40px] rounded-3xl leading-relaxed"
+  const baseClass = "block bg-my-yellow w-60 h-[40px] rounded-3xl leading-relaxed m-auto"
   const className = concatClassName(baseClass, addClass)
   return (
     <Link
