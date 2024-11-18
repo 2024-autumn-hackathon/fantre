@@ -2,13 +2,14 @@
 import os
 from datetime import datetime
 from typing import Annotated
-from fastapi import APIRouter, UploadFile
+from fastapi import APIRouter, UploadFile, HTTPException
 from pydantic import BaseModel
 from bson import ObjectId
 from PIL import Image
 import urllib.parse as urlparse
 
 from app.models import Image as Img
+from app.database.db_item import exists_item_id
 from app.database.db_image import save_image
 
 
@@ -51,9 +52,16 @@ async def save_image_at_dir(image_object, dir_path, filename):
 # 画像登録
 @router.post('/api/images')
 async def upload_item_image(item_id: str, item_image: UploadFile): # user_id: str = Depends(user.get_current_user)
-    
-
+    # item_id存在確認
+    if await exists_item_id(ObjectId(item_id)):
+        raise HTTPException(status_code=422, detail="The item_id does not exist.")
+    #拡張子チェック
     filename = item_image.filename
+    ext = os.path.splitext(filename)
+    print(ext)
+    if ext[1].lower() not in (".png", ".jpg", ".jpeg"):
+        raise HTTPException(status_code=422, detail="Extension is not allowed.")
+    
     cropped_image = await crop_image(item_image)
     localserver_url = "http://localhost:7000/"
     image_url = urlparse.urljoin(localserver_url, filename)
