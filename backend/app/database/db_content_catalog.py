@@ -184,7 +184,7 @@ async def get_all_series_characters():
     
     
 # 指定した作品またはキャラクターに関連している相手方の名前一覧を取得
-async def get_series_characters(series_id: str):
+async def get_series_characters(series_id: ObjectId):
     try:
         content_catalog = await get_content_catalog()
         if content_catalog:
@@ -201,3 +201,87 @@ async def get_series_characters(series_id: str):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error fetching filtered characters by series_id: {str(e)}"
             ) 
+
+
+# category_idからcategory_nameを取得する
+async def get_category_name(category_id: ObjectId):
+    if category_id is None:
+        return None
+    try:
+        content_catalog = await get_content_catalog()
+
+        for category in content_catalog.categories:
+            if category.id == category_id:
+                return category.category_name
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="Category not found.")
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error fetching category name by category_id: {str(e)}"
+            )
+    
+# series_idからseries_nameを取得する
+async def get_series_name(series_id: ObjectId):
+    if series_id is None:
+        return None
+    try:
+        content_catalog = await get_content_catalog()
+
+        for series in content_catalog.series:
+            if series.id == series_id:
+                return series.series_name
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="Series not found.")
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error fetching series name by series_id: {str(e)}"
+            )
+    
+# character_idからcharacter_nameを取得する
+async def get_character_name(character_id: ObjectId):
+    if character_id is None:
+        return None
+    try:
+        content_catalog = await get_content_catalog()
+
+        for character in content_catalog.characters:
+            if character.id == character_id:
+                return character.character_name
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="Character not found.")
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error fetching character name by character_id: {str(e)}"
+            )
+    
+# series_nameの部分一致検索
+async def series_name_partial_match(series_name: str):
+    content_catalog = await get_content_catalog()
+
+    matched_series_ids = []
+
+    for series in content_catalog.series:
+        if series_name.lower() in series.series_name.lower():
+            matched_series_ids.append(series.id)
+
+    return matched_series_ids
+
+
+
+# character_nameの部分一致検索
+async def character_name_partial_match(character_name: str):
+    content_catalog = await get_content_catalog()
+
+    matched_character_ids = []
+
+    for character in content_catalog.characters:
+        if character_name.lower() in character.character_name.lower():
+            matched_character_ids.append(character.id)
+
+    return matched_character_ids
