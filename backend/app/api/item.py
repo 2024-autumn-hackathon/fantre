@@ -214,8 +214,7 @@ async def parse_release_date(release_date: str):
             last_day = calendar.monthrange(year, month)[1]  # 最終日を取得
             return datetime(year, month, last_day).date()  # その月の最終日の日付を返す
         elif len(release_date) == 10:  # YYYY-MM-DD
-            release_date_obj = datetime.strptime(release_date, "%Y-%m-%d") # datetimeオブジェクトに変換
-            return (release_date_obj + timedelta(days=1)).date()            
+            return datetime.strptime(release_date, "%Y-%m-%d").date()            
         else:
             raise ValueError("Invalid date format. Please use YYYY, YYYY-MM, or YYYY-MM-DD.")
     
@@ -253,9 +252,8 @@ async def get_filtered_items(
             # 返ってきたseries_idを使い対応するitemを取得
             if series_ids:
                 items_with_series = await Item.find({"item_series": {"$in": series_ids}}).to_list()
-                # item_idのをクエリに追加
-                query_conditions.append({"_id": {"$in": [ObjectId(item.id) for item in items_with_series]}})
-                
+                # item_idを条件に追加
+                query_conditions.append({"_id": {"$in": [ObjectId(item.id) for item in items_with_series]}})                
         if character_name:
             character_ids = await character_name_partial_match(character_name)
             if character_ids:
@@ -271,23 +269,30 @@ async def get_filtered_items(
             query_conditions.append({"jan_code": jan_code})
         if release_date:
             parsed_release_date = await parse_release_date(release_date)
-            query_conditions.append({  # 正しいappendの使い方
+            query_conditions.append({ 
                 "$or": [
-                    {"release_date": {"$lt": parsed_release_date}},  # 指定された日付より前
+                    {"release_date": {"$lte": parsed_release_date}},  # 指定された日付以前
                     {"release_date": None}  # 空白も検索結果に含める
                 ]
             })
         if retailers:
             query_conditions.append({"retailers":  {"$elemMatch": {"$regex": retailers, "$options": "i"}}})
-        # クエリをAND条件で結合絞り込み
-        query = {"$and": query_conditions} if query_conditions else {}        
-        # クエリを使ってアイテム取得
-        filtered_items = await Item.find(query).to_list()
-        if not filtered_items:
+        
+        if not query_conditions:
+            return {
+                "message": "No items found matching the queries."
+            } 
+        # 条件をANDで結合
+        query = {"$and": query_conditions}    
+        # 条件にマッチするアイテム取得
+        matched_items = await Item.find(query).to_list()
+  
+        if not matched_items:
             return{
                 "message": "No items found matching the queries."
-            }        
-        sorted_items =  sorted(filtered_items, key=lambda x: x.id.generation_time, reverse=True)
+            } 
+        
+        sorted_items =  sorted(matched_items, key=lambda x: x.id.generation_time, reverse=True)
         # ページネーション
         items_per_page = 10
    
