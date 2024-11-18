@@ -242,6 +242,11 @@ async def get_filtered_items(
         tags_list = [tag.strip() for tag in params[3].split(",")]
     else:
         tags_list = []
+    
+    if params[6]:
+        retailers_list = [retailer.strip() for retailer in params[6].split(",")]
+    else:
+        retailers_list = []
 
     # クエリは１つ以上必須入力
     if not any(param for param in params if param):
@@ -272,23 +277,17 @@ async def get_filtered_items(
         if category_id:
             query_conditions.append({"category": ObjectId(category_id)})                
         if tags_list:
-            # query_conditions.append({"tags": {"$all": tags_list}})
-            # regex_conditions = [{"tags": {"$regex": tag, "$options": "i"}} for tag in tags_list]
-            # query_conditions.append({"$or": regex_conditions})
-
             # ユーザーが1つだけタグを入力した場合
             if len(tags_list) == 1:
                 # 入力値で部分一致検索
                 tag = tags_list[0].strip()
                 query_conditions.append({"tags": {"$regex": tag, "$options": "i"}})
             else:
-                # 2つ以上のタグが入力された場合、$all ではなく $or を使って条件を
+                # 2つ以上のタグが入力された場合
                 # 各タグ単位では部分一致
                 regex_conditions = [{"tags": {"$regex": tag.strip(), "$options": "i"}} for tag in tags_list]        
                 # すべてのタグが部分一致する場合のみをマッチ
                 query_conditions.append({"$and": regex_conditions})
-
-
         if jan_code:
             query_conditions.append({"jan_code": jan_code})
         if release_date:
@@ -300,8 +299,9 @@ async def get_filtered_items(
                 ]
             })
         if retailers:
-            query_conditions.append({"retailers":  {"$elemMatch": {"$regex": retailers, "$options": "i"}}})
-        
+            # query_conditions.append({"retailers":  {"$elemMatch": {"$regex": retailers, "$options": "i"}}})
+            regex_conditions_retailers = [{"retailers": {"$regex": retailer.strip(), "$options": "i"}} for retailer in retailers_list]
+            query_conditions.append({"$or": regex_conditions_retailers})
         if not query_conditions:
             return {
                 "message": "No items found matching the queries."
