@@ -1,10 +1,10 @@
 # backend/app/api/item.py
 from typing import List, Optional
-from app.models import Item
+from app.models import Item, UserSpecificData
 from app.database.db_item import create_item, existing_item_check, get_item, get_all_items
 from app.database.db_content_catalog import character_name_partial_match, get_category_name, get_character_name, get_series_name, series_name_partial_match
 from pydantic import BaseModel, field_validator, ValidationError, Field, StringConstraints
-from datetime import date
+from datetime import date, timedelta
 from bson import ObjectId
 from fastapi import APIRouter, HTTPException, status, Query
 from beanie import Indexed
@@ -90,27 +90,100 @@ async def create_item_endpoint(item_request: ItemRequest):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An error occured while creating the item"
         )
+
+# 作品IDから独自作品名を取得
+async def get_custom_series_name(user_specific_data, series_id: ObjectId):
+    if series_id is None:
+        return None
+    try:
+        custom_series = next((ser for ser in user_specific_data.custom_series_names if ser.series_id == series_id), None)
+        return custom_series.custom_series_name if custom_series else None
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error fetching custom series name by series_id: {str(e)}"
+        )
     
+
+# キャラクターIDから独自キャラクター名を取得
+async def get_custom_character_name(user_specific_data, character_id: ObjectId):
+    if character_id is None:
+        return None
+    try:
+        custom_character = next((char for char in user_specific_data.custom_character_names if char.character_id == character_id), None)
+        return custom_character.custom_character_name if custom_character else None
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error fetching custom series name by series_id: {str(e)}"
+        )
+
+
+# カテゴリーIDから独自カテゴリー名を取得
+async def get_custom_category_name(user_specific_data, category_id: ObjectId):
+    if category_id is None:
+        return None
+    try:
+        custom_category = next((cat for cat in user_specific_data.custom_category_names if cat.category_id == category_id), None)
+        return custom_category.custom_category_name if custom_category else None
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error fetching custom series name by series_id: {str(e)}"
+        )   
+
 # グッズ詳細取得
 @router.get("/api/items/{item_id}")
 async def get_item_details(item_id: str):
+
+    user_id = ObjectId("507f1f77bcf86cd799439011") # JWTから取得に変更予定
+    
     try:
         item = await get_item(ObjectId(item_id))
 
-        series_name = await get_series_name(ObjectId(item.item_series)) if item.item_series else None
-        character_name = await get_character_name(ObjectId(item.item_character)) if item.item_character else None
-        category_name = await get_category_name(ObjectId(item.category)) if item.category else None
+        user_specific_data = await UserSpecificData.find_one({"user_id": user_id})
+        print(user_specific_data)
 
-        response = {
-            "item_name": item.item_name,
-            "series_name": series_name,
-            "character_name": character_name,
-            "category_name": category_name,
-            "tags": item.tags,
-            "jan_code": item.jan_code,
-            "release_date": item.release_date,
-            "retailers": item.retailers
-        }
+        # item_idが一致するcustom_itemを持っているかチェック
+        custom_item = None
+        if user_specific_data:
+            custom_item = next((ci for ci in user_specific_data.custom_items if ci.item_id == ObjectId(item_id)), None)
+            print(custom_item)
+
+        # カスタム情報を取得
+        custom_series_name = await get_custom_series_name(user_specific_data, item.item_series) if user_specific_data else None
+        custom_character_name = await get_custom_character_name(user_specific_data, item.item_character) if user_specific_data else None
+        custom_category_name = await get_custom_category_name(user_specific_data, item.category) if user_specific_data else None
+        print(custom_series_name, custom_character_name, custom_category_name)
+
+        if custom_item:
+            response = {
+                "custom_item_name": custom_item.custom_item_name,
+                "custom_item_series_name": custom_series_name,
+                "custom_item_character_name": custom_character_name,
+                "custom_item_category_name": custom_category_name,
+                "custom_item_tags": custom_item.custom_item_tags,
+                "jan_code": item.jan_code,
+                "release_date": item.release_date,
+                "custom_item_retailer": custom_item.custom_item_retailer
+            }
+        else:
+            # 共有の名前を取得
+            series_name = await get_series_name(ObjectId(item.item_series)) if item.item_series else None
+            character_name = await get_character_name(ObjectId(item.item_character)) if item.item_character else None
+            category_name = await get_category_name(ObjectId(item.category)) if item.category else None
+            print(series_name, character_name, category_name)
+
+            response = {
+                "item_name": item.item_name,
+                "series_name": series_name,
+                "character_name": character_name,
+                "category_name": category_name,
+                "tags": item.tags,
+                "jan_code": item.jan_code,
+                "release_date": item.release_date,
+                "retailers": item.retailers
+            }
         return response
     
     except ValidationError as e:
@@ -156,13 +229,27 @@ async def get_filtered_items(
     series_name: str = Query(None),
     character_name: str = Query(None),
     item_name: str = Query(None),
+    category_id: str = Query(None),
     tags: str = Query(None),
     jan_code: str = Query(None),
     release_date: str = Query(None),
     retailers: str = Query(None),
 ):	
+    # 空白はNoneに変換
+    params = [param.strip() if param else None for param in [series_name, character_name, item_name, tags, jan_code, release_date, retailers, category_id]]
+
+    if params[3]:
+        tags_list = [tag.strip() for tag in params[3].split(",")]
+    else:
+        tags_list = []
+    
+    if params[6]:
+        retailers_list = [retailer.strip() for retailer in params[6].split(",")]
+    else:
+        retailers_list = []
+
     # クエリは１つ以上必須入力
-    if not any([series_name, character_name, item_name, tags, jan_code, release_date, retailers]):
+    if not any(param for param in params if param):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="At least one of the query parameters must be provided."
@@ -178,44 +265,58 @@ async def get_filtered_items(
             # 返ってきたseries_idを使い対応するitemを取得
             if series_ids:
                 items_with_series = await Item.find({"item_series": {"$in": series_ids}}).to_list()
-                # item_idのをクエリに追加
-                query_conditions.append({"_id": {"$in": [ObjectId(item.id) for item in items_with_series]}})
-                
+                # item_idを条件に追加
+                query_conditions.append({"_id": {"$in": [ObjectId(item.id) for item in items_with_series]}})                
         if character_name:
             character_ids = await character_name_partial_match(character_name)
-
             if character_ids:
                 items_with_character = await Item.find({"item_character": {"$in": character_ids}}).to_list()
-
                 query_conditions.append({"_id": {"$in": [ObjectId(item.id) for item in items_with_character]}})
-
         if item_name:
             query_conditions.append({"item_name":  {"$regex": item_name, "$options": "i"}})
-        if tags:
-            query_conditions.append({"tags": {"$elemMatch": {"$regex": tags, "$options": "i"}}})
+        if category_id:
+            query_conditions.append({"category": ObjectId(category_id)})                
+        if tags_list:
+            # ユーザーが1つだけタグを入力した場合
+            if len(tags_list) == 1:
+                # 入力値で部分一致検索
+                tag = tags_list[0].strip()
+                query_conditions.append({"tags": {"$regex": tag, "$options": "i"}})
+            else:
+                # 2つ以上のタグが入力された場合
+                # 各タグ単位では部分一致
+                regex_conditions = [{"tags": {"$regex": tag.strip(), "$options": "i"}} for tag in tags_list]        
+                # すべてのタグが部分一致する場合のみをマッチ
+                query_conditions.append({"$and": regex_conditions})
         if jan_code:
             query_conditions.append({"jan_code": jan_code})
         if release_date:
             parsed_release_date = await parse_release_date(release_date)
-            query_conditions.append({  # 正しいappendの使い方
+            query_conditions.append({ 
                 "$or": [
-                    {"release_date": {"$lt": parsed_release_date}},  # 指定された日付より前
+                    {"release_date": {"$lte": parsed_release_date}},  # 指定された日付以前
                     {"release_date": None}  # 空白も検索結果に含める
                 ]
             })
         if retailers:
-            query_conditions.append({"retailers":  {"$elemMatch": {"$regex": retailers, "$options": "i"}}})
-        # クエリをAND条件で結合絞り込み
-# $and条件を使ってクエリを構築
-        query = {"$and": query_conditions} if query_conditions else {}
-        
-        # クエリを使ってアイテム取得
-        filtered_items = await Item.find(query).to_list()
-        if not filtered_items:
+            # query_conditions.append({"retailers":  {"$elemMatch": {"$regex": retailers, "$options": "i"}}})
+            regex_conditions_retailers = [{"retailers": {"$regex": retailer.strip(), "$options": "i"}} for retailer in retailers_list]
+            query_conditions.append({"$or": regex_conditions_retailers})
+        if not query_conditions:
+            return {
+                "message": "No items found matching the queries."
+            } 
+        # 条件をANDで結合
+        query = {"$and": query_conditions}    
+        # 条件にマッチするアイテム取得
+        matched_items = await Item.find(query).to_list()
+  
+        if not matched_items:
             return{
                 "message": "No items found matching the queries."
-            }        
-        sorted_items =  sorted(filtered_items, key=lambda x: x.id.generation_time, reverse=True)
+            } 
+        
+        sorted_items =  sorted(matched_items, key=lambda x: x.id.generation_time, reverse=True)
         # ページネーション
         items_per_page = 10
    
