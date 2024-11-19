@@ -435,8 +435,8 @@ async def update_custom_item(item_id: str, updated_data: CustomItemUpdate):
             custom_item.custom_item_retailer = updated_data.custom_retailer
 
         
-        await custom_item.save()
-        print("custom_item saved", custom_item)
+        # await custom_item.save()
+        # print("custom_item saved", custom_item)
     
         await user_specific_data.save()
         print("User specific data saved:", user_specific_data)
