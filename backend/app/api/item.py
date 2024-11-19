@@ -150,7 +150,7 @@ async def get_item_details(item_id: str):
             custom_item = next((ci for ci in user_specific_data.custom_items if ci.item_id == ObjectId(item_id)), None)
             print(custom_item)
 
-        # カスタム情報を取得
+        # 独自名を取得
         custom_series_name = await get_custom_series_name(user_specific_data, item.item_series) if user_specific_data else None
         custom_character_name = await get_custom_character_name(user_specific_data, item.item_character) if user_specific_data else None
         custom_category_name = await get_custom_category_name(user_specific_data, item.category) if user_specific_data else None
@@ -158,14 +158,15 @@ async def get_item_details(item_id: str):
 
         if custom_item:
             response = {
-                "custom_item_name": custom_item.custom_item_name,
-                "custom_item_series_name": custom_series_name,
-                "custom_item_character_name": custom_character_name,
-                "custom_item_category_name": custom_category_name,
-                "custom_item_tags": custom_item.custom_item_tags,
+                "item_name": custom_item.custom_item_name,
+                "series_name": custom_series_name,
+                "character_name": custom_character_name,
+                "category_name": custom_category_name,
+                "tags": custom_item.custom_item_tags,
                 "jan_code": item.jan_code,
                 "release_date": item.release_date,
-                "custom_item_retailer": custom_item.custom_item_retailer
+                "retailer": custom_item.custom_item_retailer,
+                "own_status": custom_item.own_status
             }
         else:
             # 共有の名前を取得
@@ -176,13 +177,14 @@ async def get_item_details(item_id: str):
 
             response = {
                 "item_name": item.item_name,
-                "series_name": series_name,
-                "character_name": character_name,
-                "category_name": category_name,
+                "series_name": custom_series_name if custom_series_name else series_name,
+                "character_name": custom_character_name if custom_character_name else character_name,
+                "category_name": custom_category_name if custom_category_name else category_name,
                 "tags": item.tags,
                 "jan_code": item.jan_code,
                 "release_date": item.release_date,
-                "retailers": item.retailers
+                "retailers": item.retailers,
+                "own_status": "false"
             }
         return response
     
