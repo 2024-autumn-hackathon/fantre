@@ -12,10 +12,7 @@ async def get_user_specific_data(user_id: ObjectId):
   try:
         user_specific_data = await UserSpecificData.find_one({"user_id": user_id})
         if user_specific_data is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User specific data not found."
-            )
+            return None
         return user_specific_data
 
   except HTTPException as http_ex:
@@ -30,14 +27,25 @@ async def get_user_specific_data(user_id: ObjectId):
         await db.disconnect()
 
 # 新しいユーザー独自データを作成する
-async def create_user_specific_data(user_id: ObjectId, user_specific_data = UserSpecificData):
+async def create_user_specific_data(user_id: ObjectId, user_specific_data: UserSpecificData):
+    print("Starting to create user-specific data...")
+    user_specific_data.user_id = user_id
+    print(f"User ID assigned: {user_id}")
     
-    user_id = user_id
     await db.connect()
+    print("Database connected.")
     try:
+        print("Attempting to insert user_specific_data into the database...")
         await user_specific_data.insert()
+        print("User specific data inserted successfully.")
         return user_specific_data
+    
     except Exception as e:
-        raise Exception(f"Error creating user_specific_data: {str(e)}") 
+        print(f"Error during insertion: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error inserting user specific data: {str(e)}"
+        )
     finally:
-        await db.disconnect()  # 接
+        await db.disconnect()  
+        print("Database disconnected.")

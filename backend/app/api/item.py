@@ -1,6 +1,6 @@
 # backend/app/api/item.py
 from typing import List, Optional
-from app.models import CustomSeriesName, Item, UserSpecificData
+from app.models import CustomCategoryName, CustomCharacterName, CustomItem, CustomSeriesName, Item, UserSpecificData
 from app.database.db_item import create_item, existing_item_check, get_item, get_all_items
 from app.database.db_content_catalog import character_name_partial_match, get_category_name, get_character_name, get_series_name, series_name_partial_match
 from app.database.db_user_specific import create_user_specific_data, get_user_specific_data
@@ -355,8 +355,7 @@ async def get_filtered_items(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An error occured while fetching the filtered_items"
         )
-    
-
+     
 # グッズ情報編集
 class CustomItemUpdate(BaseModel):
     custom_item_name: Optional[str] = None
@@ -370,16 +369,28 @@ class CustomItemUpdate(BaseModel):
 @router.patch("/api/items/{item_id}")
 async def update_custom_item(item_id: str, updated_data: CustomItemUpdate):
 
-    user_id = ObjectId("507f1f77bcf86cd799439011")
+    user_id = ObjectId("673c6181f6ef4e365a8b5e20")
     print("user_id", user_id)
     # item_idを使ってアイテムを取得
     item = await Item.find_one({"_id": ObjectId(item_id)})
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
     print("item", item)
+    
     # ユーザーの独自データを取得
     user_specific_data = await get_user_specific_data(user_id)
 
+    if not user_specific_data:
+        print("No user_specific_data found. Creating a new one.")
+
+        user_specific_data = UserSpecificData(
+            user_id=user_id,
+            custom_items=[],
+            custom_category_names=[],
+            custom_series_names=[],
+            custom_character_names=[]
+        )
+        user_specific_data = await create_user_specific_data(user_id, user_specific_data)
 
     print("user_specific_data", user_specific_data)
 
