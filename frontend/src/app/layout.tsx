@@ -5,7 +5,7 @@ import "./globals.css"
 const hachiMaruPop = Hachi_Maru_Pop({
   weight: "400",  
   style: "normal",
-  subsets: ["latin"],
+  preload: false,
   display: "swap",
 })
 

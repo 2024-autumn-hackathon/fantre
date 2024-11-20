@@ -9,12 +9,12 @@ const ItemDetailPage = () => {
       headerContent={ <TopButton/> }
       viewContent
       naviContent={
-        <>
+        <div className="h-full">
           <ImageUploadForm
             buttonText="編集項目を確定"
             formId="item_create"
             uploadImageText="My画像を選択"
-            addClass="Y-tab:grid Y-tab:grid-cols-2 Y-tab:gap-4"
+            addClass="h-full Y-tab:grid Y-tab:grid-cols-2 Y-tab:gap-4"
           >
             <InputButton defaultValue="作品名"/>
             <InputButton defaultValue="キャラ名"/>
@@ -25,7 +25,7 @@ const ItemDetailPage = () => {
             <InputButton defaultValue="発売日"/>
             <InputButton defaultValue="購入場所"/>
           </ImageUploadForm>
-        </>
+        </div>
       }
       footerContent
     />

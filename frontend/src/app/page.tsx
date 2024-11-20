@@ -10,7 +10,7 @@ const Home = () => {
       headerContent={ <LogoutButton/> }
       viewContent={ <BackgroundImageViewer/> }
       naviContent={ <TopNaviContent/> }
-      footerContent={ <LinkButton href="/login">ログインへ(仮置き)</LinkButton> }
+      footerContent={ <LinkButton addClass="ml-auto" href="/login">ログインへ(仮置き)</LinkButton> }
     />
   )
 }

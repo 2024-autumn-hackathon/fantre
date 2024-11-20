@@ -75,7 +75,7 @@ const ItemsPage = () => {
   )
 
   const naviContent = (
-    <div className="Y-tab:grid Y-tab:grid-cols-2">
+    <div className="h-full Y-tab:grid Y-tab:grid-cols-2 Y-tab:gap-4">
       <ItemsSearchForm>
         <InputButton inputName="series_name" placeholder="作品名"/>
         <InputButton inputName="character_name" placeholder="キャラ名"/>
