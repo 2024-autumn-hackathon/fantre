@@ -75,7 +75,7 @@ async def exists_item_id(item_id: ObjectId) -> bool:
     except ValidationError as ve:
         raise HTTPException(status_code=422, detail=ve.errors())
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Item fetching error")
+        raise HTTPException(status_code=500, detail=f"Error fetching item: {str(e)}")
     finally:
         await db.disconnect()
 
