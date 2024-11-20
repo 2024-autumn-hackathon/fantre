@@ -1,15 +1,15 @@
 import ClickAndInputButton from "@/components/ClickAndInputButton"
 import InputButton from "@/components/InputButton"
-import MonitorLayout from "@/components/MonitorLayout"
+import MonitorLayout_SSR from "@/components/MonitorLayout_SSR"
 import TopButton from "@/components/TopButton"
 import ImageUploadForm from "@/features/common/ImageUploadForm"
 
 const ItemCreatePage = () => {
   return (
-    <MonitorLayout
+    <MonitorLayout_SSR
       headerContent={ <TopButton/> }
-      mainContent
-      navigationContent={
+      viewContent
+      naviContent={
         <>
           <ImageUploadForm
             buttonText="登録!"

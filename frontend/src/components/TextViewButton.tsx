@@ -7,14 +7,16 @@ const TextViewButton = ({
   children: string
   addClass?: string
 }>) => {
-  const baseClass = "block bg-my-green w-60 h-[40px] rounded-3xl m-auto"
+  const baseClass = "flex items-center justify-center bg-my-green w-60 h-[40px] rounded-3xl m-auto"
   const className = concatClassName(baseClass, addClass)
   return (
-    <p
+    <div
       className={ className }
     >
-      { children }
-    </p>
+      <p>
+        { children }
+      </p>
+    </div>
   )
 }
 

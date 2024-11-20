@@ -1,4 +1,4 @@
-import MonitorLayout from "@/components/MonitorLayout"
+import MonitorLayout_SSR from "@/components/MonitorLayout_SSR"
 import PagenationListContainer from "@/components/PagenationListContainer"
 import PagenationListItem from "@/components/PagenationListItem"
 import PagenationNavi from "@/components/PagenationNavi"
@@ -8,7 +8,7 @@ import TextViewButton from "@/components/TextViewButton"
 import TopButton from "@/components/TopButton"
 
 const SeriesPage = () => {
-  const mainContent = (
+  const viewContent = (
     // 要素を並べて、最終行にページネーションリンクを置く
     <>
       <PagenationListContainer>
@@ -36,17 +36,16 @@ const SeriesPage = () => {
     </>
   )
 
-  const navigationContent = (
-    // childrenは<p>で囲まれる
+  const naviContent = (
     <TextViewButton>
       作品一覧を表示中・・・
     </TextViewButton>
   )
   return (
-    <MonitorLayout
+    <MonitorLayout_SSR
       headerContent={ <TopButton/> }
-      mainContent={ mainContent }
-      navigationContent={ navigationContent }
+      viewContent={ viewContent }
+      naviContent={ naviContent }
       footerContent
     />
   )

@@ -2,18 +2,19 @@ import Checkbox from "@/components/Checkbox"
 import InputButton from "@/components/InputButton"
 import ItemsSearchForm from "@/components/ItemsSearchForm"
 import LinkButton from "@/components/LinkButton"
-import MonitorLayout from "@/components/MonitorLayout"
+import MonitorLayout_SSR from "@/components/MonitorLayout_SSR"
 import PagenationListContainer from "@/components/PagenationListContainer"
 import PagenationListItem from "@/components/PagenationListItem"
 import PagenationNavi from "@/components/PagenationNavi"
 import PagenationNaviContainer from "@/components/PagenationNaviContainer"
 import SelectCollectionListButton from "@/components/SelectCollectionListButton"
+import SubmitButton from "@/components/SubmitButton"
 import TextLinkButton from "@/components/TextLinkButton"
 import TopButton from "@/components/TopButton"
 import OnClickButton from "@/features/common/OnClickButton"
 
 const ItemsPage = () => {
-  const mainContent = (
+  const viewContent = (
     <>
       <PagenationListContainer>
         <PagenationListItem>
@@ -73,28 +74,31 @@ const ItemsPage = () => {
     </>
   )
 
-  const navigationContent = (
-    <>
+  const naviContent = (
+    <div className="Y-tab:grid Y-tab:grid-cols-2">
       <ItemsSearchForm>
-        <InputButton placeholder="作品名"/>
-        <InputButton placeholder="キャラ名"/>
-        <InputButton placeholder="商品名"/>
-        <InputButton placeholder="タグ"/>
-        <InputButton placeholder="グッズカテゴリー"/>
-        <InputButton placeholder="JANコード"/>
-        <InputButton placeholder="発売日"/>
-        <InputButton placeholder="購入場所"/>        
-      </ItemsSearchForm>    
-      <LinkButton href="/lists" addClass="m-auto mt-4 w-60">コレクションリスト作成</LinkButton>
-      <SelectCollectionListButton/>
-      <OnClickButton addClass="m-auto mt-4 w-60">選択項目をリストに追加</OnClickButton>
-    </>
+        <InputButton inputName="series_name" placeholder="作品名"/>
+        <InputButton inputName="character_name" placeholder="キャラ名"/>
+        <InputButton inputName="item_name" placeholder="商品名"/>
+        <InputButton inputName="category_id" placeholder="タグ"/>
+        <InputButton inputName="tags" placeholder="グッズカテゴリー"/>
+        <InputButton inputName="jan_code" placeholder="JANコード"/>
+        <InputButton inputName="release_date" placeholder="発売日"/>
+        <InputButton inputName="retailers" placeholder="購入場所"/>
+        <SubmitButton>検索する！</SubmitButton>
+      </ItemsSearchForm>
+      <div className="min-h-[calc(56px*3)] flex flex-col h-[calc(100%*3/12)]">
+        <LinkButton href="/lists" addClass="mt-4 w-60">コレクションリスト作成</LinkButton>
+        <SelectCollectionListButton/>
+        <OnClickButton addClass="mt-4 w-60">選択項目をリストに追加</OnClickButton>
+      </div>
+    </div>
   )
   return (
-    <MonitorLayout
+    <MonitorLayout_SSR
       headerContent={ <TopButton/> }
-      mainContent={ mainContent }
-      navigationContent={ navigationContent }
+      viewContent={ viewContent }
+      naviContent={ naviContent }
       footerContent
     />
   )

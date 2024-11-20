@@ -10,9 +10,11 @@ const TextLinkButton = ({
   return (
     <Link
       href={ href }
-      className="w-full bg-my-light-green pl-1 py-1 block rounded-3xl"
+      className="w-full min-h-[40px] bg-my-light-green pl-1 py-1 flex items-center justify-center rounded-3xl"
     >
-      { children }
+      <p>
+        { children }
+      </p>
     </Link>
   )
 }

@@ -13,7 +13,7 @@ const InputButton = ({
   // value?: string
   defaultValue?: string
 }>) => {
-  const baseClass = "block bg-my-light-green w-60 h-[40px] rounded-3xl text-center m-auto mt-4"
+  const baseClass = "block bg-my-light-green w-60 h-[40px] rounded-3xl text-center m-auto mt-4 py-2"
   const className = concatClassName(baseClass, addClass)
   return (
     <input

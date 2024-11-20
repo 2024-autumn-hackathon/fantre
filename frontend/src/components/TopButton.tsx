@@ -4,7 +4,7 @@ const TopButton = () => {
   return (
     <LinkButton
       href="/"
-      addClass="mr-0 w-[136px]"
+      addClass="w-[136px] max-h-[32px] leading-none m-0"
     >
       TOPへ
     </LinkButton>

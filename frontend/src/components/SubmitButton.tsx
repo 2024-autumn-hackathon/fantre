@@ -7,13 +7,16 @@ const SubmitButton = ({
   children: string
   addClass?: string
 }>) => {
-  const baseClass = "block bg-my-orange w-60 h-[40px] rounded-3xl text-center m-auto mt-4"
+  const baseClass = "block bg-my-orange w-60 h-[40px] rounded-3xl m-auto mt-4 py-2"
   const className = concatClassName(baseClass, addClass)
   return (
     <button
       className={ className }
+      type="submit"
     >
-      <p>{ children }</p>
+      <p>
+        { children }
+      </p>
     </button>
   )
 }

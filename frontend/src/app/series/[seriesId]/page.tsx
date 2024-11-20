@@ -1,4 +1,4 @@
-import MonitorLayout from "@/components/MonitorLayout"
+import MonitorLayout_SSR from "@/components/MonitorLayout_SSR"
 import PagenationListContainer from "@/components/PagenationListContainer"
 import PagenationListItem from "@/components/PagenationListItem"
 import PagenationNavi from "@/components/PagenationNavi"
@@ -16,7 +16,7 @@ const CharactersPage = async (
   }
 ) => {
   const { seriesId } = await context.params
-  const mainContent = (
+  const viewContent = (
     <>
       <PagenationListContainer>
         <PagenationListItem>
@@ -42,10 +42,10 @@ const CharactersPage = async (
     </>
   )
   return (
-    <MonitorLayout
+    <MonitorLayout_SSR
       headerContent={ <TopButton/> }
-      mainContent={ mainContent }
-      navigationContent={ <TextViewButton>キャラ一覧を表示中・・・</TextViewButton> }
+      viewContent={ viewContent }
+      naviContent={ <TextViewButton>キャラ一覧を表示中・・・</TextViewButton> }
       footerContent
     />
   )

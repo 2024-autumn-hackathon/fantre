@@ -1,14 +1,16 @@
 import InputButton from "@/components/InputButton"
 import LinkButton from "@/components/LinkButton"
-import MonitorLayout from "@/components/MonitorLayout"
+import MonitorLayout_SSR from "@/components/MonitorLayout_SSR"
 import SubmitButton from "@/components/SubmitButton"
 
 const SignupPage = () => {
   return (
-    <MonitorLayout
+    <MonitorLayout_SSR
       headerContent
-      mainContent={
-        <form>
+      viewContent={
+        <form
+          className="h-full flex flex-col [&>*]:mt-auto"
+        >
           <InputButton placeholder="メールアドレス"/>
           <InputButton placeholder="ニックネーム"/>
           <InputButton placeholder="パスワード"/>
@@ -16,7 +18,7 @@ const SignupPage = () => {
           <SubmitButton>登録する！</SubmitButton>
         </form>
       }
-      navigationContent={ <LinkButton href="/login">ログインへ</LinkButton> }
+      naviContent={ <LinkButton href="/login">ログインへ</LinkButton> }
       footerContent
     />
   )
