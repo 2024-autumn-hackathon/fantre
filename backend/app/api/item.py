@@ -3,7 +3,7 @@ from typing import List, Optional
 from app.models import CustomCategoryName, CustomCharacterName, CustomItem, CustomSeriesName, Item, UserSpecificData
 from app.database.db_item import create_item, existing_item_check, get_item, get_all_items
 from app.database.db_content_catalog import character_name_partial_match, get_category_name, get_character_name, get_series_name, series_name_partial_match
-from app.database.db_user_specific import create_user_specific_data, get_user_specific_data
+from app.database.db_user_specific import create_custom_item, create_user_specific_data, get_user_specific_data
 from pydantic import BaseModel, field_validator, ValidationError, Field, StringConstraints
 from datetime import date, timedelta
 from bson import ObjectId
@@ -137,7 +137,7 @@ async def get_custom_category_name(user_specific_data, category_id: ObjectId):
 @router.get("/api/items/{item_id}")
 async def get_item_details(item_id: str):
 
-    user_id = ObjectId("507f1f77bcf86cd799439011") # JWTから取得に変更予定
+    user_id = ObjectId("673e935d7dacc0f94bc2b97e") # JWTから取得に変更予定
     
     try:
         item = await get_item(ObjectId(item_id))
@@ -166,7 +166,7 @@ async def get_item_details(item_id: str):
                 "tags": custom_item.custom_item_tags,
                 "jan_code": item.jan_code,
                 "release_date": item.release_date,
-                "retailer": custom_item.custom_item_retailer,
+                "retailers": custom_item.custom_item_retailers,
                 "own_status": custom_item.own_status
             }
         else:
@@ -362,14 +362,14 @@ class CustomItemUpdate(BaseModel):
     custom_series_name: Optional[str] = None
     custom_character_name: Optional[str] = None
     custom_category_name: Optional[str] = None
-    custom_tags: Optional[List[Optional[str]]] = Field(default_factory=list)  # 空のリストをデフォルトに設定
-    custom_retailer: Optional[str] = None
+    custom_item_tags: Optional[List[str]] = None  
+    custom_item_retailers: Optional[List[str]] = None
 
 
 @router.patch("/api/items/{item_id}")
 async def update_custom_item(item_id: str, updated_data: CustomItemUpdate):
 
-    user_id = ObjectId("673c6181f6ef4e365a8b5e20")
+    user_id = ObjectId("673e935d7dacc0f94bc2b97e")
     print("user_id", user_id)
     # item_idを使ってアイテムを取得
     item = await Item.find_one({"_id": ObjectId(item_id)})
@@ -379,7 +379,7 @@ async def update_custom_item(item_id: str, updated_data: CustomItemUpdate):
     
     # ユーザーの独自データを取得
     user_specific_data = await get_user_specific_data(user_id)
-
+    # 独自データがない場合新規作成
     if not user_specific_data:
         print("No user_specific_data found. Creating a new one.")
 
@@ -394,32 +394,46 @@ async def update_custom_item(item_id: str, updated_data: CustomItemUpdate):
 
     print("user_specific_data", user_specific_data)
 
-    # ユーザーがシリーズ名を入力しているか確認
-    if updated_data.custom_series_name:
-        print("custom_series_name",updated_data.custom_series_name)
+    # ユーザーの custom_series_names 内に 該当するseries_id が存在するか確認
+    existing_series_names = next((s for s in user_specific_data.custom_series_names if s.series_id == item.item_series), None)
 
-        # ユーザーの custom_series_names 内に 該当するseries_id が存在するか確認
-        existing_series_names = next((s for s in user_specific_data.custom_series_names if s.series_id == item.item_series), None)
+    print("existing_series_names",existing_series_names)
+    print("series_id", item.item_series)
 
-        print("existing_series_names",existing_series_names)
-        print("series_id", item.item_series)
-
-        if existing_series_names:
-            # その作品が存在するなら名前変更
-            existing_series_names.custom_series_name = updated_data.custom_series_name
-            
-            await existing_series_names.save()  # 更新を保存
-            print("Updated Series Name:", existing_series_names.custom_series_name)
-
-        else:
-            # 存在しない場合、新規作成
-            new_series = CustomSeriesName(
-                series_id=item.item_series,  # 元のシリーズIDを設定
-                custom_series_name=updated_data.custom_series_name
+    if not existing_series_names:
+        # series_idからseries_nameを取得する
+        series_id = item.item_series
+        series_name = await get_series_name(series_id)
+        # custom_series_names に追加する
+        new_series = CustomSeriesName(
+                _id=ObjectId(),
+                series_id=series_id, 
+                custom_series_name=series_name
             )
-            user_specific_data.custom_series_names.append(new_series)
-            await new_series.save()  # 新規作成して保存
-            print("New Series Created:", new_series)
+        user_specific_data.custom_series_names.append(new_series)
+        print("New Series ", new_series)
+
+    # ユーザーがシリーズ名を入力しているならデータ更新
+    if updated_data.custom_series_name:
+        print("input_custom_series_name",updated_data.custom_series_name)
+
+        # 再確認
+        existing_series_names = next((s for s in user_specific_data.custom_series_names if s.series_id == item.item_series), None)
+        # 名前更新
+        existing_series_names.custom_series_name = updated_data.custom_series_name
+        
+        # await existing_series_names.save()  # 更新を保存
+        print("Updated Series Name:", existing_series_names.custom_series_name)
+
+        # else:
+        #     # 存在しない場合、新規作成
+        #     new_series = CustomSeriesName(
+        #         _id=ObjectId(),
+        #         series_id=item.item_series,  # 元のシリーズIDを設定
+        #         custom_series_name=updated_data.custom_series_name
+        #     )
+        #     user_specific_data.custom_series_names.append(new_series)
+        #     print("New Series ", new_series)
 
     # カスタムアイテムがあるか確認
     custom_item = next((ci for ci in user_specific_data.custom_items if ci.item_id == ObjectId(item_id)), None)
@@ -439,15 +453,41 @@ async def update_custom_item(item_id: str, updated_data: CustomItemUpdate):
         # if updated_data.custom_category_name is not None:
         #     custom_item.custom_item_category_name = item.category  # ここは元のカテゴリIDを使用するのが正しいかもしれません
 
-        if updated_data.custom_tags is not None:
-            custom_item.custom_item_tags = updated_data.custom_tags
+        if updated_data.custom_item_tags is not None:
+            custom_item.custom_item_tags = updated_data.custom_item_tags
 
-        if updated_data.custom_retailer is not None:
-            custom_item.custom_item_retailer = updated_data.custom_retailer
+        if updated_data.custom_item_retailers is not None:
+            custom_item.custom_item_retailers = updated_data.custom_item_retailers
 
-        
-        # await custom_item.save()
-        # print("custom_item saved", custom_item)
+    if not custom_item:
+
+        custom_item = CustomItem(
+            _id=ObjectId(),
+            item_id=ObjectId(item_id),
+            custom_item_images=item.item_images,
+            custom_item_name=updated_data.custom_item_name if updated_data.custom_item_name is not None else item.item_name,
+
+            custom_item_series_name=new_series.id if new_series else None, 
+            custom_item_character_name=None,
+            custom_item_category_name=None,           
+            # custom_item_tags = updated_data.custom_item_tags if updated_data.custom_item_tags is not None else (item.tags if item.tags else []),            
+            custom_item_tags = updated_data.custom_item_tags if updated_data.custom_item_tags is not None else item.tags or [],
+            
+            
+            # custom_item_retailers = updated_data.custom_item_retailers if updated_data.custom_item_retailers is not None else (item.retailers if item.retailers else []),
+            custom_item_retailers = updated_data.custom_item_retailers if updated_data.custom_item_retailers is not None else item.retailers or [],
+
+            
+
+            created_at=datetime.now()
+        )
+        print("item.tags")
+        print("updated_data.custom_item_tags", updated_data.custom_item_tags)
+   
+
+
+        custom_item = await create_custom_item(user_specific_data, custom_item)
+        print("custom_item", custom_item)
     
         await user_specific_data.save()
         print("User specific data saved:", user_specific_data)

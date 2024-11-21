@@ -1,6 +1,6 @@
 # backend/app/database/db_user_specific.py
 from bson import ObjectId
-from app.models import Category, Character, ContentCatalog, Series, SeriesCharacter, UserSpecificData
+from app.models import Category, Character, ContentCatalog, CustomItem, Series, SeriesCharacter, UserSpecificData
 from app.database.db_connection import Database
 from fastapi import HTTPException, status
 
@@ -49,3 +49,22 @@ async def create_user_specific_data(user_id: ObjectId, user_specific_data: UserS
     finally:
         await db.disconnect()  
         print("Database disconnected.")
+
+
+# 独自アイテムを作成する
+async def create_custom_item(user_specific_data, custom_item: CustomItem):
+    await db.connect()
+    try:
+        user_specific_data.custom_items.append(custom_item)
+        await user_specific_data.save()
+
+        return custom_item
+    
+    except Exception as e:
+        print(f"Error during insertion: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error inserting custom item: {str(e)}"
+        )
+    finally:
+        await db.disconnect()

@@ -114,9 +114,9 @@ class CustomItem(DocumentWithConfig):
     custom_item_character_name: Optional[ObjectId] = None # CustomCategoryName_id
     custom_item_category_name: Optional[ObjectId] = None # CustomCharacterName_id
     custom_item_tags: Optional[List[str]] = Field(default_factory=list) #tag
-    custom_item_retailer: Optional[str] = None
+    custom_item_retailers: Optional[List[str]] = Field(default_factory=list)
     custom_item_notes: Optional[str] = None
-    created_at: datetime
+    # created_at: datetime
     exchange_status: Optional[bool] = None
     own_status: Optional[bool] = None
 
