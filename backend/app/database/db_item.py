@@ -66,4 +66,16 @@ async def existing_item_check(item_name: str, jan_code: str) -> bool:
     finally:
         await db.disconnect()
 
+# item_id存在確認
+async def exists_item_id(item_id: ObjectId) -> bool:
+    try:
+        await db.connect()
+        result = await Item.find_one({"_id": item_id})
+        return result is None
+    except ValidationError as ve:
+        raise HTTPException(status_code=422, detail=ve.errors())
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching item: {str(e)}")
+    finally:
+        await db.disconnect()
 
