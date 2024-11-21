@@ -3,21 +3,23 @@ import concatClassName from "@/utils/concatClassName"
 const OnClickButton = ({
   children,
   addClass = "",
-  handleClick,
+  // handleClick,
 }: Readonly<{
     children: React.ReactNode
     addClass?: string
-    handleClick: () => void
+    // handleClick: () => void
 }>) => {
-  const baseClass = "block bg-my-orange w-44 h-[40px] rounded-3xl text-center"
+  const baseClass = "block bg-my-orange w-60 h-[40px] py-2 rounded-3xl text-center"
   const className = concatClassName(baseClass, addClass)
   return (
     <button
       className={ className }
-      onClick={ handleClick }
+      // onClick={ handleClick }
       type="button"
     >
-      { children }
+      <p>
+        { children }
+      </p>
     </button>
   )
 }

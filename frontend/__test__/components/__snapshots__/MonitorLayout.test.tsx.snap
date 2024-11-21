@@ -3,31 +3,35 @@
 exports[`Monitor Layout Snapshot layout snapshot 1`] = `
 <div>
   <section
-    class="grid relative w-full h-full rounded-[50px] bg-my-light-blue grid-rows-[40px_5fr_20px_4fr_40px] grid-cols-[20px_30px_1fr_30px_20px] X-mob:grid-rows-[40px_1fr_40px] X-mob:grid-cols-[50px_5fr_20px_4fr_50px] X-tab:h-[calc(100%-50px)] X-tab:grid-rows-[40px_1fr_40px] X-tab:grid-cols-[20px_5fr_54fr_20px_26fr_6fr_20px]"
+    class="grid relative w-full h-full rounded-[50px] bg-my-light-blue grid-rows-[40px_1fr_40px] grid-cols-[20px_1fr_20px] X-mob:grid-cols-[50px_5fr_20px_4fr_50px] X-tab:h-[calc(100%-50px)] X-tab:grid-rows-[40px_1fr_40px] X-tab:grid-cols-[20px_5fr_54fr_20px_26fr_6fr_20px]"
   >
     <section
-      class="col-start-3 col-end-4 X-tab:col-end-6 X-mob:col-start-4 X-mob:col-end-5"
+      class="flex items-center justify-end col-start-2 col-end-3 X-tab:col-start-3 X-tab:col-end-6 X-mob:col-start-4 X-mob:col-end-5"
     >
       Header
     </section>
     <section
-      class="bg-my-gray rounded-[32px] overflow-auto relative row-start-2 row-end-3 col-start-2 col-end-5 X-tab:col-end-4 X-mob:col-end-3"
+      class="h-full max-h-[calc(100vh-80px)] row-start-2 row-end-3 col-start-2 col-end-3 X-tab:max-h-[calc(100vh-130px)] X-mob:col-end-5 X-tab:col-end-7 grid grid-rows-[5fr_20px_4fr] grid-cols-1 X-mob:grid-rows-1 X-mob:grid-cols-[5fr_20px_4fr] X-tab:grid-rows-1 X-tab:grid-cols-[59fr_20px_32fr]"
     >
-      Main
+      <section
+        class="h-full bg-my-gray rounded-3xl relative flex flex-col justify-around  overflow-auto"
+      >
+        Main
+      </section>
+      <section
+        class="h-full flex flex-col justify-around items-center bg-my-gray rounded-3xl overflow-auto row-start-3 X-mob:row-start-1 X-mob:row-end-2 X-mob:col-start-3 X-tab:row-start-1 X-tab:col-start-3"
+      >
+        Navi
+      </section>
     </section>
     <section
-      class="bg-my-gray rounded-[32px] overflow-auto row-start-4 row-end-5 col-start-2 col-end-5 X-mob:row-start-2 X-mob:row-end-3 X-mob:col-start-4 X-mob:col-end-5 X-tab:row-start-2 X-tab:row-end-3 X-tab:col-start-5 X-tab:col-end-7 "
-    >
-      Navi
-    </section>
-    <section
-      class="row-start-5 col-start-3 col-end-4 X-tab:row-start-3 X-tab:col-end-6 X-mob:row-start-1 X-mob:row-end-2 X-mob:col-start-2 X-mob:col-end-3"
+      class="row-start-3 col-start-2 col-end-3 X-tab:col-start-3 X-tab:row-start-3 X-tab:col-end-6 X-mob:row-start-1 X-mob:row-end-2 X-mob:col-start-2 X-mob:col-end-3"
     >
       Footer
     </section>
     <img
       alt="電源ボタンの見た目を表現する画像です"
-      class="hidden monitor:block row-start-3 col-start-6 col-end-7"
+      class="hidden X-tab:block row-start-3 col-start-6 col-end-7"
       data-nimg="fill"
       decoding="async"
       loading="lazy"

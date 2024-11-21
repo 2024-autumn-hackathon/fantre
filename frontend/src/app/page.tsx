@@ -1,15 +1,16 @@
-import MonitorLayout from "@/components/MonitorLayout"
 import BackgroundImageViewer from "@/components/BackgroundImageViewer"
+import LinkButton from "@/components/LinkButton"
+import MonitorLayout_SSR from "@/components/MonitorLayout_SSR"
+import TopNaviContent from "@/components/TopNaviContent"
 import LogoutButton from "@/features/routes/LogoutButton"
-import NavigationContent from "@/components/NavigationContent"
 
 const Home = () => {
   return (
-    <MonitorLayout
+    <MonitorLayout_SSR
       headerContent={ <LogoutButton/> }
-      mainContent={ <BackgroundImageViewer/> }
-      navigationContent={ <NavigationContent/> }
-      footerContent
+      viewContent={ <BackgroundImageViewer/> }
+      naviContent={ <TopNaviContent/> }
+      footerContent={ <LinkButton addClass="ml-auto" href="/login">ログインへ(仮置き)</LinkButton> }
     />
   )
 }

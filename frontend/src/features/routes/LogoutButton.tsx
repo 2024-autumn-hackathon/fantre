@@ -3,9 +3,9 @@ import OnClickButton from "../common/OnClickButton"
 const LogoutButton = () => {
   return (
     <OnClickButton
-      addClass="ml-auto bg-my-yellow"
+      addClass="m-0 bg-my-yellow w-[136px] max-h-[32px] leading-none"
     >
-      <p>ログアウト</p>
+      ログアウト
     </OnClickButton>
   )
 }

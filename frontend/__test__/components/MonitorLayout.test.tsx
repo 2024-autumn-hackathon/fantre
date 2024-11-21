@@ -1,13 +1,13 @@
 import { render } from "@testing-library/react"
 
-import LayoutView from "@/components/MonitorLayout"
+import LayoutView from "@/components/MonitorLayout_SSR"
 
 describe("Monitor Layout Snapshot", () => {
   const layoutView = render(
     <LayoutView
       headerContent="Header"
-      mainContent="Main"
-      navigationContent="Navi"
+      viewContent="Main"
+      naviContent="Navi"
       footerContent="Footer"
     />
   ).container
