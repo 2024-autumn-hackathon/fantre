@@ -44,7 +44,7 @@ class Item(DocumentWithConfig):
     jan_code: Optional[str] = Indexed(unique=True), None
     release_date: Optional[date] = None
     retailers: Optional[List[str]] = Field(default_factory=list)
-    user_data: Optional[List[ObjectId]] = Field(default_factory=list) # user_specific_data_id
+    # user_data: Optional[List[ObjectId]] = Field(default_factory=list) # user_specific_data_id
 
     class Settings:
         name = "items" 
