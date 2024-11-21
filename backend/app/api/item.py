@@ -137,7 +137,7 @@ async def get_custom_category_name(user_specific_data, category_id: ObjectId):
 @router.get("/api/items/{item_id}")
 async def get_item_details(item_id: str):
 
-    user_id = ObjectId("673e935d7dacc0f94bc2b97e") # JWTから取得に変更予定
+    user_id = ObjectId("673ea7b010a961906b90efe1") # JWTから取得に変更予定
     
     try:
         item = await get_item(ObjectId(item_id))
@@ -369,7 +369,7 @@ class CustomItemUpdate(BaseModel):
 @router.patch("/api/items/{item_id}")
 async def update_custom_item(item_id: str, updated_data: CustomItemUpdate):
 
-    user_id = ObjectId("673e935d7dacc0f94bc2b97e")
+    user_id = ObjectId("673ea7b010a961906b90efe1")
     print("user_id", user_id)
     # item_idを使ってアイテムを取得
     item = await Item.find_one({"_id": ObjectId(item_id)})
@@ -489,8 +489,8 @@ async def update_custom_item(item_id: str, updated_data: CustomItemUpdate):
         custom_item = await create_custom_item(user_specific_data, custom_item)
         print("custom_item", custom_item)
     
-        await user_specific_data.save()
-        print("User specific data saved:", user_specific_data)
+    await user_specific_data.save()
+    print("User specific data saved:", user_specific_data)
 
-        return custom_item
+    return custom_item
 

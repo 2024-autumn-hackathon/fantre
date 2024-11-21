@@ -52,7 +52,7 @@ async def init_schema(database):
                     custom_item_character_name=ObjectId("6739c48fc49c15be3d1dccb8"),
                     custom_item_category_name=ObjectId("6739c48fc49c15be3d1dccb6"),
                     custom_item_tags=["Mytag1", "Mytag2"],
-                    custom_item_retailer="My Test Local Store",
+                    custom_item_retailers=["My Test Local Store"],
                     custom_item_notes="This is a personal note.",
                     created_at=datetime.now(),
                     exchange_status=False,
