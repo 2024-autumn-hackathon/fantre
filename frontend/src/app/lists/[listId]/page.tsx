@@ -6,4 +6,4 @@ const ListDetailPage = () => {
   )
 }
 
-export default ListDetailPage;
+export default ListDetailPage

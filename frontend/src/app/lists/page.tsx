@@ -6,4 +6,4 @@ const ListsPage = () => {
   )
 }
 
-export default ListsPage;
+export default ListsPage
