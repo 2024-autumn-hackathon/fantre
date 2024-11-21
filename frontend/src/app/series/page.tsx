@@ -1,11 +1,11 @@
-import MonitorLayout_SSR from "@/components/MonitorLayout_SSR"
-import PagenationListContainer from "@/components/PagenationListContainer"
-import PagenationListItem from "@/components/PagenationListItem"
-import PagenationNavi from "@/components/PagenationNavi"
-import PagenationNaviContainer from "@/components/PagenationNaviContainer"
+import MonitorLayout from "@/components/MonitorLayout"
 import TextLinkButton from "@/components/TextLinkButton"
 import TextViewButton from "@/components/TextViewButton"
 import TopButton from "@/components/TopButton"
+import PagenationListContainer from "@/features/common/pagenation/components/PagenationListContainer"
+import PagenationListItem from "@/features/common/pagenation/components/PagenationListItem"
+import PagenationNavi from "@/features/common/pagenation/components/PagenationNavi"
+import PagenationNaviContainer from "@/features/common/pagenation/components/PagenationNaviContainer"
 
 const SeriesPage = () => {
   const viewContent = (
@@ -37,12 +37,14 @@ const SeriesPage = () => {
   )
 
   const naviContent = (
-    <TextViewButton>
-      作品一覧を表示中・・・
-    </TextViewButton>
+    <div className="flex h-full items-center">
+      <TextViewButton>
+        作品一覧を表示中・・・
+      </TextViewButton>
+    </div>
   )
   return (
-    <MonitorLayout_SSR
+    <MonitorLayout
       headerContent={ <TopButton/> }
       viewContent={ viewContent }
       naviContent={ naviContent }

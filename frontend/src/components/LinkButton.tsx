@@ -10,7 +10,7 @@ const LinkButton = ({
   href: string
   addClass?: string
 }>) => {
-  const baseClass = "block bg-my-yellow w-60 h-[40px] rounded-3xl overflow-hidden"
+  const baseClass = "block bg-my-yellow w-60 h-[40px] mx-auto rounded-3xl overflow-hidden"
   const className = concatClassName(baseClass, addClass)
   return (
     <Link

@@ -3,7 +3,7 @@ import OnClickButton from "../common/OnClickButton"
 const BackgroundImageResetButton = () => {
   return (
     <OnClickButton
-      addClass="m-auto mt-4 Y-tab:mt-auto"
+      addClass="mx-auto mt-4 Y-tab:mt-auto"
     >
       背景リセット
     </OnClickButton>
