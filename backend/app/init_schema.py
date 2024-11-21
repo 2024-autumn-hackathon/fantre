@@ -114,6 +114,7 @@ async def init_schema(database):
             category=ObjectId("6736ae992ca618e77d720a9f"),
             tags=["#test1", "#test2"],
             jan_code="4991567672501",
+            release_date="2024-10-10",
             retailers=["Test Shop"],
             user_data=[ObjectId("6736a36adf3ac469905b2afc")]
         )
