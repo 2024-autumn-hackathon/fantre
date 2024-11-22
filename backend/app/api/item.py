@@ -401,7 +401,7 @@ async def get_filtered_items(
         if item_name:
             # item_nameが部分一致するものを探す
             matching_items = await Item.find({"item_name": {"$regex": item_name, "$options": "i"}}).to_list()
-            # 一致したものの_idを取り出す
+            # 一致したもののitem_idを取得
             matching_item_ids = [item.id for item in matching_items]
 
             if matching_item_ids:
@@ -422,9 +422,17 @@ async def get_filtered_items(
                 if matching_item_ids:
                     query_conditions.append({"_id": {"$in": matching_item_ids}})
           
-        # if category_id:
-        #     query_conditions.append({"category": ObjectId(category_id)})    
-            
+        if category_id:
+            category_id = ObjectId(category_id)
+            # category_idが完全一致するものを探す
+            matching_items = await Item.find({"category": category_id}).to_list()
+            print("matching_items", matching_items)
+            # 一致したもののitem_idを取得
+            matching_item_ids = [item.id for item in matching_items]
+            print("matching_item_ids", matching_item_ids)
+            if matching_item_ids:
+                query_conditions.append({"_id": {"$in": matching_item_ids}})
+            print("query_conditions.append", query_conditions)
                        
         # if tags_list:
         #     # ユーザーが1つだけタグを入力した場合
