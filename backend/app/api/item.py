@@ -402,38 +402,26 @@ async def get_filtered_items(
             # item_nameが部分一致するものを探す
             matching_items = await Item.find({"item_name": {"$regex": item_name, "$options": "i"}}).to_list()
             # 一致したもののitem_idを取得
-            matching_item_ids = [item.id for item in matching_items]
-
-            if matching_item_ids:
-                query_conditions.append({"_id": {"$in": matching_item_ids}})
-
+            original_item_ids = [item.id for item in matching_items]
             # 既存のuser_specific_dataから独自データのマッチングも行う
             if user_specific_data:
-                matching_item_ids = []                
+                # matching_item_ids = []                
                 # custom_itemsの中に一致するものを探す
                 matching_custom_items = [
                     ci for ci in user_specific_data.custom_items
                     if item_name.lower() in ci.custom_item_name.lower()
                 ]
                 # 部分マッチしたitem_nameを持つアイテムのitem_idを取得
-                matching_item_ids.extend([ci.item_id for ci in matching_custom_items])
-                print(f"Matching Item IDs from custom items: {matching_item_ids}")
-                # マッチしたitem_idをクエリ条件に追加
-                if matching_item_ids:
-                    query_conditions.append({"_id": {"$in": matching_item_ids}})
-          
+                custom_item_ids = [ci.item_id for ci in matching_custom_items]
+                print("custom_item_ids:", custom_item_ids)
+                # 両方の結果を条件に追加
+                all_item_ids = set(original_item_ids + custom_item_ids)
+                if all_item_ids:
+                    query_conditions.append({"_id": {"$in": list(all_item_ids)}})
+
         if category_id:
-            category_id = ObjectId(category_id)
-            # category_idが完全一致するものを探す
-            matching_items = await Item.find({"category": category_id}).to_list()
-            print("matching_items", matching_items)
-            # 一致したもののitem_idを取得
-            matching_item_ids = [item.id for item in matching_items]
-            print("matching_item_ids", matching_item_ids)
-            if matching_item_ids:
-                query_conditions.append({"_id": {"$in": matching_item_ids}})
-            print("query_conditions.append", query_conditions)
-                       
+            query_conditions.append({"category": ObjectId(category_id)})   
+
         # if tags_list:
         #     # ユーザーが1つだけタグを入力した場合
         #     if len(tags_list) == 1:
@@ -478,8 +466,10 @@ async def get_filtered_items(
         #             ]
         #         })
 
-        # if jan_code:
-        #     query_conditions.append({"jan_code": jan_code})
+        if jan_code:
+            query_conditions.append({"jan_code": jan_code})
+
+
         # if release_date:
         #     parsed_release_date = await parse_release_date(release_date)
         #     query_conditions.append({ 
