@@ -484,43 +484,68 @@ async def get_filtered_items(
             if all_item_ids:
                 query_conditions.append({"_id": {"$in": all_item_ids}})
 
-
-
-
-
-
-
-
-
-
         if jan_code:
             query_conditions.append({"jan_code": jan_code})
 
+        if release_date:
+            parsed_release_date = await parse_release_date(release_date)
+            query_conditions.append({ 
+                "$or": [
+                    {"release_date": {"$lte": parsed_release_date}},  # 指定された日付以前
+                    {"release_date": None}  # 空白も検索結果に含める
+                ]
+            })
 
-        # if release_date:
-        #     parsed_release_date = await parse_release_date(release_date)
-        #     query_conditions.append({ 
-        #         "$or": [
-        #             {"release_date": {"$lte": parsed_release_date}},  # 指定された日付以前
-        #             {"release_date": None}  # 空白も検索結果に含める
-        #         ]
-        #     })
-        # if retailers:
-        #     # query_conditions.append({"retailers":  {"$elemMatch": {"$regex": retailers, "$options": "i"}}})
-        #     regex_conditions_retailers = [{"retailers": {"$regex": retailer.strip(), "$options": "i"}} for retailer in retailers_list]
 
-        #     # 独自データ用の部分一致条件を構築
-        #     for retailer in retailers_list:
-        #         regex_conditions_retailers.append(
-        #             {
-        #                 "custom_items": {
-        #                     "$elemMatch": {
-        #                         "custom_item_retailers": {"$regex": retailer.strip(), "$options": "i"}
-        #                     }
-        #                 }
-        #             }
-        #         )
-        #     query_conditions.append({"$or": regex_conditions_retailers})
+        if retailers:
+                # regex_conditions_retailers = [
+                # {"retailers": {"$elemMatch": {"$regex": retailer.strip(), "$options": "i"}}}
+                # for retailer in retailers_list
+# ]
+            regex_conditions_retailers = [{"retailers": {"$regex": retailer.strip(), "$options": "i"}} for retailer in retailers_list]
+            print("regex_conditions_retailers", regex_conditions_retailers)
+                # query_conditions.append({"$or": regex_conditions_retailers})
+
+            try:                    
+                # アイテムIDのリストを取得
+                original_item_ids = await Item.find({"$or": regex_conditions_retailers}).to_list()
+                original_item_ids_list = [item.id  for item in original_item_ids]
+                print("original_item_ids_list", original_item_ids_list)
+            except Exception as e:
+                print(f"Error while fetching original items: {e}")
+
+            if user_specific_data:
+                try:
+                    custom_matching_item = [{"custom_item_retailers": {"$regex": retailer.strip(), "$options": "i"}} for retailer in retailers_list]
+
+                    matching_items = await UserSpecificData.find(
+                        {"custom_items": {"$elemMatch": {"$or": custom_matching_item}}}
+                    ).to_list()
+                    print("matching_items", matching_items)
+
+                    custom_item_ids = []
+                    for data in matching_items:
+                        for custom_item in data.custom_items:
+                            # custom_item_retailersが条件に一致するかを確認
+                            if any(
+                                re.search(retailer.strip(), retailer_value, re.IGNORECASE)
+                                for retailer in retailers_list
+                                for retailer_value in (custom_item.custom_item_retailers or [])
+                            ):
+                                if custom_item.item_id:
+                                    custom_item_ids.append(custom_item.item_id)
+                    print("custom_item_ids", custom_item_ids)
+
+                except Exception as e:
+                    print(f"Error while fetching custom items: {e}")
+
+            # 最終的なアイテムIDを集める
+            all_item_ids = original_item_ids + custom_item_ids
+            # 最終的なクエリ条件を追加
+            if all_item_ids:
+                query_conditions.append({"_id": {"$in": all_item_ids}})
+
+
 
         print("final query conditions", query_conditions)
         if not query_conditions:
