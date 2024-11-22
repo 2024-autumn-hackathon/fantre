@@ -359,8 +359,7 @@ async def get_filtered_items(
 
             # 既存のuser_specific_dataから独自データのマッチングも行う
             if user_specific_data:
-                matching_item_ids = []
-                
+                matching_item_ids = []                
                 # custom_series_namesの中に一致するものを探す
                 matching_custom_series = [
                     cs for cs in user_specific_data.custom_series_names 
@@ -380,20 +379,17 @@ async def get_filtered_items(
             if character_ids:
                 items_with_character = await Item.find({"item_character": {"$in": character_ids}}).to_list()
                 query_conditions.append({"_id": {"$in": [ObjectId(item.id) for item in items_with_character]}})
-
-
             # 既存のuser_specific_dataから独自データのマッチングも行う
             if user_specific_data:
-                matching_item_ids = []
-                
-                # custom_character_namesの中に一致するものを探す
+                matching_item_ids = []                
+                # custom_series_namesの中に一致するものを探す
                 matching_custom_character = [
                     cc for cc in user_specific_data.custom_character_names 
                     if character_name.lower() in cc.custom_character_name.lower()
                 ]
                 # マッチしたseries_idを持つアイテムのitem_idを取得
                 for custom_item in user_specific_data.custom_items:
-                    if any(cc.character_id == custom_item.custom_item_character_name for cc in matching_custom_series):
+                    if any(cc.character_id == custom_item.custom_item_character_name for cc in matching_custom_character):
                         matching_item_ids.append(custom_item.item_id)
                 
                 # マッチしたitem_idをクエリ条件に追加
