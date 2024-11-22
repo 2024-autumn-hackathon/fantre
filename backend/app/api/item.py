@@ -321,6 +321,9 @@ async def get_filtered_items(
     release_date: str = Query(None),
     retailers: str = Query(None),
 ):	
+    
+    user_id = ObjectId("507f1f77bcf86cd799439011")
+    user_specific_data = await get_user_specific_data(user_id)
     # 空白はNoneに変換
     params = [param.strip() if param else None for param in [series_name, character_name, item_name, tags, jan_code, release_date, retailers, category_id]]
 
@@ -352,28 +355,120 @@ async def get_filtered_items(
             if series_ids:
                 items_with_series = await Item.find({"item_series": {"$in": series_ids}}).to_list()
                 # item_idを条件に追加
-                query_conditions.append({"_id": {"$in": [ObjectId(item.id) for item in items_with_series]}})                
+                query_conditions.append({"_id": {"$in": [ObjectId(item.id) for item in items_with_series]}})  
+
+            # 既存のuser_specific_dataから独自データのマッチングも行う
+            if user_specific_data:
+                matching_item_ids = []
+                
+                # custom_series_namesの中に一致するものを探す
+                matching_custom_series = [
+                    cs for cs in user_specific_data.custom_series_names 
+                    if series_name.lower() in cs.custom_series_name.lower()
+                ]
+                # マッチしたseries_idを持つアイテムのitem_idを取得
+                for custom_item in user_specific_data.custom_items:
+                    if any(cs.series_id == custom_item.custom_item_series_name for cs in matching_custom_series):
+                        matching_item_ids.append(custom_item.item_id)
+                
+                # マッチしたitem_idをクエリ条件に追加
+                if matching_item_ids:
+                    query_conditions.append({"_id": {"$in": matching_item_ids}})
+
         if character_name:
             character_ids = await character_name_partial_match(character_name)
             if character_ids:
                 items_with_character = await Item.find({"item_character": {"$in": character_ids}}).to_list()
                 query_conditions.append({"_id": {"$in": [ObjectId(item.id) for item in items_with_character]}})
+
+
+            # 既存のuser_specific_dataから独自データのマッチングも行う
+            if user_specific_data:
+                matching_item_ids = []
+                
+                # custom_character_namesの中に一致するものを探す
+                matching_custom_character = [
+                    cc for cc in user_specific_data.custom_character_names 
+                    if character_name.lower() in cc.custom_character_name.lower()
+                ]
+                # マッチしたseries_idを持つアイテムのitem_idを取得
+                for custom_item in user_specific_data.custom_items:
+                    if any(cc.character_id == custom_item.custom_item_character_name for cc in matching_custom_series):
+                        matching_item_ids.append(custom_item.item_id)
+                
+                # マッチしたitem_idをクエリ条件に追加
+                if matching_item_ids:
+                    query_conditions.append({"_id": {"$in": matching_item_ids}})
+
+
+
         if item_name:
             query_conditions.append({"item_name":  {"$regex": item_name, "$options": "i"}})
+            # ユーザー独自データからもアイテム名に部分一致するものを検索
+            custom_item_names = await UserSpecificData.find({
+                "user_id": user_id, 
+                "custom_items.custom_item_name": {"$regex": item_name, "$options": "i"}
+            }).to_list()
+
+            # 独自データから一致するアイテムIDがあれば、それを条件に加える
+            if custom_item_names:
+                custom_item_ids = []
+                for custom_item in custom_item_names:
+                    # custom_items内のcustom_item_nameと一致するものを見つけてアイテムIDを取得
+                    matching_custom_items = [ci for ci in custom_item.custom_items if item_name.lower() in ci.custom_item_name.lower()]
+                    custom_item_ids.extend([ci.item_id for ci in matching_custom_items])
+
+                if custom_item_ids:
+                    query_conditions.append({"_id": {"$in": custom_item_ids}})
+          
         if category_id:
-            query_conditions.append({"category": ObjectId(category_id)})                
+            query_conditions.append({"category": ObjectId(category_id)})    
+            
+                       
         if tags_list:
             # ユーザーが1つだけタグを入力した場合
             if len(tags_list) == 1:
                 # 入力値で部分一致検索
                 tag = tags_list[0].strip()
-                query_conditions.append({"tags": {"$regex": tag, "$options": "i"}})
+                query_conditions.append({
+                    "$or": [
+                        # 通常データのタグ検索
+                        {"tags": {"$regex": tag, "$options": "i"}},
+                        # 独自データのタグ検索
+                        {
+                            "_id": {"$in": [
+                                custom_item.item_id
+                                for custom_item in user_specific_data.custom_items
+                                if any(tag.lower() in custom_tag.lower() for custom_tag in custom_item.custom_item_tags)
+                            ]}
+                        }
+                    ]
+                })
             else:
                 # 2つ以上のタグが入力された場合
                 # 各タグ単位では部分一致
-                regex_conditions = [{"tags": {"$regex": tag.strip(), "$options": "i"}} for tag in tags_list]        
-                # すべてのタグが部分一致する場合のみをマッチ
-                query_conditions.append({"$and": regex_conditions})
+                regex_conditions = [{"tags": {"$regex": tag.strip(), "$options": "i"}} for tag in tags_list] 
+                custom_item_conditions = [
+                    {
+                        "_id": {"$in": [
+                            custom_item.item_id
+                            for custom_item in user_specific_data.custom_items
+                            if any(
+                                any(tag.lower() in custom_tag.lower() for custom_tag in custom_item.custom_item_tags)
+                                for tag in tags_list
+                            )
+                        ]}
+                    }
+                ]
+                query_conditions.append({
+                    "$or": [
+                        # 通常データの部分一致
+                        {"$or": regex_conditions},
+                        # 独自データの部分一致
+                        *custom_item_conditions
+                    ]
+                })
+
         if jan_code:
             query_conditions.append({"jan_code": jan_code})
         if release_date:
@@ -387,7 +482,21 @@ async def get_filtered_items(
         if retailers:
             # query_conditions.append({"retailers":  {"$elemMatch": {"$regex": retailers, "$options": "i"}}})
             regex_conditions_retailers = [{"retailers": {"$regex": retailer.strip(), "$options": "i"}} for retailer in retailers_list]
+
+            # 独自データ用の部分一致条件を構築
+            for retailer in retailers_list:
+                regex_conditions_retailers.append(
+                    {
+                        "custom_items": {
+                            "$elemMatch": {
+                                "custom_item_retailers": {"$regex": retailer.strip(), "$options": "i"}
+                            }
+                        }
+                    }
+                )
             query_conditions.append({"$or": regex_conditions_retailers})
+
+
         if not query_conditions:
             return {
                 "message": "No items found matching the queries."
