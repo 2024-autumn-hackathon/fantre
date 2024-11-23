@@ -118,7 +118,7 @@ class CustomItem(DocumentWithConfig):
     custom_item_notes: Optional[str] = None
     # created_at: datetime
     exchange_status: Optional[bool] = None
-    own_status: Optional[bool] = None
+    own_status: Optional[bool] = False
 
 class CustomCategoryName(DocumentWithConfig):
     _id: ObjectId
