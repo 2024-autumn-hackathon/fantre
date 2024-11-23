@@ -10,7 +10,7 @@ const ClickAndInputButton = ({
   return (
     <>
       <OnClickButton
-        addClass="bg-[#5271ff] w-60 m-auto mt-4 bg-opacity-80"
+        addClass="bg-[#5271ff] w-60 mx-auto mt-4 bg-opacity-80"
       >
         { children }
       </OnClickButton>

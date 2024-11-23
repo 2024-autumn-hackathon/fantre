@@ -1,6 +1,6 @@
 import { render } from "@testing-library/react"
 
-import LayoutView from "@/components/MonitorLayout_SSR"
+import LayoutView from "@/components/MonitorLayout"
 
 describe("Monitor Layout Snapshot", () => {
   const layoutView = render(

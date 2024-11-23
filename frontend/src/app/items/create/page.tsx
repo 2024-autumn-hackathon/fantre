@@ -1,12 +1,12 @@
-import ClickAndInputButton from "@/components/ClickAndInputButton"
 import InputButton from "@/components/InputButton"
-import MonitorLayout_SSR from "@/components/MonitorLayout_SSR"
+import MonitorLayout from "@/components/MonitorLayout"
 import TopButton from "@/components/TopButton"
 import ImageUploadForm from "@/features/common/ImageUploadForm"
+import ClickAndInputButton from "@/features/routes/create/components/ClickAndInputButton"
 
 const ItemCreatePage = () => {
   return (
-    <MonitorLayout_SSR
+    <MonitorLayout
       headerContent={ <TopButton/> }
       viewContent
       naviContent={
@@ -15,6 +15,7 @@ const ItemCreatePage = () => {
             buttonText="登録!"
             formId="item_create"
             uploadImageText="アップロード画像を選択"
+            addClass="h-full flex flex-col justify-around Y-tab:grid Y-tab:grid-cols-2 Y-tab:gap-4"
           >
             <ClickAndInputButton inputName="series_name">作品名</ClickAndInputButton>
             <ClickAndInputButton inputName="character_name">キャラ名</ClickAndInputButton>
