@@ -25,16 +25,16 @@ async def save_image(image: Image):
 
 
 # item_idに紐づいている画像URL全て取得
-async def get_url_from_itemid(item_id: ObjectId):
+async def get_imagename_from_itemid(item_id: ObjectId):
     try:
         await db.connect()
         images = await Image.find({"item_id": item_id}).to_list()  # クエリ結果をリストとして取得
 
-        image_url = []
+        image_names = []
         if images:
-            image_url = [image.image_url for image in images]
-            return image_url
-        return image_url
+            image_names = [image.image_name for image in images]
+            return image_names
+        return image_names
     except ValidationError as ve:
         raise HTTPException(status_code=422, detail=ve.errors())
     except Exception as e:
@@ -44,15 +44,15 @@ async def get_url_from_itemid(item_id: ObjectId):
 
 
 # 画像URL単体取得
-async def get_url(user_id: ObjectId, item_id: ObjectId):
+async def get_image_name(user_id: ObjectId, item_id: ObjectId):
     try:
         await db.connect()
-        user_image_url = await Image.find_one({"user_id": user_id, "item_id": item_id},sort=[("_id", -1)]) # 一番新しいの取得
-        if user_image_url:
-            return user_image_url.image_url
-        item_image_url = await Image.find_one({"item_id": item_id}, sort=[("_id", -1)] ) # 一番新しいの取得
-        if item_image_url:
-            return item_image_url.image_url
+        user_image = await Image.find_one({"user_id": user_id, "item_id": item_id},sort=[("_id", -1)]) # 一番新しいの取得
+        if user_image:
+            return user_image.image_name
+        item_image = await Image.find_one({"item_id": item_id}, sort=[("_id", -1)] ) # 一番新しいの取得
+        if item_image:
+            return item_image.image_url
         return None
 
     except ValidationError as ve:

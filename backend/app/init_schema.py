@@ -155,13 +155,13 @@ async def init_schema(database):
         print("test_content_catalog already exists.")   
    
     # 画像を挿入
-    test_image = await Image.find_one({"image_url": "https://example.com/images/image1.jpg"}) 
+    test_image = await Image.find_one({"image_name": "test.jpg"}) 
 
     if not test_image:
         test_image = Image(
             user_id=ObjectId("6728433a3bdeccb817510476"), 
             item_id=ObjectId("61f5f484a2d21a1d4cf1b0e6"), 
-            image_url="https://example.com/images/image1.jpg", 
+            image_name="test.jpg", 
             created_at=datetime.now(), 
             is_background=False 
         )

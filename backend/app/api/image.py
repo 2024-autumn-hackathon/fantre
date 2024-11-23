@@ -13,7 +13,7 @@ from minio import Minio
 
 from app.models import Image as Img
 from app.database.db_item import exists_item_id
-from app.database.db_image import save_image, get_url_from_itemid, get_url
+from app.database.db_image import save_image, get_imagename_from_itemid, get_image_name
 
 
 router = APIRouter()
@@ -71,13 +71,11 @@ def save_image_to_S3(image_object, bucket, key):
 
     try:
         s3.put_object(Body = image_byte, Bucket = bucket, Key = key)
-        image_url = urlparse.urljoin("http://127.0.0.1:9000", key)
     except Exception as e:
         print(f"S3 Upload Error: {e}")
         raise HTTPException(
             status_code=500, detail="Image Upload Error"
         )
-    return image_url
 
 
 # ダウンロード用署名付きURL生成
@@ -106,29 +104,29 @@ async def upload_item_image(item_id: str, item_image: UploadFile): # user_id: st
         raise HTTPException(status_code=422, detail="The item does not exist.")
     
     # 名前と拡張子に分けて名前をハッシュ化
-    filename = item_image.filename
-    root, ext = os.path.splitext(filename)
+    image_name = item_image.filename
+    root, ext = os.path.splitext(image_name)
     hash_root = hashlib.md5(root.encode()).hexdigest() # 日本語除去のため拡張子以外をハッシュ化
-    hash_filename = hash_root + ext
+    hash_image_name = hash_root + ext
     
     #拡張子チェック
     if ext.lower() not in (".png", ".jpg", ".jpeg"):
         raise HTTPException(status_code=422, detail="Extension is not allowed.")
     
     # ファイル名重複チェック 
-    exists_url_list = await get_url_from_itemid(ObjectId(item_id))
+    exists_image_name_list = await get_imagename_from_itemid(ObjectId(item_id))
     exists_key_list = []
-    for url in exists_url_list:
-        exists_key = os.path.basename(url)
+    for name in exists_image_name_list:
+        exists_key = name
         exists_key_list.append(exists_key)
 
-    if hash_filename in exists_key_list:
+    if hash_image_name in exists_key_list:
         raise HTTPException(status_code=422, detail="The filename already exist.")
 
     # 画像加工して保存           
     cropped_image = await crop_image(item_image)
-    image_url = save_image_to_S3(cropped_image, bucket, hash_filename)
-    image_info = Img(user_id=USER, item_id=ObjectId(item_id), image_url = image_url, created_at=datetime.now(), is_background=False)
+    save_image_to_S3(cropped_image, bucket, hash_image_name)
+    image_info = Img(user_id=USER, item_id=ObjectId(item_id), image_name = hash_image_name, created_at=datetime.now(), is_background=False)
 
     await save_image(image_info)
     return image_info
@@ -141,14 +139,13 @@ async def get_item_image_url(item_id: str): # user_id: str = Depends(user.get_cu
     if await exists_item_id(ObjectId(item_id)):
         raise HTTPException(status_code=422, detail="The item does not exist.")
     
-    # URL取得
-    image_url = await get_url(USER, ObjectId(item_id))
-    if image_url is None:
+    # key取得
+    image_name = await get_image_name(USER, ObjectId(item_id))
+    if image_name is None:
         raise HTTPException(status_code=206, detail="The item image does not exist.")
     
     # ダウンロード用署名付きURL生成
-    key = os.path.basename(image_url)
-    response_url = generate_presigned_url(s3, bucket, key, 10)
+    response_url = generate_presigned_url(s3, bucket, image_name, 10)
     response_url = response_url.replace("s3-minio","localhost") # コンテナ間通信でなければ要らないはず
     print(response_url) 
     return response_url
