@@ -158,10 +158,9 @@ async def create_item_endpoint(item_request: ItemRequest):
                 own_status = False       
             )
         custom_item = await create_custom_item(user_specific_data, custom_item)
-        await user_specific_data.save()
 
+        await user_specific_data.save()        
         return created_item
-
     
     except ValidationError as e:
         raise HTTPException(
@@ -226,21 +225,17 @@ async def get_item_details(item_id: str):
 
     try:
         item = await get_item(ObjectId(item_id))
-
         user_specific_data = await UserSpecificData.find_one({"user_id": user_id})
-        print(user_specific_data)
 
         # item_idが一致するcustom_itemを持っているかチェック
         custom_item = None
         if user_specific_data:
             custom_item = next((ci for ci in user_specific_data.custom_items if ci.item_id == ObjectId(item_id)), None)
-            print(custom_item)
 
         # 独自名を取得
         custom_series_name = await get_custom_series_name(user_specific_data, item.item_series) if user_specific_data else None
         custom_character_name = await get_custom_character_name(user_specific_data, item.item_character) if user_specific_data else None
         custom_category_name = await get_custom_category_name(user_specific_data, item.category) if user_specific_data else None
-        print(custom_series_name, custom_character_name, custom_category_name)
 
         if custom_item:
             response = {
@@ -275,7 +270,7 @@ async def get_item_details(item_id: str):
         return response
     
     except ValidationError as e:
-        print(f"Validation error: {e.errors()}")  # エラーの詳細を出力
+        print(f"Validation error: {e.errors()}") 
         raise HTTPException(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         detail={"errors": e.errors()}
@@ -284,10 +279,10 @@ async def get_item_details(item_id: str):
         print(f"HTTP Exception: {str(e.detail)}")
         raise e
     except Exception as e:
-        print(f"Unexpected error when fetching the item: {str(e)}")
+        print(f"Unexpected error when fetching the item details: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="An error occured while fetching the item"
+            detail="An error occured while fetching the item details"
         )
 
 
@@ -304,8 +299,7 @@ async def parse_release_date(release_date: str):
         elif len(release_date) == 10:  # YYYY-MM-DD
             return datetime.strptime(release_date, "%Y-%m-%d").date()            
         else:
-            raise ValueError("Invalid date format. Please use YYYY, YYYY-MM, or YYYY-MM-DD.")
-    
+            raise ValueError("Invalid date format. Please use YYYY, YYYY-MM, or YYYY-MM-DD.")    
     except ValueError as ve:
         raise HTTPException(status_code=400, detail=str(ve))
 
@@ -356,11 +350,10 @@ async def get_filtered_items(
         if series_name:
             # 別関数で部分検索
             series_ids = await series_name_partial_match(series_name)
-            # 返ってきたseries_idを使い対応するitemを取得
+            # 返ってきたseries_idを含んでいるitemを取得
             if series_ids:
                 matching_items = await Item.find({"item_series": {"$in": series_ids}}).to_list()
                 original_series_item_ids = [item.id for item in matching_items]
-                print("Original series_item_ids:", original_series_item_ids)
 
             # 既存のuser_specific_dataから独自データのマッチングも行う
             if user_specific_data:
@@ -372,7 +365,6 @@ async def get_filtered_items(
                 ci.item_id for ci in user_specific_data.custom_items
                 if any(cs.series_id == ci.custom_item_series_name for cs in matching_custom_series)
             ]
-            print("Custom series_item_ids:", custom_series_item_ids)
                     
             # 結果を統合
             all_item_ids = set(
@@ -417,8 +409,7 @@ async def get_filtered_items(
             original_item_ids = [item.id for item in matching_items]
 
             # 既存のuser_specific_dataから独自データのマッチングも行う
-            if user_specific_data:
-                # matching_item_ids = []                
+            if user_specific_data:         
                 # custom_itemsの中に一致するものを探す
                 matching_custom_items = [
                     ci for ci in user_specific_data.custom_items
@@ -525,13 +516,11 @@ async def get_filtered_items(
         if not query_conditions:
             return {
                 "message": "No items found matching the queries."
-            } 
+            }         
         # 条件をANDで結合
-        query = {"$and": query_conditions} 
-        print("Query to be executed:", query)   
+        query = {"$and": query_conditions}  
         # 条件にマッチするアイテム取得
         matched_items = await Item.find(query).to_list()
-        print(f"matched_items: {matched_items}")
 
         if not matched_items:
             return{
@@ -573,6 +562,7 @@ async def get_filtered_items(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An error occured while fetching the filtered_items"
         )
+
      
 # グッズ情報編集
 class CustomItemUpdate(BaseModel):
@@ -587,7 +577,7 @@ class CustomItemUpdate(BaseModel):
 
     @validator('custom_item_name', 'custom_series_name', 'custom_character_name', 'custom_category_name', pre=True)
     def check_not_empty_or_whitespace(cls, value):
-        if value is None or value.strip() == "":  # 空文字または空白文字列の場合
+        if value is None or value.strip() == "": 
             raise ValueError("Field cannot be empty or just whitespace.")
         return value
 
@@ -607,7 +597,6 @@ async def update_custom_item(item_id: str, updated_data: CustomItemUpdate):
         user_specific_data = await get_user_specific_data(user_id)
         # 独自データがない場合新規作成
         if not user_specific_data:
-
             user_specific_data = UserSpecificData(
                 user_id=user_id,
                 custom_items=[],
@@ -656,7 +645,6 @@ async def update_custom_item(item_id: str, updated_data: CustomItemUpdate):
 
         # ユーザーがシリーズ名を入力しているならデータ更新
         if updated_data.custom_character_name:
-
             # 再確認
             existing_character_names = next((c for c in user_specific_data.custom_character_names if c.character_id == item.item_character), None)
             # 名前更新
@@ -679,7 +667,6 @@ async def update_custom_item(item_id: str, updated_data: CustomItemUpdate):
 
         # ユーザーがシリーズ名を入力しているならデータ更新
         if updated_data.custom_category_name:
-
             # 再確認
             existing_category_names = next((cat for cat in user_specific_data.custom_category_names if cat.category_id == item.category), None)
             # 名前更新
@@ -725,7 +712,7 @@ async def update_custom_item(item_id: str, updated_data: CustomItemUpdate):
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="An error occured while updating the custom_item"
+            detail="An error occured while updating the custom item details."
         )
 
 
@@ -733,8 +720,8 @@ async def update_custom_item(item_id: str, updated_data: CustomItemUpdate):
 @router.patch("/api/items/{item_id}/exchange-status")
 async def change_exchange_status(item_id: str, status: bool):
 
-    user_id = ObjectId("67415107113ae9bb3fb11a10")
-    # user_id = Depends(get_current_user)    
+    user_id = ObjectId("507f1f77bcf86cd799439011") 
+    # user_id = Depends(get_current_user) 
     
     try:
         # 独自データがあるか？
@@ -791,8 +778,8 @@ async def change_exchange_status(item_id: str, status: bool):
 @router.patch("/api/items/{item_id}/own-status")
 async def change_own_status(item_id: str, status: bool):
 
-    user_id = ObjectId("67415107113ae9bb3fb11a10")
-    # user_id = Depends(get_current_user)    
+    user_id = ObjectId("507f1f77bcf86cd799439011") 
+    # user_id = Depends(get_current_user)  
     
     try:
         # 独自データがあるか？
