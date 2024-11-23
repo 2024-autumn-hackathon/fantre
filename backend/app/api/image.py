@@ -1,7 +1,7 @@
 # app/api/image.py
 import os, io, boto3, hashlib
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Annotated
 from fastapi import APIRouter, UploadFile, HTTPException
 from pydantic import BaseModel
@@ -9,13 +9,18 @@ from bson import ObjectId
 from PIL import Image
 import urllib.parse as urlparse
 from dotenv import load_dotenv
+from minio import Minio
 
 from app.models import Image as Img
 from app.database.db_item import exists_item_id
-from app.database.db_image import save_image, get_url_from_itemid
+from app.database.db_image import save_image, get_url_from_itemid, get_url
 
 
 router = APIRouter()
+
+USER=ObjectId("6741648c379d65123353859a")
+
+# ----------変数--------------------------------------
 
 # S3接続情報
 s3 = boto3.client(
@@ -32,6 +37,9 @@ bucket = "image"
 MAX_WIDTH = 1080
 MAX_HEIGHT = 1080
 
+
+
+# ----------関数--------------------------------------
 
 # 画像トリミング
 async def crop_image(imagefile):
@@ -72,9 +80,26 @@ def save_image_to_S3(image_object, bucket, key):
     return image_url
 
 
+# ダウンロード用署名付きURL生成
+def generate_presigned_url(s3_client, bucketname, key, expires_in):
+    try:
+        presign_url = s3_client.generate_presigned_url(
+            ClientMethod='get_object',
+            Params={'Bucket': bucketname, 'Key': key},
+            ExpiresIn=expires_in
+        )
+    except Exception as e:
+        print(f"generate presigned url Error: {e}")
+        raise HTTPException(
+            status_code=500, detail="Image Download Error"
+        )
+    return presign_url
+
+
+# ----------API--------------------------------------
 
 # 画像登録
-@router.post('/api/images')
+@router.post('/api/image/{item_id}')
 async def upload_item_image(item_id: str, item_image: UploadFile): # user_id: str = Depends(user.get_current_user)
     # item_id存在確認
     if await exists_item_id(ObjectId(item_id)):
@@ -103,9 +128,31 @@ async def upload_item_image(item_id: str, item_image: UploadFile): # user_id: st
     # 画像加工して保存           
     cropped_image = await crop_image(item_image)
     image_url = save_image_to_S3(cropped_image, bucket, hash_filename)
-    image_info = Img(user_id=ObjectId("6728433a3bdeccb817510476"), item_id=ObjectId(item_id), image_url = image_url, created_at=datetime.now(), is_background=False)
+    image_info = Img(user_id=USER, item_id=ObjectId(item_id), image_url = image_url, created_at=datetime.now(), is_background=False)
 
     await save_image(image_info)
     return image_info
+
+
+# 画像取得
+@router.get('/api/images/{item_id}')
+async def get_item_image_url(item_id: str): # user_id: str = Depends(user.get_current_user)
+    # item_id存在確認
+    if await exists_item_id(ObjectId(item_id)):
+        raise HTTPException(status_code=422, detail="The item does not exist.")
+    
+    # URL取得
+    image_url = await get_url(USER, ObjectId(item_id))
+    if image_url is None:
+        raise HTTPException(status_code=206, detail="The item image does not exist.")
+    
+    # ダウンロード用署名付きURL生成
+    key = os.path.basename(image_url)
+    response_url = generate_presigned_url(s3, bucket, key, 10)
+    response_url = response_url.replace("s3-minio","localhost") # コンテナ間通信でなければ要らないはず
+    print(response_url) 
+    return response_url
+
+
 
 # テスト用item_id : 6736b102d2bffe77f23d75db

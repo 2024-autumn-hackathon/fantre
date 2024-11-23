@@ -24,7 +24,7 @@ async def save_image(image: Image):
         await db.disconnect()
 
 
-# item_idに紐づいている画像URL取得
+# item_idに紐づいている画像URL全て取得
 async def get_url_from_itemid(item_id: ObjectId):
     try:
         await db.connect()
@@ -35,6 +35,26 @@ async def get_url_from_itemid(item_id: ObjectId):
             image_url = [image.image_url for image in images]
             return image_url
         return image_url
+    except ValidationError as ve:
+        raise HTTPException(status_code=422, detail=ve.errors())
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching item : {str(e)}")
+    finally:
+        await db.disconnect()
+
+
+# 画像URL単体取得
+async def get_url(user_id: ObjectId, item_id: ObjectId):
+    try:
+        await db.connect()
+        user_image_url = await Image.find_one({"user_id": user_id, "item_id": item_id},sort=[("_id", -1)]) # 一番新しいの取得
+        if user_image_url:
+            return user_image_url.image_url
+        item_image_url = await Image.find_one({"item_id": item_id}, sort=[("_id", -1)] ) # 一番新しいの取得
+        if item_image_url:
+            return item_image_url.image_url
+        return None
+
     except ValidationError as ve:
         raise HTTPException(status_code=422, detail=ve.errors())
     except Exception as e:

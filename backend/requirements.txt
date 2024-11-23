@@ -4,12 +4,12 @@ pymongo==4.9.2
 beanie==1.27.0
 motor==3.6.0
 pydantic==2.9.2
-pydantic[email]
-python-jose[cryptography]
-passlib[bcrypt]
-python-multipart
-PyJWT
-pillow # 画像処理
-minio # いらないかも？
-boto3 # S3操作
-load_dotenv #環境変数読み込み
+pydantic[email]==2.2.0
+python-jose[cryptography]==43.0.3
+passlib[bcrypt]==4.2.1
+python-multipart==0.0.17
+PyJWT==2.10.0
+pillow==11.0.0 # 画像処理
+minio==7.2.11 # いらないかも？
+boto3== 1.35.65 # S3操作
+load_dotenv==0.1.0 #環境変数読み込み
