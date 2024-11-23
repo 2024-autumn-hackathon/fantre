@@ -731,7 +731,7 @@ async def update_custom_item(item_id: str, updated_data: CustomItemUpdate):
 
 # 欲しい/譲れるフラグ変更
 @router.patch("/api/items/{item_id}/exchange-status")
-async def chenge_exchange_status(item_id: str, status: bool):
+async def change_exchange_status(item_id: str, status: bool):
 
     user_id = ObjectId("67415107113ae9bb3fb11a10")
     # user_id = Depends(get_current_user)    
@@ -784,4 +784,62 @@ async def chenge_exchange_status(item_id: str, status: bool):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An error occured while updating the exchange_status"
+        )
+ 
+
+# 所持/未所持フラグ変更
+@router.patch("/api/items/{item_id}/own-status")
+async def change_own_status(item_id: str, status: bool):
+
+    user_id = ObjectId("67415107113ae9bb3fb11a10")
+    # user_id = Depends(get_current_user)    
+    
+    try:
+        # 独自データがあるか？
+        user_specific_data = await get_user_specific_data(user_id)
+        # なければ作成
+        if not user_specific_data:
+            user_specific_data = UserSpecificData(
+                user_id=user_id,
+                custom_items=[]
+            )
+            user_specific_data = await create_user_specific_data(user_id, user_specific_data)
+
+        # 該当item_idのカスタムアイテムがあるか？
+        custom_item = next((item for item in user_specific_data.custom_items if str(item.item_id) == item_id), None)
+        # なければ作成
+        if not custom_item:
+            # item情報を取得
+            item = await Item.find_one({"_id": ObjectId(item_id)})
+
+            # 情報を元にカスタムアイテム作成
+            custom_item = CustomItem(
+                _id=ObjectId(),
+                item_id=ObjectId(item_id),
+                custom_item_images=[],
+                custom_item_name=item.item_name,
+                custom_item_series_name=item.item_series, 
+                custom_item_character_name=item.item_character, 
+                custom_item_category_name=item.category,       
+                custom_item_tags = item.tags,
+                custom_item_retailers = item.retailers,
+                custom_item_notes = None,
+                exchange_status = None,
+                own_status = False       
+            )
+            custom_item = await create_custom_item(user_specific_data, custom_item)
+
+        # 所持/未所持フラグ変更
+        if status is not None:
+            custom_item.own_status = status
+
+        await user_specific_data.save()
+        return {"message": "Own status updated successfully", "own_status": custom_item.own_status}
+    
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occured while updating the own_status"
         )
