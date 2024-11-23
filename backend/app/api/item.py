@@ -79,88 +79,88 @@ async def create_item_endpoint(item_request: ItemRequest):
 
         item = Item(**item_data)
         created_item = await create_item(item)
-        # return created_item
-
-        # ユーザーの独自データを取得
-        user_specific_data = await get_user_specific_data(user_id)
-        # 独自データがない場合新規作成
-        if not user_specific_data:
-
-            user_specific_data = UserSpecificData(
-                user_id=user_id,
-                custom_items=[],
-                custom_category_names=[],
-                custom_series_names=[],
-                custom_character_names=[]
-            )
-            user_specific_data = await create_user_specific_data(user_id, user_specific_data)
-
-        # カスタムアイテムを作成
-
-        # シリーズIDが独自データ内にあるか？
-        existing_series_names = next((s for s in user_specific_data.custom_series_names if s.series_id == created_item.item_series), None)
-        # なければ作成
-        if not existing_series_names:
-            # series_idからseries_nameを取得する
-            series_id = created_item.item_series
-            series_name = await get_series_name(series_id)
-            # custom_series_names に追加する
-            new_series = CustomSeriesName(
-                    _id=ObjectId(),
-                    series_id=series_id, 
-                    custom_series_name=series_name
-                )
-            user_specific_data.custom_series_names.append(new_series)
-
-        # キャラクターIDが独自データ内にあるか？
-        existing_character_names = next((c for c in user_specific_data.custom_character_names if c.character_id == item.item_character), None)
-        # なければ作成
-        if not existing_character_names:
-            # character_idからcharacter_nameを取得する
-            character_id = item.item_character
-            character_name = await get_character_name(character_id)
-            # custom_series_names に追加する
-            new_character = CustomCharacterName(
-                    _id=ObjectId(),
-                    character_id=character_id, 
-                    custom_character_name=character_name
-                )
-            user_specific_data.custom_character_names.append(new_character)
-            
-        # ユーザーの custom_category_names 内に 該当するcategory_id が存在するか確認
-        existing_category_names = next((cat for cat in user_specific_data.custom_category_names if cat.category_id == item.category), None)
-        # なければ作成
-        if not existing_category_names:
-            # series_idからseries_nameを取得する
-            category_id = item.category
-            category_name = await get_category_name(category_id)
-            # custom_series_names に追加する
-            new_category = CustomCategoryName(
-                    _id=ObjectId(),
-                    category_id=category_id, 
-                    custom_category_name=category_name
-                )
-            user_specific_data.custom_category_names.append(new_category)
-
-        # カスタムアイテム作成        
-        custom_item = CustomItem(
-                _id=ObjectId(),
-                item_id=ObjectId(created_item.id),
-                custom_item_images=[],
-                custom_item_name=item_request.item_name,
-                custom_item_series_name=item_request.item_series, 
-                custom_item_character_name=item_request.item_character, 
-                custom_item_category_name=item_request.category,       
-                custom_item_tags = item_request.tags,
-                custom_item_retailers = item_request.retailers,
-                custom_item_notes = None,
-                exchange_status = False,
-                own_status = False       
-            )
-        custom_item = await create_custom_item(user_specific_data, custom_item)
-
-        await user_specific_data.save()        
         return created_item
+
+        # # ユーザーの独自データを取得
+        # user_specific_data = await get_user_specific_data(user_id)
+        # # 独自データがない場合新規作成
+        # if not user_specific_data:
+
+        #     user_specific_data = UserSpecificData(
+        #         user_id=user_id,
+        #         custom_items=[],
+        #         custom_category_names=[],
+        #         custom_series_names=[],
+        #         custom_character_names=[]
+        #     )
+        #     user_specific_data = await create_user_specific_data(user_id, user_specific_data)
+
+        # # カスタムアイテムを作成
+
+        # # シリーズIDが独自データ内にあるか？
+        # existing_series_names = next((s for s in user_specific_data.custom_series_names if s.series_id == created_item.item_series), None)
+        # # なければ作成
+        # if not existing_series_names:
+        #     # series_idからseries_nameを取得する
+        #     series_id = created_item.item_series
+        #     series_name = await get_series_name(series_id)
+        #     # custom_series_names に追加する
+        #     new_series = CustomSeriesName(
+        #             _id=ObjectId(),
+        #             series_id=series_id, 
+        #             custom_series_name=series_name
+        #         )
+        #     user_specific_data.custom_series_names.append(new_series)
+
+        # # キャラクターIDが独自データ内にあるか？
+        # existing_character_names = next((c for c in user_specific_data.custom_character_names if c.character_id == item.item_character), None)
+        # # なければ作成
+        # if not existing_character_names:
+        #     # character_idからcharacter_nameを取得する
+        #     character_id = item.item_character
+        #     character_name = await get_character_name(character_id)
+        #     # custom_series_names に追加する
+        #     new_character = CustomCharacterName(
+        #             _id=ObjectId(),
+        #             character_id=character_id, 
+        #             custom_character_name=character_name
+        #         )
+        #     user_specific_data.custom_character_names.append(new_character)
+            
+        # # ユーザーの custom_category_names 内に 該当するcategory_id が存在するか確認
+        # existing_category_names = next((cat for cat in user_specific_data.custom_category_names if cat.category_id == item.category), None)
+        # # なければ作成
+        # if not existing_category_names:
+        #     # series_idからseries_nameを取得する
+        #     category_id = item.category
+        #     category_name = await get_category_name(category_id)
+        #     # custom_series_names に追加する
+        #     new_category = CustomCategoryName(
+        #             _id=ObjectId(),
+        #             category_id=category_id, 
+        #             custom_category_name=category_name
+        #         )
+        #     user_specific_data.custom_category_names.append(new_category)
+
+        # # カスタムアイテム作成        
+        # custom_item = CustomItem(
+        #         _id=ObjectId(),
+        #         item_id=ObjectId(created_item.id),
+        #         custom_item_images=[],
+        #         custom_item_name=item_request.item_name,
+        #         custom_item_series_name=item_request.item_series, 
+        #         custom_item_character_name=item_request.item_character, 
+        #         custom_item_category_name=item_request.category,       
+        #         custom_item_tags = item_request.tags,
+        #         custom_item_retailers = item_request.retailers,
+        #         custom_item_notes = None,
+        #         exchange_status = False,
+        #         own_status = False       
+        #     )
+        # custom_item = await create_custom_item(user_specific_data, custom_item)
+
+        # await user_specific_data.save()        
+        # return created_item
     
     except ValidationError as e:
         raise HTTPException(
