@@ -6,7 +6,7 @@ exports[`Monitor Layout Snapshot layout snapshot 1`] = `
     class="grid relative w-full h-full rounded-[50px] bg-my-light-blue grid-rows-[40px_5fr_20px_4fr_40px] grid-cols-[20px_30px_1fr_30px_20px] X-mob:grid-rows-[40px_1fr_40px] X-mob:grid-cols-[50px_5fr_20px_4fr_50px] X-tab:h-[calc(100%-50px)] X-tab:grid-rows-[40px_1fr_40px] X-tab:grid-cols-[20px_5fr_54fr_20px_26fr_6fr_20px]"
   >
     <section
-      class="col-start-3 col-end-4 X-tab:col-end-6 X-mob:col-start-4 X-mob:col-end-5"
+      class="flex items-center justify-end col-start-3 col-end-4 X-tab:col-end-6 X-mob:col-start-4 X-mob:col-end-5"
     >
       Header
     </section>
@@ -21,13 +21,13 @@ exports[`Monitor Layout Snapshot layout snapshot 1`] = `
       Navi
     </section>
     <section
-      class="row-start-5 col-start-3 col-end-4 X-tab:row-start-3 X-tab:col-end-6 X-mob:row-start-1 X-mob:row-end-2 X-mob:col-start-2 X-mob:col-end-3"
+      class="flex justify-end row-start-5 col-start-3 col-end-4 X-tab:row-start-3 X-tab:col-end-6 X-mob:row-start-1 X-mob:row-end-2 X-mob:col-start-2 X-mob:col-end-3"
     >
       Footer
     </section>
     <img
       alt="電源ボタンの見た目を表現する画像です"
-      class="hidden monitor:block row-start-3 col-start-6 col-end-7"
+      class="hidden X-tab:block row-start-3 col-start-6 col-end-7"
       data-nimg="fill"
       decoding="async"
       loading="lazy"
