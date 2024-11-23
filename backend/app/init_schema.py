@@ -146,8 +146,8 @@ async def init_schema(database):
             series_characters=[
                 SeriesCharacter(
                    _id=ObjectId(), 
-                   series_id=ObjectId("64f93b28dcadf9d53f99ef44"),
-                   character_id=ObjectId("64f93b28dcadf9d53f99ef45") 
+                   series_id=ObjectId("6731371a31c29bb05c8a1275"),
+                   character_id=ObjectId("6731371a31c29bb05c8a1276") 
                 )
             ]
         )
