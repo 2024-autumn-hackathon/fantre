@@ -73,7 +73,7 @@ class Series(DocumentWithConfig):
 # characters
 class Character(DocumentWithConfig):
     _id: ObjectId
-    character_name: str = Indexed(unique=True)  # キャラクター名
+    character_name: str = Optional[str]
 
 # series_characters
 class SeriesCharacter(DocumentWithConfig):
