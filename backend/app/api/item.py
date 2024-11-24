@@ -2,7 +2,7 @@
 from typing import List, Optional
 from app.models import CustomCategoryName, CustomCharacterName, CustomItem, CustomSeriesName, Item, UserSpecificData
 from app.database.db_item import create_item, existing_item_check, get_item, get_all_items
-from app.database.db_content_catalog import character_name_partial_match, get_category_name, get_character_name, get_series_name, series_name_partial_match
+from app.database.db_content_catalog import character_name_partial_match, create_new_category, get_category_name, get_character_name, get_series_name, series_name_partial_match
 from app.database.db_user_specific import create_custom_item, create_user_specific_data, get_user_specific_data
 from pydantic import BaseModel, field_validator, ValidationError, Field, validator
 from datetime import date, timedelta
@@ -575,13 +575,6 @@ class CustomItemUpdate(BaseModel):
     # exchange_status: Optional[bool] = None
     # own_status: Optional[bool] = False
     
-    @field_validator("custom_series_name", "custom_character_name", "custom_category_name", mode="before")
-    def validate_object_id(cls, v):
-        if v is None:
-            return v
-        if not ObjectId.is_valid(v):
-            raise ValueError(f"Invalid ObjectId: {v}")
-        return ObjectId(v)
     
     @validator('custom_item_name', 'custom_series_name', 'custom_character_name', 'custom_category_name' , pre=True)
     def check_not_empty_or_whitespace(cls, value):
@@ -631,14 +624,15 @@ async def update_custom_item(item_id: str, updated_data: CustomItemUpdate):
             print("new_series", new_series)
             user_specific_data.custom_series_names.append(new_series)
 
-        custom_item_series_name = new_series.id if new_series else item.item_series
+        custom_item_series_name = new_series.id if new_series else existing_series_names.id
 
         # ユーザーがシリーズ名を入力しているならデータ更新
         if updated_data.custom_series_name:
             # 再確認
             existing_series_names = next((s for s in user_specific_data.custom_series_names if s.series_id == item.item_series), None)
             # 名前更新
-            existing_series_names.custom_series_name = updated_data.custom_series_name
+            if existing_series_names:
+                existing_series_names.custom_series_name = updated_data.custom_series_name
 
         
         # ユーザーの custom_character_names 内に 該当するcharacter_id が存在するか確認
@@ -658,7 +652,7 @@ async def update_custom_item(item_id: str, updated_data: CustomItemUpdate):
             print("new_character", new_character)
             user_specific_data.custom_character_names.append(new_character)
 
-        custom_item_character_name = new_character.id if new_character else item.item_character
+        custom_item_character_name = new_character.id if new_character else existing_character_names.id
 
         # ユーザーがキャラクター名を入力しているならデータ更新
         if updated_data.custom_character_name:
@@ -672,6 +666,9 @@ async def update_custom_item(item_id: str, updated_data: CustomItemUpdate):
         print("existing_category_names", existing_category_names)
 
         new_category = None
+        custom_item_category_name = None
+
+        # アイテムにカテゴリーが設定されている場合
         if item.category:  
             if not existing_category_names:
                 # category_idからcategory_nameを取得する
@@ -685,18 +682,47 @@ async def update_custom_item(item_id: str, updated_data: CustomItemUpdate):
                     )
                 print("new_category", new_category)
                 user_specific_data.custom_category_names.append(new_category)
+
+                custom_item_category_name = new_category.id
+            else:
+                custom_item_category_name = existing_category_names._id
+
+
+        # アイテムにカテゴリーが設定されていない場合
         else:
             print("No category assigned to item. Skipping category handling.")
+            # ユーザがカテゴリー名を入力していたら新規作成
+            if updated_data.custom_category_name:
+                
+                try:
+                    # 新しいカテゴリーを作成
+                    new_category = await create_new_category(updated_data.custom_category_name)
+                    print(f"User-created new category: {new_category}")
 
-        custom_item_category_name = new_category.id if new_category else (item.category if item.category else None)
+                    # 新しい CustomCategoryName を作成して user_specific_data に追加
+                    new_custom_category = CustomCategoryName(
+                        _id=ObjectId(),
+                        category_id=new_category.id,
+                        custom_category_name=new_category.category_name
+                    )
+                    print(f"New CustomCategoryName: {new_custom_category}")
+                    user_specific_data.custom_category_names.append(new_custom_category)
+
+                    custom_item_category_name = new_custom_category.id
+
+                except Exception as e:
+                    print(f"Failed to create new category: {str(e)}")
+                    custom_item_category_name = None
+
 
         # ユーザーがカテゴリー名を入力しているならデータ更新
         if updated_data.custom_category_name:
             # 再確認
-            existing_category_names = next((cat for cat in user_specific_data.custom_category_names if cat.category_id == item.category), None)
+            updated_category = next((cat for cat in user_specific_data.custom_category_names if cat.category_id == item.category), None)
             # 名前更新
-            existing_category_names.custom_category_name = updated_data.custom_category_name           
-
+            if updated_category:
+                updated_category.custom_category_name = updated_data.custom_category_name
+                print(f"Updated custom category name: {updated_category}")
         
 
         # カスタムアイテムがあるか確認
