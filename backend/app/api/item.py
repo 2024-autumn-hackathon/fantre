@@ -585,7 +585,7 @@ class CustomItemUpdate(BaseModel):
 @router.patch("/api/items/{item_id}")
 async def update_custom_item(item_id: str, updated_data: CustomItemUpdate):
 
-    user_id = ObjectId("507f1f77bcf86cd799439011")
+    user_id = ObjectId("6742d7c5de99837fc6a65156")
     # user_id = Depends(get_current_user)
 
     try:
@@ -685,7 +685,7 @@ async def update_custom_item(item_id: str, updated_data: CustomItemUpdate):
 
                 custom_item_category_name = new_category.id
             else:
-                custom_item_category_name = existing_category_names._id
+                custom_item_category_name = existing_category_names.id
 
 
         # アイテムにカテゴリーが設定されていない場合
