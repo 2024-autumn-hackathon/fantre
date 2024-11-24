@@ -86,7 +86,7 @@ class Image(DocumentWithConfig):
     _id: ObjectId
     user_id: ObjectId
     item_id: Optional[ObjectId] = None
-    image_url: str
+    image_name: str
     created_at: Optional[datetime]
     is_background: bool = False
    

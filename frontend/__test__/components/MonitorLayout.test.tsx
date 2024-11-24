@@ -6,8 +6,8 @@ describe("Monitor Layout Snapshot", () => {
   const layoutView = render(
     <LayoutView
       headerContent="Header"
-      mainContent="Main"
-      navigationContent="Navi"
+      viewContent="Main"
+      naviContent="Navi"
       footerContent="Footer"
     />
   ).container

@@ -1,7 +1,7 @@
 # app/api/image.py
 import os, io, boto3, hashlib
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Annotated
 from fastapi import APIRouter, UploadFile, HTTPException
 from pydantic import BaseModel
@@ -9,13 +9,18 @@ from bson import ObjectId
 from PIL import Image
 import urllib.parse as urlparse
 from dotenv import load_dotenv
+from minio import Minio
 
 from app.models import Image as Img
 from app.database.db_item import exists_item_id
-from app.database.db_image import save_image, get_url_from_itemid
+from app.database.db_image import save_image, get_imagename_from_itemid, get_image_name, save_bg_image, exists_image_name, get_bg_image_name
 
 
 router = APIRouter()
+
+USER=ObjectId("507f1f77bcf86cd799439011")
+
+# ----------変数--------------------------------------
 
 # S3接続情報
 s3 = boto3.client(
@@ -27,11 +32,15 @@ s3 = boto3.client(
 
 bucket = "image"
 
+# 拡張子リスト
+valid_extensions = (".png", ".jpg", ".jpeg")
 
 # 画像サイズ上限
 MAX_WIDTH = 1080
 MAX_HEIGHT = 1080
 
+
+# ----------関数--------------------------------------
 
 # 画像トリミング
 async def crop_image(imagefile):
@@ -63,49 +72,109 @@ def save_image_to_S3(image_object, bucket, key):
 
     try:
         s3.put_object(Body = image_byte, Bucket = bucket, Key = key)
-        image_url = urlparse.urljoin("http://127.0.0.1:9000", key)
     except Exception as e:
         print(f"S3 Upload Error: {e}")
         raise HTTPException(
             status_code=500, detail="Image Upload Error"
         )
-    return image_url
 
 
+# ダウンロード用署名付きURL生成
+def generate_presigned_url(s3_client, bucketname, key, expires_in):
+    try:
+        presign_url = s3_client.generate_presigned_url(
+            ClientMethod='get_object',
+            Params={'Bucket': bucketname, 'Key': key},
+            ExpiresIn=expires_in
+        )
+    except Exception as e:
+        print(f"generate presigned url Error: {e}")
+        raise HTTPException(
+            status_code=500, detail="Image Download Error"
+        )
+    return presign_url
+
+
+# ----------API--------------------------------------
 
 # 画像登録
-@router.post('/api/images')
+@router.post('/api/image/{item_id}')
 async def upload_item_image(item_id: str, item_image: UploadFile): # user_id: str = Depends(user.get_current_user)
     # item_id存在確認
     if await exists_item_id(ObjectId(item_id)):
         raise HTTPException(status_code=422, detail="The item does not exist.")
     
-    # 名前と拡張子に分けて名前をハッシュ化
-    filename = item_image.filename
-    root, ext = os.path.splitext(filename)
-    hash_root = hashlib.md5(root.encode()).hexdigest() # 日本語除去のため拡張子以外をハッシュ化
-    hash_filename = hash_root + ext
-    
-    #拡張子チェック
-    if ext.lower() not in (".png", ".jpg", ".jpeg"):
+    root, ext = os.path.splitext(item_image.filename)
+    if ext.lower() not in valid_extensions: #拡張子チェック
         raise HTTPException(status_code=422, detail="Extension is not allowed.")
-    
-    # ファイル名重複チェック 
-    exists_url_list = await get_url_from_itemid(ObjectId(item_id))
-    exists_key_list = []
-    for url in exists_url_list:
-        exists_key = os.path.basename(url)
-        exists_key_list.append(exists_key)
+    hashed_root = hashlib.md5(root.encode()).hexdigest() # 日本語除去のため拡張子以外をハッシュ化
+    hashed_image_name = hashed_root + ext
 
-    if hash_filename in exists_key_list:
+    if await exists_image_name(hashed_image_name): # ファイル名重複チェック 
         raise HTTPException(status_code=422, detail="The filename already exist.")
-
+    
     # 画像加工して保存           
     cropped_image = await crop_image(item_image)
-    image_url = save_image_to_S3(cropped_image, bucket, hash_filename)
-    image_info = Img(user_id=ObjectId("6728433a3bdeccb817510476"), item_id=ObjectId(item_id), image_url = image_url, created_at=datetime.now(), is_background=False)
+    save_image_to_S3(cropped_image, bucket, hashed_image_name)
+    image_info = Img(user_id=USER, item_id=ObjectId(item_id), image_name = hashed_image_name, created_at=datetime.now(), is_background=False)
 
     await save_image(image_info)
     return image_info
+
+
+# 画像取得
+@router.get('/api/images/{item_id}')
+async def get_item_image_url(item_id: str): # user_id: str = Depends(user.get_current_user)
+    # item_id存在確認
+    if await exists_item_id(ObjectId(item_id)):
+        raise HTTPException(status_code=422, detail="The item does not exist.")
+    
+    # key取得
+    image_name = await get_image_name(USER, ObjectId(item_id))
+    if image_name is None:
+        raise HTTPException(status_code=206, detail="The item image does not exist.")
+    
+    # ダウンロード用署名付きURL生成
+    presigned_url = generate_presigned_url(s3, bucket, image_name, 30)
+    presigned_url = presigned_url.replace("s3-minio","localhost") # コンテナ間通信でなければ要らないはず
+    print(presigned_url) 
+    return presigned_url
+
+
+# 背景画像登録・更新
+@router.post('/api/user/bg-images')
+async def upload_bg_image(bg_image: UploadFile):
+
+    ext = os.path.splitext(bg_image.filename)[1]
+    if ext.lower() not in valid_extensions: #拡張子チェック
+        raise HTTPException(status_code=422, detail="Extension is not allowed.")
+    
+    str_user_id = str(USER)
+    hashed_root = hashlib.md5(str_user_id.encode()).hexdigest() # 日本語除去のため拡張子以外をハッシュ化
+    hashed_bg_image_name = hashed_root + ".jpg"
+  
+    # 画像加工して保存           
+    cropped_image = await crop_image(bg_image)
+    save_image_to_S3(cropped_image, bucket, hashed_bg_image_name)
+    bg_image_info = Img(user_id=USER, image_name = hashed_bg_image_name, created_at=datetime.now(), is_background=True)
+
+    await save_bg_image(bg_image_info)
+    return bg_image_info
+
+
+# 背景画像取得
+@router.get('/api/user/bg-images')
+async def get_bg_image_url():
+    # key取得
+    bg_image_name = await get_bg_image_name(USER)
+    if bg_image_name is None:
+        raise HTTPException(status_code=206, detail="The Background image does not exist.")
+    
+    # ダウンロード用署名付きURL生成
+    presigned_url = generate_presigned_url(s3, bucket, bg_image_name, 30)
+    presigned_url = presigned_url.replace("s3-minio","localhost") # コンテナ間通信でなければ要らないはず
+    print(presigned_url) 
+    return presigned_url
+
 
 # テスト用item_id : 6736b102d2bffe77f23d75db

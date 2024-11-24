@@ -1,27 +1,23 @@
 import concatClassName from "@/utils/concatClassName"
-import Link from "next/link"
 
-const LinkButton = ({
+const TextViewButton = ({
   children,
-  href,
   addClass = "",
 }: Readonly<{
-  children: React.ReactNode
-  href: string
+  children: string
   addClass?: string
 }>) => {
-  const baseClass = "block bg-my-yellow w-60 h-[40px] mx-auto rounded-3xl overflow-hidden"
+  const baseClass = "bg-my-green w-60 h-[40px] rounded-3xl mx-auto"
   const className = concatClassName(baseClass, addClass)
   return (
-    <Link
-      href={ href }
+    <div
       className={ className }
     >
       <p className="py-2">
         { children }
       </p>
-    </Link>
+    </div>
   )
 }
 
-export default LinkButton
+export default TextViewButton
