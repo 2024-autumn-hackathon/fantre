@@ -1,17 +1,16 @@
 import InputButton from "@/components/InputButton"
-import MonitorLayout_SSR from "@/components/MonitorLayout_SSR"
+import MonitorLayout from "@/components/MonitorLayout"
 import TopButton from "@/components/TopButton"
-import Checkbox from "@/components/Checkbox"
-import PagenationListContainer from "@/components/PagenationListContainer"
-import PagenationListItem from "@/components/PagenationListItem"
-import PagenationNavi from "@/components/PagenationNavi"
-import PagenationNaviContainer from "@/components/PagenationNaviContainer"
+import PagenationListContainer from "@/features/common/pagenation/components/PagenationListContainer"
+import PagenationListItem from "@/features/common/pagenation/components/PagenationListItem"
+import PagenationNavi from "@/features/common/pagenation/components/PagenationNavi"
+import PagenationNaviContainer from "@/features/common/pagenation/components/PagenationNaviContainer"
 import TextLinkButton from "@/components/TextLinkButton"
-import OnClickButton from "@/features/common/OnClickButton"
-
+import LinkButton from "@/components/LinkButton"
+import TextViewButton from "@/components/TextViewButton"
+import SubmitButton from "@/components/SubmitButton"
 
 const ListsPage = () => {
-
   const viewContent = (
     <>
       <PagenationListContainer>
@@ -30,13 +29,6 @@ const ListsPage = () => {
             list 3
           </TextLinkButton>
         </PagenationListItem>
-        <PagenationListItem>
-          <TextLinkButton href="/items/itemId1">
-            グッズ3だよ
-          </TextLinkButton>
-          <Checkbox/>
-          <OnClickButton addClass="h-4/5">画像を表示</OnClickButton>
-        </PagenationListItem>
       </PagenationListContainer>
       <PagenationNaviContainer>
         <PagenationNavi href="/lists?page=1">1</PagenationNavi>
@@ -46,18 +38,18 @@ const ListsPage = () => {
   )
 
   const naviContent = (
-    <div className="h-full">
-      <div>
-        <span>コレクションリスト一覧を表示中・・・</span>
+    <>
+      <div className="h-full">
+        <TextViewButton addClass="h-[60px]">コレクションリスト一覧を表示中...</TextViewButton>
+        <LinkButton href="/items" addClass="mt-4 w-60">グッズを探す</LinkButton>
+        <InputButton inputName="list_name" placeholder="コレクションリスト名"/>
+        <SubmitButton>コレクションリストを作成</SubmitButton>
       </div>
-      <InputButton defaultValue="グッズを探す"/>
-      <InputButton defaultValue="コレクションリスト名"/>
-      <InputButton defaultValue="コレクションリストを作成"/>
-    </div>
+    </>
   ) 
 
   return (
-    <MonitorLayout_SSR
+    <MonitorLayout
       headerContent={ <TopButton/> }
       viewContent={ viewContent }
       naviContent={ naviContent }

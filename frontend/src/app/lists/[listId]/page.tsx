@@ -1,13 +1,14 @@
-import MonitorLayout_SSR from "@/components/MonitorLayout_SSR"
+import MonitorLayout from "@/components/MonitorLayout"
 import TopButton from "@/components/TopButton"
 import Checkbox from "@/components/Checkbox"
-import PagenationListContainer from "@/components/PagenationListContainer"
-import PagenationListItem from "@/components/PagenationListItem"
-import PagenationNavi from "@/components/PagenationNavi"
-import PagenationNaviContainer from "@/components/PagenationNaviContainer"
+import PagenationListContainer from "@/features/common/pagenation/components/PagenationListContainer"
+import PagenationListItem from "@/features/common/pagenation/components/PagenationListItem"
+import PagenationNavi from "@/features/common/pagenation/components/PagenationNavi"
+import PagenationNaviContainer from "@/features/common/pagenation/components/PagenationNaviContainer"
 import TextLinkButton from "@/components/TextLinkButton"
 import OnClickButton from "@/features/common/OnClickButton"
-import Image from "next/image"
+import TextViewButton from "@/components/TextViewButton"
+import SubmitButton from "@/components/SubmitButton"
 
 const ListDetailPage = () => {
   const viewContent = (
@@ -33,35 +34,24 @@ const ListDetailPage = () => {
         </PagenationListItem>
       </PagenationListContainer>
       <PagenationNaviContainer>
-        <PagenationNavi href="/lists?page=1">1</PagenationNavi>
-        <PagenationNavi href="/lists?page=2">2</PagenationNavi>
+        <PagenationNavi href="/lists/1?page=1">1</PagenationNavi>
+        <PagenationNavi href="/lists/1?page=2">2</PagenationNavi>
       </PagenationNaviContainer>
-
-      {/* stateの分岐で画像表示と切り替え */}
-      <Image
-        fill
-        src="/torio.png"
-        alt="背景として表示する画像です"
-        style={{objectFit:"contain"}}
-      />
     </>
   )
 
   const naviContent = (
-    <div className="h-full">
-      <div>
-        <span>コレクション一覧を表示中・・・</span>
+    <>
+      <div className="h-full">
+        <TextViewButton >コレクション一覧を表示中...</TextViewButton>
+        <SubmitButton>チェック項目をリストから削除</SubmitButton>
+        <OnClickButton>画像ビューに切り替え</OnClickButton>
       </div>
-      <OnClickButton addClass="h-4/5">チェック項目をリストから削除</OnClickButton>
-
-      {/* stateの分岐で文言の表示を切り替え */}
-      <OnClickButton addClass="h-4/5">画像ビューに切り替え</OnClickButton>
-      <OnClickButton addClass="h-4/5">テキストビューに切り替え</OnClickButton>
-    </div>
+    </>
   ) 
 
   return (
-    <MonitorLayout_SSR
+    <MonitorLayout
       headerContent={ <TopButton/> }
       viewContent={ viewContent }
       naviContent={ naviContent }
