@@ -235,14 +235,24 @@ async def get_item_details(item_id: str):
         # 独自名を取得
         custom_series_name = await get_custom_series_name(user_specific_data, item.item_series) if user_specific_data else None
         custom_character_name = await get_custom_character_name(user_specific_data, item.item_character) if user_specific_data else None
-        custom_category_name = await get_custom_category_name(user_specific_data, item.category) if user_specific_data else None
+
+        # カスタムアイテムの独自カテゴリを取得
+        custom_category_name = None
+        if custom_item and custom_item.custom_item_category_name:
+            custom_category = next(
+                (cat for cat in user_specific_data.custom_category_names if cat.id == custom_item.custom_item_category_name),
+                None
+            )
+            custom_category_name = custom_category.custom_category_name if custom_category else None
+
+        # custom_category_name = await get_custom_category_name(user_specific_data, item.category) if user_specific_data else None
 
         if custom_item:
             response = {
                 "item_name": custom_item.custom_item_name,
                 "series_name": custom_series_name,
                 "character_name": custom_character_name,
-                "category_name": custom_category_name,
+                "category_name": custom_category_name if custom_category_name else category_name,
                 "tags": custom_item.custom_item_tags,
                 "jan_code": item.jan_code,
                 "release_date": item.release_date,
