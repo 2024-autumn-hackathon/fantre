@@ -1,3 +1,8 @@
+/**
+ * 
+ * @param children
+ * @returns li 量産想定
+ */
 const PagenationListItem = ({
   children
 }: Readonly<{
