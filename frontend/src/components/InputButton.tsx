@@ -6,7 +6,7 @@ const InputButton = ({
   defaultValue = "",
   inputName,
   type,
-  pattern = "*",
+  pattern,
 }: Readonly<{
   addClass?: string
   placeholder?: string
@@ -24,7 +24,7 @@ const InputButton = ({
       name={ inputName }
       type={ type }
       defaultValue={ defaultValue }
-      pattern={ pattern }
+      pattern={ pattern || undefined }
       maxLength={30}
     />
   )
