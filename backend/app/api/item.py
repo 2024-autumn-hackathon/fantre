@@ -1,17 +1,18 @@
 # backend/app/api/item.py
 from typing import List, Optional
 from app.models import Item, UserSpecificData
+from app.api.user import get_current_user
 from app.database.db_item import create_item, existing_item_check, get_item, get_all_items
 from app.database.db_content_catalog import character_name_partial_match, get_category_name, get_character_name, get_series_name, series_name_partial_match
 from pydantic import BaseModel, field_validator, ValidationError, Field, StringConstraints
 from datetime import date, timedelta
 from bson import ObjectId
-from fastapi import APIRouter, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from beanie import Indexed
 import re, calendar
 from datetime import datetime
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(get_current_user)])
 
 class ItemRequest(BaseModel):    
     item_images: Optional[List[str]] = Field(default_factory=list) # image_idのリスト
