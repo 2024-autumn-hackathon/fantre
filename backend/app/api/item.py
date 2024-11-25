@@ -458,30 +458,14 @@ async def get_filtered_items(
                 custom_item.item_id for custom_item in user_specific_data.custom_items
                 if custom_item.custom_item_category_name in matching_custom_category_ids
             ]
-                print(f"Custom items matching category: {custom_category_item_ids}")
-            
-                
-
-            # 結果を統合
-            
+                print(f"Custom items matching category: {custom_category_item_ids}")          
+               
+            # 結果を統合          
 
             all_item_ids = set(original_category_item_ids + custom_category_item_ids)
-            print(f"Original item IDs: {original_category_item_ids}")
-            print(f"Custom item IDs: {custom_category_item_ids}")
-            print("all_item_ids", all_item_ids)
             if all_item_ids:
                 query_conditions.append({"_id": {"$in": list(all_item_ids)}})
-                print(f"Query conditions: {query_conditions}")      
-   
-
-
-
-
-
-
-
-
-
+                print(f"Query conditions: {query_conditions}")
 
         if tags_list:
             # 条件を集めるためのリストを初期化
@@ -599,19 +583,7 @@ async def get_filtered_items(
         total_items_count = len(sorted_items)
         all_pages = (total_items_count + items_per_page - 1) // items_per_page
 
-
-
-        response = {
-                # "items": [
-                #         {
-                #             "id": str(sorted_item.id), 
-                #             "item_name": sorted_item.item_name
-                #         }
-                #         for sorted_item in pagenated_items
-                #         ],                    
-                #         "all_pages": all_pages
-                #     }        
-        
+        response = {        
                 "items": [
                 {
                     "id": str(sorted_item.id),
@@ -627,10 +599,7 @@ async def get_filtered_items(
                 for sorted_item in pagenated_items
                 ],
                 "all_pages": all_pages,
-                }
-        
-        
-        
+                }       
         
         return response
 
@@ -657,8 +626,7 @@ class CustomItemUpdate(BaseModel):
     custom_item_tags: Optional[List[str]] = None  
     custom_item_retailers: Optional[List[str]] = None
     # exchange_status: Optional[bool] = None
-    # own_status: Optional[bool] = False
-    
+    # own_status: Optional[bool] = False    
     
     @validator('custom_item_name', 'custom_series_name', 'custom_character_name', 'custom_category_name' , pre=True)
     def check_not_empty_or_whitespace(cls, value):
@@ -719,7 +687,6 @@ async def update_custom_item(
             # 名前更新
             if existing_series_names:
                 existing_series_names.custom_series_name = updated_data.custom_series_name
-
         
         # ユーザーの custom_character_names 内に 該当するcharacter_id が存在するか確認
         existing_character_names = next((c for c in user_specific_data.custom_character_names if c.character_id == item.item_character), None)
@@ -745,8 +712,7 @@ async def update_custom_item(
             # 再確認
             existing_character_names = next((c for c in user_specific_data.custom_character_names if c.character_id == item.item_character), None)
             # 名前更新
-            existing_character_names.custom_character_name = updated_data.custom_character_name   
-
+            existing_character_names.custom_character_name = updated_data.custom_character_name 
 
         # ユーザーの custom_category_names 内に 該当する category_id が存在するか確認
         existing_category_names = next(
@@ -757,7 +723,6 @@ async def update_custom_item(
         if existing_category_names:
             existing_category_names.custom_category_name = updated_data.custom_category_name
             print(f"Custom category name updated: {existing_category_names.custom_category_name}")
-
 
         new_category = None
         custom_item_category_name = None
@@ -793,7 +758,6 @@ async def update_custom_item(
                     print(f"Updating existing category name from {existing_category_names.custom_category_name} to {updated_data.custom_category_name}")
                     existing_category_names.custom_category_name = updated_data.custom_category_name
 
-
         # アイテムにカテゴリーが設定されていない場合
         else:
             print(f"Updated data category name: {updated_data.custom_category_name}")
@@ -817,8 +781,7 @@ async def update_custom_item(
                         existing_cutom_category_names = next(
                             (cat for cat in user_specific_data.custom_category_names if cat.id == custom_item.custom_item_category_name),
                             None
-                        )
-                        
+                        )                        
        
                         if existing_cutom_category_names:
                             # 名前を上書き
@@ -869,7 +832,6 @@ async def update_custom_item(
 
                     # custom_item に新しいカテゴリIDをリンク
                     custom_item_category_name = new_custom_category.id
-
 
         # カスタムアイテムがあるか確認
         custom_item = next((ci for ci in user_specific_data.custom_items if ci.item_id == ObjectId(item_id)), None)
