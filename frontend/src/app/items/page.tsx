@@ -14,7 +14,6 @@ import ItemsSearchForm from "@/features/routes/items/components/ItemsSearchForm"
 import SelectCollectionListButton from "@/features/routes/items/components/SelectCollectionListButton"
 import getItemsByQuery from "@/features/routes/items/getItemsByQuery"
 import { useEffect, useState } from "react"
-import ItemsTest from "./ItemsTest"
 
 
 const ItemsPage = () => {
@@ -37,7 +36,6 @@ const ItemsPage = () => {
       setItemList(response.items[0]?.id === "" ? [] : response.items)
     }
     fetchData()
-    console.log(searchInput, pageState)
   }, [pageState, searchInput])
 
   const viewContent = () => {
@@ -87,7 +85,7 @@ const ItemsPage = () => {
       headerContent={ <TopButton/> }
       viewContent={ viewContent() }
       naviContent={ naviContent() }
-      footerContent= { <ItemsTest/> }
+      footerContent
     />
   )
 }

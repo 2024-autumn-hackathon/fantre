@@ -23,6 +23,5 @@ export const getRequest = async (
   //   console.error("接続エラー:", e)
   // })
   // 要ネットワークエラー処理と、fetchの返り値の考慮
-  console.log(response)
   return response === undefined ? Response.json({}) : response.json()
 }
