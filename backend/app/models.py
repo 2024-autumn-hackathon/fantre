@@ -44,7 +44,7 @@ class Item(DocumentWithConfig):
     jan_code: Optional[str] = Indexed(unique=True), None
     release_date: Optional[date] = None
     retailers: Optional[List[str]] = Field(default_factory=list)
-    user_data: Optional[List[ObjectId]] = Field(default_factory=list) # user_specific_data_id
+    # user_data: Optional[List[ObjectId]] = Field(default_factory=list) # user_specific_data_id
 
     class Settings:
         name = "items" 
@@ -114,11 +114,11 @@ class CustomItem(DocumentWithConfig):
     custom_item_character_name: Optional[ObjectId] = None # CustomCategoryName_id
     custom_item_category_name: Optional[ObjectId] = None # CustomCharacterName_id
     custom_item_tags: Optional[List[str]] = Field(default_factory=list) #tag
-    custom_item_retailer: Optional[str] = None
+    custom_item_retailers: Optional[List[str]] = Field(default_factory=list)
     custom_item_notes: Optional[str] = None
-    created_at: datetime
+    # created_at: datetime
     exchange_status: Optional[bool] = None
-    own_status: Optional[bool] = None
+    own_status: Optional[bool] = False
 
 class CustomCategoryName(DocumentWithConfig):
     _id: ObjectId

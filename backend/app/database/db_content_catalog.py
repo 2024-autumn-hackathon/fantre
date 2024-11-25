@@ -35,6 +35,15 @@ async def get_content_catalog():
     finally:
         await db.disconnect()
 
+# カテゴリー重複チェック
+async def existing_catecogy_check(category_name) -> bool:
+    try:
+        existing_category = await ContentCatalog.find_one({"categories.category_name": category_name.strip()})
+        return existing_category is not None
+    except Exception as e:
+        print(f"Error checking for duplicate category: {str(e)}")
+        raise RuntimeError(f"Error while checking category duplication: {str(e)}")     
+
 # 新しいグッズジャンル(カテゴリー)を作成する 
 async def create_category(category_name: str):
     try:
@@ -285,3 +294,20 @@ async def character_name_partial_match(character_name: str):
             matched_character_ids.append(character.id)
 
     return matched_character_ids
+
+
+# 新しいカテゴリーを作成する（内部処理用）
+async def create_new_category(category_name: str) -> Category:
+
+    if not category_name or len(category_name.strip()) == 0:
+        raise ValueError("Category name is required.")
+
+    try:
+        if await existing_catecogy_check(category_name):
+            raise ValueError(f"Category '{category_name}' already exists.")
+        
+        new_category = await create_category(category_name)
+        return new_category
+    except Exception as e:
+        print(f"Error during category creation: {str(e)}")
+        raise RuntimeError(f"Failed to create category: {str(e)}")

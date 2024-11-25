@@ -20,6 +20,8 @@ async def create_category_endpoint(category_name: str):
             detail="Category name is required."
             )                                    
         new_category = await create_category(category_name)
+
+        
         return {
             "category_id": str(new_category.id),
             "category_name": str(new_category.category_name)
