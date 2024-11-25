@@ -324,7 +324,7 @@ async def get_filtered_items(
     retailers: str = Query(None),
     user_id: str = Depends(get_current_user)
 ):	
-    
+    user_id=ObjectId(user_id)    
     user_specific_data = await get_user_specific_data(user_id)
 
     # 空白はNoneに変換
@@ -428,8 +428,61 @@ async def get_filtered_items(
                 query_conditions.append({"_id": {"$in": list(all_item_ids)}})
 
         if category_id:
-            query_conditions.append({"category": ObjectId(category_id)})
+            # query_conditions.append({"category": ObjectId(category_id)})
+            category_id = ObjectId(category_id)
+
+            # 元のアイテムに指定された category_id があるか検索
+            original_category_item_ids = []
+            matching_items = await Item.find({"category": category_id}).to_list()
+            print(f"Matching original items: {matching_items}") 
+            if matching_items:
+                original_category_item_ids = [item.id for item in matching_items]
+
+                print("original_category_item_ids", original_category_item_ids)
+
+            # CustomCategoryName内からcategory_idに一致する_idを収集
+            matching_custom_category_ids = []
+            if user_specific_data and user_specific_data.custom_category_names:
+                print(f"user_specific_data.custom_items: {user_specific_data.custom_items}")
+
+                matching_custom_category_ids = [
+                custom_category.id for custom_category in user_specific_data.custom_category_names
+                if custom_category.category_id == category_id
+            ]
+                print(f"Matching custom category IDs for category_id {category_id}: {matching_custom_category_ids}")
+
+            # カスタムアイテム内でcustom_item_category_name が一致するアイテムIDを収集
+            custom_category_item_ids = []
+            if user_specific_data and user_specific_data.custom_items:
+                custom_category_item_ids = [
+                custom_item.item_id for custom_item in user_specific_data.custom_items
+                if custom_item.custom_item_category_name in matching_custom_category_ids
+            ]
+                print(f"Custom items matching category: {custom_category_item_ids}")
+            
+                
+
+            # 結果を統合
+            
+
+            all_item_ids = set(original_category_item_ids + custom_category_item_ids)
+            print(f"Original item IDs: {original_category_item_ids}")
+            print(f"Custom item IDs: {custom_category_item_ids}")
+            print("all_item_ids", all_item_ids)
+            if all_item_ids:
+                query_conditions.append({"_id": {"$in": list(all_item_ids)}})
+                print(f"Query conditions: {query_conditions}")      
    
+
+
+
+
+
+
+
+
+
+
         if tags_list:
             # 条件を集めるためのリストを初期化
             original_tag_conditions = []
@@ -470,7 +523,7 @@ async def get_filtered_items(
                     ]
                     custom_item_ids.extend(matching_custom_items)
 
-            all_item_ids = original_item_ids + custom_item_ids
+            all_item_ids = set(original_item_ids + custom_item_ids)
             if all_item_ids:
                 query_conditions.append({"_id": {"$in": all_item_ids}})
 
@@ -513,14 +566,18 @@ async def get_filtered_items(
                             if custom_item.item_id:
                                 custom_item_ids.append(custom_item.item_id)
 
-            all_item_ids = original_item_ids + custom_item_ids
+            all_item_ids = set(original_item_ids + custom_item_ids)
             if all_item_ids:
                 query_conditions.append({"_id": {"$in": all_item_ids}})
 
         if not query_conditions:
+            print("Query conditions are empty.")
             return {
                 "message": "No items found matching the queries."
-            }         
+            }
+        else:
+            print(f"Query conditions: {query_conditions}")
+                                
         # 条件をANDで結合
         query = {"$and": query_conditions}  
         # 条件にマッチするアイテム取得
