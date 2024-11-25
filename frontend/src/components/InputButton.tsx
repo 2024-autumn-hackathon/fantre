@@ -2,16 +2,18 @@ import concatClassName from "@/utils/concatClassName"
 
 const InputButton = ({
   addClass = "",
-  // handleChange,
   placeholder = "",
-  // value = "",
   defaultValue = "",
+  inputName,
+  type,
+  pattern,
 }: Readonly<{
   addClass?: string
-  // handleChange?: () => void
   placeholder?: string
-  // value?: string
   defaultValue?: string
+  inputName: string
+  type: string
+  pattern?: string
 }>) => {
   const baseClass = "block bg-my-light-green w-60 h-[40px] rounded-3xl text-center mx-auto mt-4 py-2"
   const className = concatClassName(baseClass, addClass)
@@ -19,11 +21,11 @@ const InputButton = ({
     <input
       className={ className }
       placeholder={ placeholder }
-      name=""
-      type="text"
-      // value={ value }
-      // onChange={ handleChange }
+      name={ inputName }
+      type={ type }
       defaultValue={ defaultValue }
+      pattern={ pattern || undefined }
+      maxLength={30}
     />
   )
 }
