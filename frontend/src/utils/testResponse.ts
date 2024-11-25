@@ -1,5 +1,5 @@
-const testResponse = (searchParams: URLSearchParams) => {
-  const testIndex = test(searchParams)
+const testResponse = (searchInput: URLSearchParams, currentPage: number) => {
+  const testIndex = test(searchInput, currentPage)
   return testData[testIndex]
 }
 
@@ -15,16 +15,16 @@ const testData = [
   {items:[{id: "id61", item_name: "item61"},{id: "id62", item_name: "item62"},{id: "id63", item_name: "item63"},{id: "id64", item_name: "item64"},{id: "id65", item_name: "item65"},{id: "id66", item_name: "item66"},{id: "id67", item_name: "item67"},],all_pages: 7},
 ]
 
-function test(searchParams: URLSearchParams) {
-  const paramsToString = `${searchParams}`
+function test(searchParams: URLSearchParams, currentPage: number) {
+  const paramsToString = `currentPage=${ currentPage }&${ searchParams }`
   const paramsList = [
-    "series_name=Test+Series&currentPage=1&maxPage=7",
-    "series_name=Test+Series&currentPage=2&maxPage=7",
-    "series_name=Test+Series&currentPage=3&maxPage=7",
-    "series_name=Test+Series&currentPage=4&maxPage=7",
-    "series_name=Test+Series&currentPage=5&maxPage=7",
-    "series_name=Test+Series&currentPage=6&maxPage=7",
-    "series_name=Test+Series&currentPage=7&maxPage=7",
+    "currentPage=1&series_name=Test+Series",
+    "currentPage=2&series_name=Test+Series",
+    "currentPage=3&series_name=Test+Series",
+    "currentPage=4&series_name=Test+Series",
+    "currentPage=5&series_name=Test+Series",
+    "currentPage=6&series_name=Test+Series",
+    "currentPage=7&series_name=Test+Series",
   ]
   return paramsList.indexOf(paramsToString)
 }

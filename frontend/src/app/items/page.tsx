@@ -23,9 +23,9 @@ const ItemsPage = () => {
     item_name: string
   }[]>([])
   const [searchInput, setSearchInput] = useState<URLSearchParams>(new URLSearchParams())
-  const [pageState, setPageState] = useState<PageState>({currentPage: 1, maxPage: 99})
+  const [pageState, setPageState] = useState<PageState>({currentPage: 1, maxPage: 1})
 
-  // searchInputかpageStateの変更を検知するとitemListの取得を行う
+  // searchInputかpageStateの変更を検知するとitemListの再取得を行う
   useEffect(() => {
     const fetchData = async () => {
       const response = await getItemsByQuery(searchInput, pageState)

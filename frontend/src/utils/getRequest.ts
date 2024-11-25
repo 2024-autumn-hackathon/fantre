@@ -1,15 +1,18 @@
 /**
  * 
  * @param endpoint /から続く、先頭と最後の/は不要
- * @param searchParams
+ * @param searchInput
  */
 export const getRequest = async (
   endpoint: string,
-  searchParams: URLSearchParams
+  searchInput: URLSearchParams,
+  currentPage: number,
 ) => {
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
   const baseURL = `${ apiBaseUrl }${ endpoint }`
-  const requestUrl = `${ baseURL }?${ searchParams }`
+  const newSearchInput = new URLSearchParams(searchInput)
+  newSearchInput.append("currentPage", currentPage.toString())
+  const requestUrl = `${ baseURL }?${ searchInput }`
   const response = await fetch(requestUrl)
   // .then(res => {
   //   if (!res.ok) {
