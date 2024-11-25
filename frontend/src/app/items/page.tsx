@@ -8,11 +8,11 @@ import TopButton from "@/components/TopButton"
 import OnClickButton from "@/features/common/OnClickButton"
 import PagenationListContainer from "@/features/common/pagenation/components/PagenationListContainer"
 import PagenationNaviContainer from "@/features/common/pagenation/components/PagenationNaviContainer"
+import PageState from "@/features/common/pagenation/PageState"
 import ItemList from "@/features/routes/items/components/ItemList"
 import ItemsSearchForm from "@/features/routes/items/components/ItemsSearchForm"
 import SelectCollectionListButton from "@/features/routes/items/components/SelectCollectionListButton"
-import getItemsByQuery from "@/utils/getItemsByQuery"
-import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import getItemsByQuery from "@/features/routes/items/getItemsByQuery"
 import { useEffect, useState } from "react"
 import ItemsTest from "./ItemsTest"
 
@@ -22,30 +22,23 @@ const ItemsPage = () => {
     id: string,
     item_name: string
   }[]>([])
-  const searchParams = useSearchParams()
-  const [searchInput, setSearchInput] = useState<URLSearchParams>()
-  const router = useRouter()
-  const pathName = usePathname()
+  const [searchInput, setSearchInput] = useState<URLSearchParams>(new URLSearchParams())
+  const [pageState, setPageState] = useState<PageState>({currentPage: 1, maxPage: 99})
 
-  // searchInputの更新を検知するとURLをsearchInputのクエリで書き換える
-  useEffect(() => {
-    router.push(`${pathName}?${searchInput ? searchInput : ""}`)
-  }, [searchInput])
-
-  // URLのクエリの変更を検知するとsearchParamsをもとにitemListの取得を行う
+  // searchInputかpageStateの変更を検知するとitemListの取得を行う
   useEffect(() => {
     const fetchData = async () => {
-      const response = await getItemsByQuery(searchParams)
-      const newSearchParams = new URLSearchParams(searchParams)
-      const currentPage = searchParams.get("currentPage")
-      const maxPage = response.maxPage
-      if (!currentPage || Number(currentPage) > maxPage) newSearchParams.set("currentPage", "1")
-      if (maxPage) newSearchParams.set("maxPage", maxPage.toString())
-      setSearchInput(newSearchParams)
+      const response = await getItemsByQuery(searchInput, pageState)
+      if (response.maxPage && response.maxPage !== pageState.maxPage) {
+        const newPageState: PageState = {currentPage: pageState.currentPage, maxPage: pageState.maxPage}
+        newPageState.maxPage = response.maxPage
+        setPageState(newPageState)
+      }
       setItemList(response.items[0]?.id === "" ? [] : response.items)
     }
     fetchData()
-  }, [searchParams])
+    console.log(searchInput, pageState)
+  }, [pageState, searchInput])
 
   const viewContent = () => {
     return (
@@ -56,8 +49,8 @@ const ItemsPage = () => {
           />
         </PagenationListContainer>
         <PagenationNaviContainer
-          endpoint="/items"
-          searchParams={ searchParams }
+          pageState={ pageState }
+          handleSetPageState={ setPageState }
         />
       </>
     )

@@ -1,12 +1,12 @@
 
-import updateSearchInput from "@/utils/updateSearchInput"
+import updateSearchInput from "@/features/routes/items/updateSearchInput"
 
 const ItemsSearchForm = ({
   children,
   handleSetSearchInput,
 }: Readonly<{
   children: React.ReactNode
-  handleSetSearchInput: React.Dispatch<React.SetStateAction<URLSearchParams | undefined>>
+  handleSetSearchInput: React.Dispatch<React.SetStateAction<URLSearchParams>>
 }>) => {
   return (
     <form

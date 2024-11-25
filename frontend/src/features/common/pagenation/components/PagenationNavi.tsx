@@ -1,25 +1,34 @@
 import concatClassName from "@/utils/concatClassName"
-import Link from "next/link"
+import PageState from "../PageState"
+import updatePageState from "../updatePageState"
 
 const PagenationNavi = ({
   children,
   addClass = "",
-  href
+  pageState,
+  handleSetPageState,
+  newCurrentPage,
+  liClass,
 }: Readonly<{
   children: string
   addClass?: string
-  href: string
+  pageState: PageState
+  handleSetPageState: React.Dispatch<React.SetStateAction<PageState>>
+  newCurrentPage: number
+  liClass: string
 }>) => {
   const baseClass = "block h-6 bg-my-yellow rounded-full text-sm"
   const className = concatClassName(baseClass, addClass)
   return (
-    <li>
-      <Link
-        href={ href }
+    <li className={ liClass }>
+      <button
+        onClick={ () => updatePageState(pageState, handleSetPageState, newCurrentPage) }
         className={ className }
       >
-        { children }
-      </Link>
+        <p>
+          { children }
+        </p>
+      </button>
     </li>
   )
 }
