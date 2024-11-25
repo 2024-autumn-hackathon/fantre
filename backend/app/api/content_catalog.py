@@ -1,12 +1,13 @@
 # backend/app/api/content_catalog.py
 from typing import Optional
+from app.api.user import get_current_user
 from app.database.db_content_catalog import create_character, create_series, create_series_character, get_all_categories, get_all_characters, get_all_series, create_category, get_series_characters
 from pydantic import BaseModel, field_validator,  model_validator
 from bson import ObjectId
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(get_current_user)])
 
 # グッズジャンル（カテゴリー）登録
 @router.post("/api/categories")
@@ -19,6 +20,8 @@ async def create_category_endpoint(category_name: str):
             detail="Category name is required."
             )                                    
         new_category = await create_category(category_name)
+
+        
         return {
             "category_id": str(new_category.id),
             "category_name": str(new_category.category_name)

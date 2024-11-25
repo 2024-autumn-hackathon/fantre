@@ -52,7 +52,7 @@ async def init_schema(database):
                     custom_item_character_name=ObjectId("6739c48fc49c15be3d1dccb8"),
                     custom_item_category_name=ObjectId("6739c48fc49c15be3d1dccb6"),
                     custom_item_tags=["Mytag1", "Mytag2"],
-                    custom_item_retailer="My Test Local Store",
+                    custom_item_retailers=["My Test Local Store"],
                     custom_item_notes="This is a personal note.",
                     created_at=datetime.now(),
                     exchange_status=False,
@@ -61,21 +61,21 @@ async def init_schema(database):
             ],
             custom_category_names=[
                 CustomCategoryName(
-                    _id=ObjectId(),
+                    _id=ObjectId("6739c48fc49c15be3d1dccb6"),
                     category_id=ObjectId("6736ae992ca618e77d720a9f"),
                     custom_category_name="My Custom Category"
                 )
             ],
             custom_series_names=[
                 CustomSeriesName(
-                    _id=ObjectId(),
+                    _id=ObjectId("6739c48fc49c15be3d1dccb7"),
                     series_id=ObjectId("6731371a31c29bb05c8a1275"),
                     custom_series_name="My Custom Series"
                 )
             ],
             custom_character_names=[
                 CustomCharacterName(
-                    _id=ObjectId(),
+                    _id=ObjectId("6739c48fc49c15be3d1dccb8"),
                     character_id=ObjectId("6731371a31c29bb05c8a1276"),
                     custom_character_name="My Custom Character"
                 )
@@ -114,8 +114,9 @@ async def init_schema(database):
             category=ObjectId("6736ae992ca618e77d720a9f"),
             tags=["#test1", "#test2"],
             jan_code="4991567672501",
+            release_date="2024-10-10",
             retailers=["Test Shop"],
-            user_data=[ObjectId("6736a36adf3ac469905b2afc")]
+            # user_data=[ObjectId("6736a36adf3ac469905b2afc")]
         )
         await test_item.insert()  # データベースにグッズを追加
 
@@ -145,8 +146,8 @@ async def init_schema(database):
             series_characters=[
                 SeriesCharacter(
                    _id=ObjectId(), 
-                   series_id=ObjectId("64f93b28dcadf9d53f99ef44"),
-                   character_id=ObjectId("64f93b28dcadf9d53f99ef45") 
+                   series_id=ObjectId("6731371a31c29bb05c8a1275"),
+                   character_id=ObjectId("6731371a31c29bb05c8a1276") 
                 )
             ]
         )
@@ -155,13 +156,13 @@ async def init_schema(database):
         print("test_content_catalog already exists.")   
    
     # 画像を挿入
-    test_image = await Image.find_one({"image_url": "https://example.com/images/image1.jpg"}) 
+    test_image = await Image.find_one({"image_name": "test.jpg"}) 
 
     if not test_image:
         test_image = Image(
             user_id=ObjectId("6728433a3bdeccb817510476"), 
             item_id=ObjectId("61f5f484a2d21a1d4cf1b0e6"), 
-            image_url="https://example.com/images/image1.jpg", 
+            image_name="test.jpg", 
             created_at=datetime.now(), 
             is_background=False 
         )

@@ -4,7 +4,7 @@ from jwt.exceptions import InvalidTokenError
 from datetime import datetime, timedelta, timezone
 from typing import Annotated, Union
 from fastapi import APIRouter, Depends, Form, HTTPException
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel, Field, field_validator, ValidationInfo, EmailStr, SecretStr
 from passlib.context import CryptContext
 from bson import ObjectId
@@ -63,10 +63,12 @@ def verify_password(plain_password, hashed_password):
 # 入力された情報と一致するユーザーを取得
 async def authenticate_user(email: EmailStr, password: str):
     user = await get_user(email)
+    print(type(user.password))
+
     if not user:
-        raise HTTPException(status_code=401)
-    if not verify_password(password.get_secret_value(), user.password):
-        raise HTTPException(status_code=401)
+        raise HTTPException(status_code=401, detail="The user is not exit.")
+    if not verify_password(password, user.password):
+        raise HTTPException(status_code=401, detail="password error.")
     return user
 
 
@@ -115,21 +117,22 @@ async def signup(signup_request: Annotated[SignupFormData, Form()]):
 
 # ログイン
 @router.post("/login")
-async def login(login_request: Annotated[LoginFormData, Form()]) -> Token:
-    login_user = await authenticate_user(login_request.email, login_request.password)
+async def login(login_request: Annotated[OAuth2PasswordRequestForm, Depends()]) -> Token:
+    print("oguinpasswordtype:",type(login_request.password))
+    print(login_request.password)
+    login_user = await authenticate_user(login_request.username, login_request.password) # OAuth2PasswordRequestFormを使う場合usernameとpasswordという名前を使う必要がある
     if not login_user:
         raise HTTPException(
             status_code=401,
-            detail="Incorrect username or password",
+            detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
     access_token = create_access_token(login_user.id)
     return Token(access_token=access_token, token_type="bearer")
 
-
 # tokenからuser_idを取るテスト用
 # テスト時のcurlは以下の<token>を生成したtokenに置き換えたもの
 # curl -X GET 'http://localhost:8000/token-test' -H 'Content-Type:application/json;charset=utf-8' -H 'Authorization: Bearer <taken>' | jq .
 @router.get("/token-test") 
-async def token_test(current_user_id: CurrentUser = Depends(get_current_user)):
-    return current_user_id
+async def token_test(user_id: str = Depends(get_current_user)):
+    return user_id
