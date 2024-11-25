@@ -1,6 +1,7 @@
 # backend/app/api/item.py
 from typing import List, Optional
 from app.models import CustomCategoryName, CustomCharacterName, CustomItem, CustomSeriesName, Item, UserSpecificData
+from app.api.user import get_current_user
 from app.database.db_item import create_item, existing_item_check, get_item, get_all_items
 from app.database.db_content_catalog import character_name_partial_match, create_new_category, get_category_name, get_character_name, get_series_name, series_name_partial_match
 from app.database.db_user_specific import create_custom_item, create_user_specific_data, get_user_specific_data
@@ -12,7 +13,7 @@ from beanie import Indexed
 import re, calendar
 from datetime import datetime
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(get_current_user)])
 
 class ItemRequest(BaseModel):    
     item_images: Optional[List[str]] = Field(default_factory=list) # image_idのリスト
