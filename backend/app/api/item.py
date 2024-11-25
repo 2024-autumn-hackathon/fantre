@@ -599,16 +599,39 @@ async def get_filtered_items(
         total_items_count = len(sorted_items)
         all_pages = (total_items_count + items_per_page - 1) // items_per_page
 
+
+
         response = {
+                # "items": [
+                #         {
+                #             "id": str(sorted_item.id), 
+                #             "item_name": sorted_item.item_name
+                #         }
+                #         for sorted_item in pagenated_items
+                #         ],                    
+                #         "all_pages": all_pages
+                #     }        
+        
                 "items": [
-                        {
-                            "id": str(sorted_item.id), 
-                            "item_name": sorted_item.item_name
-                        }
-                        for sorted_item in pagenated_items
-                        ],                    
-                        "all_pages": all_pages
-                    }        
+                {
+                    "id": str(sorted_item.id),
+                    "item_name": next(
+                        (
+                            ci.custom_item_name
+                            for ci in user_specific_data.custom_items
+                            if ci.item_id == sorted_item.id
+                        ),
+                        sorted_item.item_name  # カスタムアイテムがない場合は元の名前を使用
+                    ),
+                }
+                for sorted_item in pagenated_items
+                ],
+                "all_pages": all_pages,
+                }
+        
+        
+        
+        
         return response
 
     except ValidationError as e:
