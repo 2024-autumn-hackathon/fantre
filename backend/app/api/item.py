@@ -52,10 +52,7 @@ class ItemRequest(BaseModel):
     
 # グッズ（アイテム）登録
 @router.post("/api/items")
-async def create_item_endpoint(item_request: ItemRequest):
-
-    user_id = ObjectId("507f1f77bcf86cd799439011")
-    # user_id = Depends(get_current_user)
+async def create_item_endpoint(item_request: ItemRequest, user_id: str = Depends(get_current_user)):
 
     try:
         if not item_request.item_series:
@@ -220,11 +217,8 @@ async def get_custom_category_name(user_specific_data, category_id: ObjectId):
 
 # グッズ詳細取得
 @router.get("/api/items/{item_id}")
-async def get_item_details(item_id: str):
-
-    user_id = ObjectId("507f1f77bcf86cd799439011") 
-    # user_id = Depends(get_current_user)
-
+async def get_item_details(item_id: str, user_id: str = Depends(get_current_user)):
+    user_id=ObjectId(user_id)
     try:
         item = await get_item(ObjectId(item_id))
         user_specific_data = await UserSpecificData.find_one({"user_id": user_id})
@@ -254,7 +248,7 @@ async def get_item_details(item_id: str):
                 "item_name": custom_item.custom_item_name,
                 "series_name": custom_series_name,
                 "character_name": custom_character_name,
-                "category_name": custom_category_name if custom_category_name else category_name,
+                "category_name": custom_category_name,
                 "tags": custom_item.custom_item_tags,
                 "jan_code": item.jan_code,
                 "release_date": item.release_date,
@@ -328,11 +322,9 @@ async def get_filtered_items(
     jan_code: str = Query(None),
     release_date: str = Query(None),
     retailers: str = Query(None),
+    user_id: str = Depends(get_current_user)
 ):	
     
-    user_id = ObjectId("507f1f77bcf86cd799439011")
-    # user_id = Depends(get_current_user)
-
     user_specific_data = await get_user_specific_data(user_id)
 
     # 空白はNoneに変換
@@ -595,11 +587,13 @@ class CustomItemUpdate(BaseModel):
         return value
 
 @router.patch("/api/items/{item_id}")
-async def update_custom_item(item_id: str, updated_data: CustomItemUpdate):
-
-    user_id = ObjectId("507f1f77bcf86cd799439011")
-    # user_id = Depends(get_current_user)
-
+async def update_custom_item(
+    item_id: str, 
+    updated_data: CustomItemUpdate,
+    user_id: str = Depends(get_current_user)
+    ):
+    user_id = ObjectId(user_id)
+    
     try:
         # item_idを使ってアイテムを取得
         item = await Item.find_one({"_id": ObjectId(item_id)})
@@ -856,7 +850,7 @@ async def update_custom_item(item_id: str, updated_data: CustomItemUpdate):
 
 # 欲しい/譲れるフラグ変更
 @router.patch("/api/items/{item_id}/exchange-status")
-async def change_exchange_status(item_id: str, status: bool):
+async def change_exchange_status(item_id: str, status: bool, user_id: str = Depends(get_current_user)):
 
     user_id = ObjectId("507f1f77bcf86cd799439011") 
     # user_id = Depends(get_current_user) 
@@ -914,7 +908,7 @@ async def change_exchange_status(item_id: str, status: bool):
 
 # 所持/未所持フラグ変更
 @router.patch("/api/items/{item_id}/own-status")
-async def change_own_status(item_id: str, status: bool):
+async def change_own_status(item_id: str, status: bool, user_id: str = Depends(get_current_user)):
 
     user_id = ObjectId("507f1f77bcf86cd799439011") 
     # user_id = Depends(get_current_user)  
