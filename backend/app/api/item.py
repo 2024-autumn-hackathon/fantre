@@ -53,6 +53,7 @@ class ItemRequest(BaseModel):
 # グッズ（アイテム）登録
 @router.post("/api/items")
 async def create_item_endpoint(item_request: ItemRequest, user_id: str = Depends(get_current_user)):
+    user_id=ObjectId(user_id)
 
     try:
         if not item_request.item_series:
@@ -893,9 +894,7 @@ async def update_custom_item(
 # 欲しい/譲れるフラグ変更
 @router.patch("/api/items/{item_id}/exchange-status")
 async def change_exchange_status(item_id: str, status: bool, user_id: str = Depends(get_current_user)):
-
-    user_id = ObjectId("507f1f77bcf86cd799439011") 
-    # user_id = Depends(get_current_user) 
+    user_id=ObjectId(user_id)
     
     try:
         # 独自データがあるか？
@@ -951,9 +950,7 @@ async def change_exchange_status(item_id: str, status: bool, user_id: str = Depe
 # 所持/未所持フラグ変更
 @router.patch("/api/items/{item_id}/own-status")
 async def change_own_status(item_id: str, status: bool, user_id: str = Depends(get_current_user)):
-
-    user_id = ObjectId("507f1f77bcf86cd799439011") 
-    # user_id = Depends(get_current_user)  
+    user_id=ObjectId(user_id)
     
     try:
         # 独自データがあるか？

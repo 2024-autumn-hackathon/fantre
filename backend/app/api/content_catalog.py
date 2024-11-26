@@ -11,7 +11,9 @@ router = APIRouter(dependencies=[Depends(get_current_user)])
 
 # グッズジャンル（カテゴリー）登録
 @router.post("/api/categories")
-async def create_category_endpoint(category_name: str):
+async def create_category_endpoint(category_name: str, user_id: str = Depends(get_current_user)):
+    user_id=ObjectId(user_id)
+
     try:  
         # category_nameが空白でないことを確認
         if not category_name or len(category_name.strip()) == 0:
@@ -39,7 +41,9 @@ async def create_category_endpoint(category_name: str):
 
 # グッズジャンル（カテゴリー）一覧取得
 @router.get("/api/category")
-async def get_all_categories_endpoint():
+async def get_all_categories_endpoint(user_id: str = Depends(get_current_user)):
+    user_id=ObjectId(user_id)
+    
     try:
         categories = await get_all_categories()
         # 新しい順に並べ替え
@@ -105,7 +109,9 @@ class SeriesCharacterRequest(BaseModel):
             raise e
             
 @router.post("/api/series-characters")
-async def create_series_character_endpoint(series_character_request: SeriesCharacterRequest):
+async def create_series_character_endpoint(series_character_request: SeriesCharacterRequest, user_id: str = Depends(get_current_user)):
+    user_id=ObjectId(user_id)
+    
     try:
         series_id = series_character_request.series_id
         character_id = series_character_request.character_id
@@ -143,7 +149,9 @@ async def create_series_character_endpoint(series_character_request: SeriesChara
     
 # 作品名一覧取得(検索用)   
 @router.get("/api/series")
-async def get_all_series_endpoint():
+async def get_all_series_endpoint(user_id: str = Depends(get_current_user)):
+    user_id=ObjectId(user_id)
+    
     try:
         series = await get_all_series()
         # 新しい順に並べ替え
@@ -160,7 +168,9 @@ async def get_all_series_endpoint():
 
 # 作品名一覧取得(一覧ページ用)
 @router.get("/api/series/page/{current_page}")	
-async def get_all_series_with_pagenation(current_page: int):
+async def get_all_series_with_pagenation(current_page: int, user_id: str = Depends(get_current_user)):
+    user_id=ObjectId(user_id)
+    
     try:
         series = await get_all_series()
         # ページごとのアイテム数
@@ -196,7 +206,9 @@ async def get_all_series_with_pagenation(current_page: int):
 
 # 作品名で絞ったキャラ一覧取得(検索用)
 @router.get("/api/series/{series_id}/characters")
-async def get_filtered_characters(series_id: str):
+async def get_filtered_characters(series_id: str, user_id: str = Depends(get_current_user)):
+    user_id=ObjectId(user_id)
+    
     try:
         # DBから指定したシリーズIDのシリーズキャラクターを取得
         series_characters = await get_series_characters(series_id)
@@ -234,7 +246,9 @@ async def get_filtered_characters(series_id: str):
 
 # 作品名で絞ったキャラ一覧取得(一覧ページ用)
 @router.get("/api/series/{series_id}/characters/page/{current_page}")
-async def get_filterd_characters_with_pagenation(series_id: str, current_page: int):
+async def get_filterd_characters_with_pagenation(series_id: str, current_page: int, user_id: str = Depends(get_current_user)):
+    user_id=ObjectId(user_id)
+    
     try:
         # 既存の関数を利用
         characters_dict = await get_filtered_characters(series_id)
