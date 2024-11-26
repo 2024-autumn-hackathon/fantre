@@ -208,6 +208,18 @@ async def get_all_series_with_pagenation(current_page: int, user_id: str = Depen
     
     try:
         series = await get_all_series()
+
+        # 独自データを取得
+        user_specific_data = await get_user_specific_data(user_id)
+        custom_series_names = {}
+        if user_specific_data and user_specific_data.custom_series_names:
+            # 辞書形式に変換
+            custom_series_names = {
+                str(custom_series.series_id): custom_series.custom_series_name
+                for custom_series in user_specific_data.custom_series_names
+            }
+            print("custom_series_names", custom_series_names)
+
         # ページごとのアイテム数
         series_per_page = 2
         # 新しい順に並べ替え
@@ -222,10 +234,12 @@ async def get_all_series_with_pagenation(current_page: int, user_id: str = Depen
         # 何ページできるか計算
         total_series_count = len(series)
         all_pages = (total_series_count + series_per_page - 1) // series_per_page # 切り上げ
-        # レスポンスをリストから辞書形式に変換、整形
+        # レスポンスをリストから辞書形式に変換、整形独自名優先
         series_response = {
             "series": [
-                {"id": str(series.id), "series_name": series.series_name}
+                {"id": str(series.id), 
+                 "series_name": custom_series_names.get(str(series.id), series.series_name)
+                 }
                 for series in pagenated_series
             ],
             "all_pages": all_pages
