@@ -89,20 +89,42 @@ async def get_all_categories():
             return content_catalog.categories
         return []
     except Exception as e:
-        raise Exception(f"Error fetching categories: {str(e)}") 
+        raise Exception(f"Error fetching categories: {str(e)}")
+     
+    
+# 作品重複チェック
+async def existing_series_check(series_name) -> bool:
+    await db.connect()
+    try:
+        series_name = series_name.strip()
+        existing_series = await ContentCatalog.find_one({"series.series_name": series_name})
+        return existing_series is not None 
+    except Exception as e:
+        print(f"Error checking for duplicate series: {str(e)}")
+        raise RuntimeError(f"Error while checking series duplication: {str(e)}")
+    finally:
+        await db.disconnect()
+
 
 # 新しい作品を作成する
 async def create_series(series_name: str):
     try:
+        series_name = series_name.strip()
+
+        # 既存の作品名と重複を確認
+        if await existing_series_check(series_name):            
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Series with the same name already exists."
+            )
+        
         content_catalog = await get_content_catalog()
-        # 既存のseries_nameと重複を確認
-        if content_catalog:
-            for existing_series in content_catalog.series:
-                if existing_series.series_name == series_name:
-                    raise HTTPException(
-                        status_code=status.HTTP_400_BAD_REQUEST,
-                        detail="Series with the same name already exists."
-                    )            
+        if not content_catalog:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Content catalog not found."
+            )
+        
         # 新しい作品を追加
         new_series = Series(_id=ObjectId(), series_name=series_name)
         content_catalog.series.append(new_series)
@@ -130,14 +152,14 @@ async def get_all_series():
 # 新しいキャラクターを作成する
 async def create_character(character_name: str):
     try:
+        character_name = character_name.strip()
         content_catalog = await get_content_catalog()
-        # 既存のseries_nameと重複を確認
-        # for existing_character in content_catalog.characters:
-        #     if existing_character.character_name == character_name:
-        #         raise HTTPException(
-        #             status_code=status.HTTP_400_BAD_REQUEST,
-        #             detail="Character with the same name already exists."
-                # )            
+        if not content_catalog:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Content catalog not found."
+            )
+          
         # 新しいキャラクターを追加
         new_character = Character(_id=ObjectId(), character_name=character_name)
         content_catalog.characters.append(new_character)
