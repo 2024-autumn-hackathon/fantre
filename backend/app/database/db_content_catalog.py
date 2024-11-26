@@ -185,21 +185,41 @@ async def get_all_characters():
         raise Exception(f"Error fetching characters: {str(e)}") 
 
 
-# 新しい作品＆キャラクターの組み合わせを作成する
-async def create_series_character(series_id: ObjectId, character_id: ObjectId):
-    try:        # ContentCatalogを取得
+# 作品＆キャラクターの重複チェック
+async def existing_series_character_check(series_id: ObjectId, character_id: ObjectId) -> bool:
+    await db.connect()
+    try:
         content_catalog = await get_content_catalog()
-
-        # 同じ作品とキャラクターのペアがすでに存在するか確認
         for pair in content_catalog.series_characters:
             if pair.series_id == series_id and pair.character_id == character_id:
-                # 既存のペアがあればスキップ
-                return{
-                    "message":"Series and character pair already exists.",
-                    "series_id": str(series_id),
-                    "character_id": str(character_id)                    
-                    }            
+                return True # 重複あり
+        return False # 重複なし
+    except Exception as e:
+        print(f"Error checking for duplicate series-character pair: {str(e)}")
+        raise RuntimeError(f"Error while checking series-character duplication: {str(e)}")
+    finally:
+        await db.disconnect()
+        
+
+# 新しい作品＆キャラクターの組み合わせを作成する
+async def create_series_character(series_id: ObjectId, character_id: ObjectId):
+    try:
+        # 同じ作品とキャラクターのペアがすでに存在するか確認
+        if await existing_series_character_check(series_id, character_id):
+            return{
+                "message":"Series and character pair already exists.",
+                "series_id": str(series_id),
+                "character_id": str(character_id)                    
+                }
+                
         # 新しいペアを作成
+        content_catalog = await get_content_catalog()
+        if not content_catalog:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Content catalog not found."
+            )
+        
         new_pair = SeriesCharacter(_id=ObjectId(),series_id=series_id, character_id=character_id)
         content_catalog.series_characters.append(new_pair)
         await save_content_catalog(content_catalog)
