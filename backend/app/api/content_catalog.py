@@ -2,6 +2,7 @@
 from typing import Optional
 from app.api.user import get_current_user
 from app.database.db_content_catalog import create_character, create_series, create_series_character, get_all_categories, get_all_characters, get_all_series, create_category, get_series_characters
+from app.database.db_user_specific import get_user_specific_data
 from pydantic import BaseModel, field_validator,  model_validator
 from bson import ObjectId
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -46,11 +47,28 @@ async def get_all_categories_endpoint(user_id: str = Depends(get_current_user)):
     
     try:
         categories = await get_all_categories()
+
+        # 独自データを取得
+        user_specific_data = await get_user_specific_data(user_id)
+        custom_category_names = {}
+        if user_specific_data and user_specific_data.custom_category_names:
+            # 辞書形式に変換
+            custom_category_names = {
+                str(custom_category.category_id): custom_category.custom_category_name
+                for custom_category in user_specific_data.custom_category_names
+            }
+
         # 新しい順に並べ替え
         sorted_categories = sorted(categories, key=lambda x: x.id.generation_time, reverse=True)
-        # リスト形式を辞書形式に変換する （id:name形式）
-        category_dict = {str(category.id): category.category_name for category in sorted_categories}
+
+        # リスト形式を辞書形式に変換する独自データがあればそちらの名前を設定
+        category_dict = {
+            str(category.id): custom_category_names.get(str(category.id), category.category_name)
+            for category in sorted_categories
+            }
+
         return category_dict
+    
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
