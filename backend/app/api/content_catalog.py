@@ -23,7 +23,6 @@ async def create_category_endpoint(category_name: str, user_id: str = Depends(ge
             detail="Category name is required."
             )                                    
         new_category = await create_category(category_name)
-
         
         return {
             "category_id": str(new_category.id),
@@ -173,16 +172,8 @@ async def get_all_series_endpoint(user_id: str = Depends(get_current_user)):
     try:
         series = await get_all_series()
 
-        # 独自データを取得
-        user_specific_data = await get_user_specific_data(user_id)
-        custom_series_names = {}
-        if user_specific_data and user_specific_data.custom_series_names:
-            # 辞書形式に変換
-            custom_series_names = {
-                str(custom_series.series_id): custom_series.custom_series_name
-                for custom_series in user_specific_data.custom_series_names
-            }
-            print("custom_series_names", custom_series_names)
+        # 独自データの名前を適応させる
+        custom_series_names = await apply_custom_series_names(user_id)
 
         # 新しい順に並べ替え
         sorted_series = sorted(series, key=lambda x: x.id.generation_time, reverse=True)
@@ -201,27 +192,35 @@ async def get_all_series_endpoint(user_id: str = Depends(get_current_user)):
             detail=f"Error fetching series: {str(e)}"
         )
 
+async def apply_custom_series_names(user_id):
+    user_specific_data = await get_user_specific_data(user_id)
+    custom_series_names = {}
+    if user_specific_data and user_specific_data.custom_series_names:
+            # 辞書形式に変換
+        custom_series_names = {
+                str(custom_series.series_id): custom_series.custom_series_name
+                for custom_series in user_specific_data.custom_series_names
+            }        
+    return custom_series_names
+
+
+
 # 作品名一覧取得(一覧ページ用)
 @router.get("/api/series/page/{current_page}")	
 async def get_all_series_with_pagenation(current_page: int, user_id: str = Depends(get_current_user)):
     user_id=ObjectId(user_id)
-    
+
+    # 既存の関数を使用
+    custom_series_names = await get_all_series_endpoint(user_id)
+
     try:
         series = await get_all_series()
 
-        # 独自データを取得
-        user_specific_data = await get_user_specific_data(user_id)
-        custom_series_names = {}
-        if user_specific_data and user_specific_data.custom_series_names:
-            # 辞書形式に変換
-            custom_series_names = {
-                str(custom_series.series_id): custom_series.custom_series_name
-                for custom_series in user_specific_data.custom_series_names
-            }
-            print("custom_series_names", custom_series_names)
+        # 独自データの名前を適応させる
+        custom_series_names = await apply_custom_series_names(user_id)
 
         # ページごとのアイテム数
-        series_per_page = 2
+        series_per_page = 10
         # 新しい順に並べ替え
         sorted_series = sorted(series, key=lambda x: x.id.generation_time, reverse=True)
         # 現在ページが1以下の場合、1ページ目を表示
