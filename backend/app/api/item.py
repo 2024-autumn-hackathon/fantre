@@ -52,10 +52,7 @@ class ItemRequest(BaseModel):
     
 # グッズ（アイテム）登録
 @router.post("/api/items")
-async def create_item_endpoint(item_request: ItemRequest):
-
-    user_id = ObjectId("507f1f77bcf86cd799439011")
-    # user_id = Depends(get_current_user)
+async def create_item_endpoint(item_request: ItemRequest, user_id: str = Depends(get_current_user)):
 
     try:
         if not item_request.item_series:
@@ -220,11 +217,8 @@ async def get_custom_category_name(user_specific_data, category_id: ObjectId):
 
 # グッズ詳細取得
 @router.get("/api/items/{item_id}")
-async def get_item_details(item_id: str):
-
-    user_id = ObjectId("507f1f77bcf86cd799439011") 
-    # user_id = Depends(get_current_user)
-
+async def get_item_details(item_id: str, user_id: str = Depends(get_current_user)):
+    user_id=ObjectId(user_id)
     try:
         item = await get_item(ObjectId(item_id))
         user_specific_data = await UserSpecificData.find_one({"user_id": user_id})
@@ -237,7 +231,17 @@ async def get_item_details(item_id: str):
         # 独自名を取得
         custom_series_name = await get_custom_series_name(user_specific_data, item.item_series) if user_specific_data else None
         custom_character_name = await get_custom_character_name(user_specific_data, item.item_character) if user_specific_data else None
-        custom_category_name = await get_custom_category_name(user_specific_data, item.category) if user_specific_data else None
+
+        # カスタムアイテムの独自カテゴリを取得
+        custom_category_name = None
+        if custom_item and custom_item.custom_item_category_name:
+            custom_category = next(
+                (cat for cat in user_specific_data.custom_category_names if cat.id == custom_item.custom_item_category_name),
+                None
+            )
+            custom_category_name = custom_category.custom_category_name if custom_category else None
+
+        # custom_category_name = await get_custom_category_name(user_specific_data, item.category) if user_specific_data else None
 
         if custom_item:
             response = {
@@ -318,11 +322,9 @@ async def get_filtered_items(
     jan_code: str = Query(None),
     release_date: str = Query(None),
     retailers: str = Query(None),
+    user_id: str = Depends(get_current_user)
 ):	
-    
-    user_id = ObjectId("507f1f77bcf86cd799439011")
-    # user_id = Depends(get_current_user)
-
+    user_id=ObjectId(user_id)    
     user_specific_data = await get_user_specific_data(user_id)
 
     # 空白はNoneに変換
@@ -426,8 +428,45 @@ async def get_filtered_items(
                 query_conditions.append({"_id": {"$in": list(all_item_ids)}})
 
         if category_id:
-            query_conditions.append({"category": ObjectId(category_id)})
-   
+            # query_conditions.append({"category": ObjectId(category_id)})
+            category_id = ObjectId(category_id)
+
+            # 元のアイテムに指定された category_id があるか検索
+            original_category_item_ids = []
+            matching_items = await Item.find({"category": category_id}).to_list()
+            print(f"Matching original items: {matching_items}") 
+            if matching_items:
+                original_category_item_ids = [item.id for item in matching_items]
+
+                print("original_category_item_ids", original_category_item_ids)
+
+            # CustomCategoryName内からcategory_idに一致する_idを収集
+            matching_custom_category_ids = []
+            if user_specific_data and user_specific_data.custom_category_names:
+                print(f"user_specific_data.custom_items: {user_specific_data.custom_items}")
+
+                matching_custom_category_ids = [
+                custom_category.id for custom_category in user_specific_data.custom_category_names
+                if custom_category.category_id == category_id
+            ]
+                print(f"Matching custom category IDs for category_id {category_id}: {matching_custom_category_ids}")
+
+            # カスタムアイテム内でcustom_item_category_name が一致するアイテムIDを収集
+            custom_category_item_ids = []
+            if user_specific_data and user_specific_data.custom_items:
+                custom_category_item_ids = [
+                custom_item.item_id for custom_item in user_specific_data.custom_items
+                if custom_item.custom_item_category_name in matching_custom_category_ids
+            ]
+                print(f"Custom items matching category: {custom_category_item_ids}")          
+               
+            # 結果を統合          
+
+            all_item_ids = set(original_category_item_ids + custom_category_item_ids)
+            if all_item_ids:
+                query_conditions.append({"_id": {"$in": list(all_item_ids)}})
+                print(f"Query conditions: {query_conditions}")
+
         if tags_list:
             # 条件を集めるためのリストを初期化
             original_tag_conditions = []
@@ -468,7 +507,7 @@ async def get_filtered_items(
                     ]
                     custom_item_ids.extend(matching_custom_items)
 
-            all_item_ids = original_item_ids + custom_item_ids
+            all_item_ids = set(original_item_ids + custom_item_ids)
             if all_item_ids:
                 query_conditions.append({"_id": {"$in": all_item_ids}})
 
@@ -511,14 +550,18 @@ async def get_filtered_items(
                             if custom_item.item_id:
                                 custom_item_ids.append(custom_item.item_id)
 
-            all_item_ids = original_item_ids + custom_item_ids
+            all_item_ids = set(original_item_ids + custom_item_ids)
             if all_item_ids:
                 query_conditions.append({"_id": {"$in": all_item_ids}})
 
         if not query_conditions:
+            print("Query conditions are empty.")
             return {
                 "message": "No items found matching the queries."
-            }         
+            }
+        else:
+            print(f"Query conditions: {query_conditions}")
+                                
         # 条件をANDで結合
         query = {"$and": query_conditions}  
         # 条件にマッチするアイテム取得
@@ -540,16 +583,24 @@ async def get_filtered_items(
         total_items_count = len(sorted_items)
         all_pages = (total_items_count + items_per_page - 1) // items_per_page
 
-        response = {
+        response = {        
                 "items": [
-                        {
-                            "id": str(sorted_item.id), 
-                            "item_name": sorted_item.item_name
-                        }
-                        for sorted_item in pagenated_items
-                        ],                    
-                        "all_pages": all_pages
-                    }        
+                {
+                    "id": str(sorted_item.id),
+                    "item_name": next(
+                        (
+                            ci.custom_item_name
+                            for ci in user_specific_data.custom_items
+                            if ci.item_id == sorted_item.id
+                        ),
+                        sorted_item.item_name  # カスタムアイテムがない場合は元の名前を使用
+                    ),
+                }
+                for sorted_item in pagenated_items
+                ],
+                "all_pages": all_pages,
+                }       
+        
         return response
 
     except ValidationError as e:
@@ -575,8 +626,7 @@ class CustomItemUpdate(BaseModel):
     custom_item_tags: Optional[List[str]] = None  
     custom_item_retailers: Optional[List[str]] = None
     # exchange_status: Optional[bool] = None
-    # own_status: Optional[bool] = False
-    
+    # own_status: Optional[bool] = False    
     
     @validator('custom_item_name', 'custom_series_name', 'custom_character_name', 'custom_category_name' , pre=True)
     def check_not_empty_or_whitespace(cls, value):
@@ -585,11 +635,13 @@ class CustomItemUpdate(BaseModel):
         return value
 
 @router.patch("/api/items/{item_id}")
-async def update_custom_item(item_id: str, updated_data: CustomItemUpdate):
-
-    user_id = ObjectId("507f1f77bcf86cd799439011")
-    # user_id = Depends(get_current_user)
-
+async def update_custom_item(
+    item_id: str, 
+    updated_data: CustomItemUpdate,
+    user_id: str = Depends(get_current_user)
+    ):
+    user_id = ObjectId(user_id)
+    
     try:
         # item_idを使ってアイテムを取得
         item = await Item.find_one({"_id": ObjectId(item_id)})
@@ -635,7 +687,6 @@ async def update_custom_item(item_id: str, updated_data: CustomItemUpdate):
             # 名前更新
             if existing_series_names:
                 existing_series_names.custom_series_name = updated_data.custom_series_name
-
         
         # ユーザーの custom_character_names 内に 該当するcharacter_id が存在するか確認
         existing_character_names = next((c for c in user_specific_data.custom_character_names if c.character_id == item.item_character), None)
@@ -661,8 +712,7 @@ async def update_custom_item(item_id: str, updated_data: CustomItemUpdate):
             # 再確認
             existing_character_names = next((c for c in user_specific_data.custom_character_names if c.character_id == item.item_character), None)
             # 名前更新
-            existing_character_names.custom_character_name = updated_data.custom_character_name   
-
+            existing_character_names.custom_character_name = updated_data.custom_character_name 
 
         # ユーザーの custom_category_names 内に 該当する category_id が存在するか確認
         existing_category_names = next(
@@ -673,7 +723,6 @@ async def update_custom_item(item_id: str, updated_data: CustomItemUpdate):
         if existing_category_names:
             existing_category_names.custom_category_name = updated_data.custom_category_name
             print(f"Custom category name updated: {existing_category_names.custom_category_name}")
-
 
         new_category = None
         custom_item_category_name = None
@@ -709,7 +758,6 @@ async def update_custom_item(item_id: str, updated_data: CustomItemUpdate):
                     print(f"Updating existing category name from {existing_category_names.custom_category_name} to {updated_data.custom_category_name}")
                     existing_category_names.custom_category_name = updated_data.custom_category_name
 
-
         # アイテムにカテゴリーが設定されていない場合
         else:
             print(f"Updated data category name: {updated_data.custom_category_name}")
@@ -733,8 +781,7 @@ async def update_custom_item(item_id: str, updated_data: CustomItemUpdate):
                         existing_cutom_category_names = next(
                             (cat for cat in user_specific_data.custom_category_names if cat.id == custom_item.custom_item_category_name),
                             None
-                        )
-                        
+                        )                        
        
                         if existing_cutom_category_names:
                             # 名前を上書き
@@ -785,7 +832,6 @@ async def update_custom_item(item_id: str, updated_data: CustomItemUpdate):
 
                     # custom_item に新しいカテゴリIDをリンク
                     custom_item_category_name = new_custom_category.id
-
 
         # カスタムアイテムがあるか確認
         custom_item = next((ci for ci in user_specific_data.custom_items if ci.item_id == ObjectId(item_id)), None)
@@ -846,7 +892,7 @@ async def update_custom_item(item_id: str, updated_data: CustomItemUpdate):
 
 # 欲しい/譲れるフラグ変更
 @router.patch("/api/items/{item_id}/exchange-status")
-async def change_exchange_status(item_id: str, status: bool):
+async def change_exchange_status(item_id: str, status: bool, user_id: str = Depends(get_current_user)):
 
     user_id = ObjectId("507f1f77bcf86cd799439011") 
     # user_id = Depends(get_current_user) 
@@ -904,7 +950,7 @@ async def change_exchange_status(item_id: str, status: bool):
 
 # 所持/未所持フラグ変更
 @router.patch("/api/items/{item_id}/own-status")
-async def change_own_status(item_id: str, status: bool):
+async def change_own_status(item_id: str, status: bool, user_id: str = Depends(get_current_user)):
 
     user_id = ObjectId("507f1f77bcf86cd799439011") 
     # user_id = Depends(get_current_user)  
