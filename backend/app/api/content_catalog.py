@@ -172,10 +172,27 @@ async def get_all_series_endpoint(user_id: str = Depends(get_current_user)):
     
     try:
         series = await get_all_series()
+
+        # 独自データを取得
+        user_specific_data = await get_user_specific_data(user_id)
+        custom_series_names = {}
+        if user_specific_data and user_specific_data.custom_series_names:
+            # 辞書形式に変換
+            custom_series_names = {
+                str(custom_series.series_id): custom_series.custom_series_name
+                for custom_series in user_specific_data.custom_series_names
+            }
+            print("custom_series_names", custom_series_names)
+
         # 新しい順に並べ替え
         sorted_series = sorted(series, key=lambda x: x.id.generation_time, reverse=True)
-        # リスト形式を辞書形式に変換
-        series_dict = {str(series.id): series.series_name for series in sorted_series}
+
+        # リスト形式を辞書形式に変換する独自データがあればそちらの名前を設定
+        series_dict = {
+            str(series.id): custom_series_names.get(str(series.id), series.series_name) 
+            for series in sorted_series
+            }
+        
         return series_dict
     
     except Exception as e:
