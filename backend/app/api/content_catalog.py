@@ -192,6 +192,7 @@ async def get_all_series_endpoint(user_id: str = Depends(get_current_user)):
             detail=f"Error fetching series: {str(e)}"
         )
 
+# 独自シリーズ名を適応させる
 async def apply_custom_series_names(user_id):
     user_specific_data = await get_user_specific_data(user_id)
     custom_series_names = {}
@@ -209,9 +210,6 @@ async def apply_custom_series_names(user_id):
 @router.get("/api/series/page/{current_page}")	
 async def get_all_series_with_pagenation(current_page: int, user_id: str = Depends(get_current_user)):
     user_id=ObjectId(user_id)
-
-    # 既存の関数を使用
-    custom_series_names = await get_all_series_endpoint(user_id)
 
     try:
         series = await get_all_series()
@@ -258,39 +256,8 @@ async def get_filtered_characters(series_id: str, user_id: str = Depends(get_cur
     user_id=ObjectId(user_id)
     
     try:
-        # DBから指定したシリーズIDのシリーズキャラクターを取得
-        series_characters = await get_series_characters(series_id)
-
-        if not series_characters:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Characters not found for this series"
-            )
-
-        # キャラクターIDをリスト化
-        character_ids = [character.character_id for character in series_characters]
-        # キャラクター詳細情報（キャラクター名）を取得
-        characters = await get_all_characters()
-
-        # 独自データを取得
-        user_specific_data = await get_user_specific_data(user_id)
-        custom_character_names = {}
-        if user_specific_data and user_specific_data.custom_character_names:
-            custom_character_names = {
-                str(custom_character.character_id): custom_character.custom_character_name
-                for custom_character in user_specific_data.custom_character_names
-            }
-
-        # キャラクター詳細情報をキャラクターIDでフィルタリングして独自名を追加
-        filtered_characters = [
-            {
-                "id": str(character.id),
-                "name": custom_character_names.get(str(character.id), character.character_name),
-                "original_name": character.character_name
-            }
-            for character in characters
-            if character.id in character_ids
-        ]
+        # シリーズキャラクターを取得して独自キャラクター名を適応させる
+        filtered_characters = await apply_custom_character_names(series_id, user_id)
 
         # 五十音順にソート
         sorted_characters = sorted(filtered_characters, key=lambda x: x["name"])
@@ -306,6 +273,44 @@ async def get_filtered_characters(series_id: str, user_id: str = Depends(get_cur
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error fetching sorted characters by series_id: {str(e)}"
         )
+
+
+# シリーズキャラクターを取得して独自キャラクター名を適応させる
+async def apply_custom_character_names(series_id, user_id):
+    series_characters = await get_series_characters(series_id)
+
+    if not series_characters:
+        raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Characters not found for this series"
+            )
+
+    # キャラクターIDをリスト化
+    character_ids = [character.character_id for character in series_characters]
+    # キャラクター詳細情報（キャラクター名）を取得
+    characters = await get_all_characters()
+
+    # 独自データを取得
+    user_specific_data = await get_user_specific_data(user_id)
+    custom_character_names = {}
+    if user_specific_data and user_specific_data.custom_character_names:
+        custom_character_names = {
+                str(custom_character.character_id): custom_character.custom_character_name
+                for custom_character in user_specific_data.custom_character_names
+            }
+
+    # キャラクター詳細情報をキャラクターIDでフィルタリングして独自名を追加
+    filtered_characters = [
+            {
+                "id": str(character.id),
+                "name": custom_character_names.get(str(character.id), character.character_name),
+                "original_name": character.character_name
+            }
+            for character in characters
+            if character.id in character_ids
+        ]
+    
+    return filtered_characters
     
 
 # 作品名で絞ったキャラ一覧取得(一覧ページ用)
@@ -314,16 +319,14 @@ async def get_filterd_characters_with_pagenation(series_id: str, current_page: i
     user_id=ObjectId(user_id)
     
     try:
-        # 既存の関数を利用
-        characters_dict = await get_filtered_characters(series_id, user_id)
-        print(characters_dict)
-        # リストに変換
-        characters_list = list(characters_dict.items())
+        # シリーズキャラクターを取得して独自キャラクター名を適応させる
+        filtered_characters = await apply_custom_character_names(series_id, user_id)
+
         # 新しい順にソート
-        sorted_characters_list = sorted(characters_list, key=lambda x: ObjectId(x[0]).generation_time, reverse=True)
-        print("sorted_characters_list", sorted_characters_list)
+        sorted_characters_list = sorted(filtered_characters, key=lambda x: ObjectId(x[0]).generation_time, reverse=True)
 
         characters_per_page = 10
+
         # 現在ページが1以下の場合、1ページ目を表示
         if current_page < 1:
             current_page = 1        
