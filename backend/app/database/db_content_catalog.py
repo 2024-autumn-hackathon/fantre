@@ -36,26 +36,37 @@ async def get_content_catalog():
         await db.disconnect()
 
 # カテゴリー重複チェック
-async def existing_catecogy_check(category_name) -> bool:
+async def existing_categogy_check(category_name) -> bool:
+    await db.connect()
     try:
         existing_category = await ContentCatalog.find_one({"categories.category_name": category_name.strip()})
         return existing_category is not None
     except Exception as e:
         print(f"Error checking for duplicate category: {str(e)}")
-        raise RuntimeError(f"Error while checking category duplication: {str(e)}")     
+        raise RuntimeError(f"Error while checking category duplication: {str(e)}")
+    finally:
+        await db.disconnect()     
 
 # 新しいグッズジャンル(カテゴリー)を作成する 
 async def create_category(category_name: str):
     try:
-        content_catalog = await get_content_catalog()
+        category_name = category_name.strip()
+
         # 既存のcategory_nameとの重複を確認
-        if content_catalog:
-            for existing_category in content_catalog.categories:
-                if existing_category.category_name == category_name:
-                    raise HTTPException(
-                        status_code=status.HTTP_400_BAD_REQUEST,
-                        detail="Category with the same name already exists."
-                    )
+        if await existing_categogy_check(category_name):            
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Category with the same name already exists."
+            )
+        
+        # 新しいカテゴリーを作成
+        content_catalog = await get_content_catalog()
+        if not content_catalog:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Content catalog not found."
+            )
+
         new_category = Category(_id=ObjectId(), category_name=category_name)
         content_catalog.categories.append(new_category)
 
