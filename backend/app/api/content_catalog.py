@@ -316,14 +316,15 @@ async def get_filterd_characters_with_pagenation(series_id: str, current_page: i
     
     try:
         # 既存の関数を利用
-        characters_dict = await get_filtered_characters(series_id)
+        characters_dict = await get_filtered_characters(series_id, user_id)
         print(characters_dict)
         # リストに変換
         characters_list = list(characters_dict.items())
         # 新しい順にソート
         sorted_characters_list = sorted(characters_list, key=lambda x: ObjectId(x[0]).generation_time, reverse=True)
+        print("sorted_characters_list", sorted_characters_list)
 
-        characters_per_page = 2
+        characters_per_page = 10
         # 現在ページが1以下の場合、1ページ目を表示
         if current_page < 1:
             current_page = 1        
