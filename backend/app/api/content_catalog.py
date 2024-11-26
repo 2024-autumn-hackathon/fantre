@@ -267,23 +267,39 @@ async def get_filtered_characters(series_id: str, user_id: str = Depends(get_cur
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Characters not found for this series"
             )
+
         # キャラクターIDをリスト化
         character_ids = [character.character_id for character in series_characters]
         # キャラクター詳細情報（キャラクター名）を取得
-        characters_with_name = await get_all_characters()
-        # キャラクター情報をキャラクターIDでフィルタリング
+        characters = await get_all_characters()
+
+        # 独自データを取得
+        user_specific_data = await get_user_specific_data(user_id)
+        custom_character_names = {}
+        if user_specific_data and user_specific_data.custom_character_names:
+            custom_character_names = {
+                str(custom_character.character_id): custom_character.custom_character_name
+                for custom_character in user_specific_data.custom_character_names
+            }
+
+        # キャラクター詳細情報をキャラクターIDでフィルタリングして独自名を追加
         filtered_characters = [
-            character for character in characters_with_name
+            {
+                "id": str(character.id),
+                "name": custom_character_names.get(str(character.id), character.character_name),
+                "original_name": character.character_name
+            }
+            for character in characters
             if character.id in character_ids
         ]
-        # あいうえお順にソート
-        sorted_characters = sorted(filtered_characters, key=lambda character: character.character_name)
+
+        # 五十音順にソート
+        sorted_characters = sorted(filtered_characters, key=lambda x: x["name"])
         # 辞書形式に変換
         characters_dict = {
-            str(character.id): character.character_name
+            character["id"]: character["name"]
             for character in sorted_characters
         }
-
         return characters_dict
 
     except Exception as e:
