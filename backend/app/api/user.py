@@ -118,8 +118,6 @@ async def signup(signup_request: Annotated[SignupFormData, Form()]):
 # ログイン
 @router.post("/login")
 async def login(login_request: Annotated[OAuth2PasswordRequestForm, Depends()]) -> Token:
-    print("oguinpasswordtype:",type(login_request.password))
-    print(login_request.password)
     login_user = await authenticate_user(login_request.username, login_request.password) # OAuth2PasswordRequestFormを使う場合usernameとpasswordという名前を使う必要がある
     if not login_user:
         raise HTTPException(
