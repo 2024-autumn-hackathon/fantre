@@ -19,7 +19,7 @@ const TopNaviContent = () => {
           formId="top-page-form"
           buttonText="画像送信"
           uploadImageText="背景画像を設定する"
-        ></ImageUploadForm>
+        />
         <BackgroundImageResetButton/>
       </div>
     </>

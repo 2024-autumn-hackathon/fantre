@@ -19,7 +19,6 @@ const ImageUploadForm = ({
     <form
       autoComplete="off"
       className={ className }
-      encType="multipart/form-data"
       id={ formId }
       name={ formId }
       // action
