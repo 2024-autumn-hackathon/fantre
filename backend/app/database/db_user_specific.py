@@ -82,3 +82,28 @@ async def custom_series_name_partial_match(series_name: str):
             matched_series_ids.append(series.id)
 
     return matched_series_ids
+
+
+# item_nameの独自データを持っているか確認、持っていれば返す
+async def exists_user_custom_items(user_id: ObjectId):
+    await db.connect()
+    try:
+        user_specific_data = await UserSpecificData.find_one({"user_id": user_id})
+        if user_specific_data is None:
+            return None
+        elif user_specific_data.custom_items is None:
+            return None
+        else:
+            print("koko:", user_specific_data.custom_items)
+            return user_specific_data.custom_items
+
+    except HTTPException as http_ex:
+        raise http_ex
+    except Exception as e:
+        print(f"Error fetching user_specific_data: {str(e)}")
+        raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Error fetching user_specific_data: {str(e)}"
+        )
+    finally:
+            await db.disconnect()

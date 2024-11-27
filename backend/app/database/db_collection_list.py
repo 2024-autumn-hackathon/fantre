@@ -13,9 +13,6 @@ from app.models import User, Item, CollectionList
 db = Database()
 
 
-# class UserCollectionlists(BaseModel):
-#     collection_lists: Optional[List["CollectionList"]]
-
 # コレクションリスト登録
 async def add_collection_list(new_list: CollectionList, user_id: ObjectId):
     try:
@@ -27,6 +24,7 @@ async def add_collection_list(new_list: CollectionList, user_id: ObjectId):
         raise HTTPException(status_code=500, detail=f"create collection list error: {str(e)}")
     finally:
         await db.disconnect()
+
 
 # コレクションリスト取得
 async def get_collection_list(user_id: ObjectId):

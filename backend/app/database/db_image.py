@@ -17,6 +17,7 @@ async def save_image(image: Image):
         await db.connect()
         await image.insert()
         return image
+    
     except ValidationError as ve:
         raise HTTPException(status_code=422, detail=ve.errors())
     except Exception as e:
@@ -31,6 +32,7 @@ async def exists_image_name(image_name: str) -> bool:
         await db.connect()
         result = await Image.find_one({"image_name": image_name})
         return result is not None
+    
     except ValidationError as ve:
         raise HTTPException(status_code=422, detail=ve.errors())
     except Exception as e:
@@ -50,6 +52,7 @@ async def get_imagename_from_itemid(item_id: ObjectId):
             image_names = [image.image_name for image in images]
             return image_names
         return image_names
+    
     except ValidationError as ve:
         raise HTTPException(status_code=422, detail=ve.errors())
     except Exception as e:
@@ -87,6 +90,7 @@ async def save_bg_image(bg_image: Image):
             await existed_bg_image.set({"created_at": bg_image.created_at})
         else:
             await bg_image.insert()
+    
     except ValidationError as ve:
         raise HTTPException(status_code=422, detail=ve.errors())
     except Exception as e:
@@ -103,6 +107,7 @@ async def get_bg_image_name(user_id: ObjectId):
         if bg_image is None:
             return None
         return bg_image.image_name
+    
     except ValidationError as ve:
         raise HTTPException(status_code=422, detail=ve.errors())
     except Exception as e:

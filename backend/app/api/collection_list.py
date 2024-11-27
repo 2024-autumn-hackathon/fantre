@@ -14,7 +14,7 @@ from app.database.db_user import exists_user
 from app.database.db_item import create_item, existing_item_check, get_item, get_all_items, get_item_names, exists_item_id
 from app.database.db_content_catalog import character_name_partial_match, get_category_name, get_character_name, get_series_name, series_name_partial_match
 from app.database.db_collection_list import exists_collection_list_name, get_collection_list, add_collection_list, add_item_to_list, delete_item_from_list, delete_list
-
+from app.database.db_user_specific import exists_user_custom_items
 
 router = APIRouter(dependencies=[Depends(get_current_user)])
 
@@ -63,17 +63,25 @@ async def get_list_detail(list_id: str, user_id: str = Depends(get_current_user)
 
     # ユーザー固有のコレクションリスト取得して指定のリストからitem_id取得
     collection_lists = await get_collection_list(ObjectId(user_id))
-    print("collection_lists:", collection_lists)
     collection_item_ids = []
     for list in collection_lists:
-        print(list.id, ObjectId(list_id))
         if list.id == ObjectId(list_id):
-            collection_item_ids.extend(list.list_items)
-    print("ここ")
+            collection_item_ids.extend(list.list_items)   
+
     # item_idからitem_name取得して整形
-    collection_item_response = await get_item_names(collection_item_ids)
-    print("collection_item_response:", collection_item_response)
-    print(type(collection_item_response))
+    collection_item_dict = await get_item_names(collection_item_ids)
+
+    # ユーザーが固有データを持っているか確認
+    custom_items = await exists_user_custom_items(ObjectId(user_id))
+    if custom_items is not None:
+        for id in collection_item_ids:
+            for item in custom_items:
+                if id == item.item_id:
+                    collection_item_dict[str(id)] = item.custom_item_name
+    
+    # 整形
+    collection_item_response = [{k:v} for k, v in collection_item_dict.items()]
+
     return collection_item_response
 
 

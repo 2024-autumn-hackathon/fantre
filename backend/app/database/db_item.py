@@ -73,6 +73,7 @@ async def exists_item_id(item_id: ObjectId) -> bool:
         await db.connect()
         result = await Item.find_one({"_id": item_id})
         return result is None
+    
     except ValidationError as ve:
         raise HTTPException(status_code=422, detail=ve.errors())
     except Exception as e:
@@ -83,19 +84,15 @@ async def exists_item_id(item_id: ObjectId) -> bool:
 # item_idのリストからitem_name取得
 async def get_item_names(item_ids: List[ObjectId]):
     try:
-        print("はいる", item_ids)
         await db.connect()
-        item_list = []
+        item_dict = {}
         for item_id in item_ids:
-            print(item_id)
             item = await Item.find_one({"_id": item_id})
-            print(item)
             if item is None:
                 continue
-            print(item.item_name)
-            item_list.append({str(item_id): item.item_name})
-        print("item_list:", item_list)
-        return item_list
+            item_dict[str(item_id)] = item.item_name
+        return item_dict
+    
     except ValidationError as ve:
         raise HTTPException(status_code=422, detail=ve.errors())
     except Exception as e:
