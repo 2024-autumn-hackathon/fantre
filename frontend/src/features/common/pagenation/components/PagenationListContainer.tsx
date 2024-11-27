@@ -1,3 +1,8 @@
+/**
+ * 
+ * @param children PagenationListItem>{children}</PagenationListItem>
+ * @returns ページネーションコンテナ外側
+ */
 const PagenationListContainer = ({
   children,
 }: Readonly<{

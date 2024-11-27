@@ -2,6 +2,7 @@
 from typing import Optional
 from app.api.user import get_current_user
 from app.database.db_content_catalog import create_character, create_series, create_series_character, get_all_categories, get_all_characters, get_all_series, create_category, get_series_characters
+from app.database.db_user_specific import get_user_specific_data
 from pydantic import BaseModel, field_validator,  model_validator
 from bson import ObjectId
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -11,7 +12,9 @@ router = APIRouter(dependencies=[Depends(get_current_user)])
 
 # グッズジャンル（カテゴリー）登録
 @router.post("/api/categories")
-async def create_category_endpoint(category_name: str):
+async def create_category_endpoint(category_name: str, user_id: str = Depends(get_current_user)):
+    user_id=ObjectId(user_id)
+
     try:  
         # category_nameが空白でないことを確認
         if not category_name or len(category_name.strip()) == 0:
@@ -20,6 +23,7 @@ async def create_category_endpoint(category_name: str):
             detail="Category name is required."
             )                                    
         new_category = await create_category(category_name)
+        
         return {
             "category_id": str(new_category.id),
             "category_name": str(new_category.category_name)
@@ -37,14 +41,33 @@ async def create_category_endpoint(category_name: str):
 
 # グッズジャンル（カテゴリー）一覧取得
 @router.get("/api/category")
-async def get_all_categories_endpoint():
+async def get_all_categories_endpoint(user_id: str = Depends(get_current_user)):
+    user_id=ObjectId(user_id)
+    
     try:
         categories = await get_all_categories()
+
+        # 独自データを取得
+        user_specific_data = await get_user_specific_data(user_id)
+        custom_category_names = {}
+        if user_specific_data and user_specific_data.custom_category_names:
+            # 辞書形式に変換
+            custom_category_names = {
+                str(custom_category.category_id): custom_category.custom_category_name
+                for custom_category in user_specific_data.custom_category_names
+            }
+
         # 新しい順に並べ替え
         sorted_categories = sorted(categories, key=lambda x: x.id.generation_time, reverse=True)
-        # リスト形式を辞書形式に変換する （id:name形式）
-        category_dict = {str(category.id): category.category_name for category in sorted_categories}
+
+        # リスト形式を辞書形式に変換する独自データがあればそちらの名前を設定
+        category_dict = {
+            str(category.id): custom_category_names.get(str(category.id), category.category_name)
+            for category in sorted_categories
+            }
+
         return category_dict
+    
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -103,7 +126,9 @@ class SeriesCharacterRequest(BaseModel):
             raise e
             
 @router.post("/api/series-characters")
-async def create_series_character_endpoint(series_character_request: SeriesCharacterRequest):
+async def create_series_character_endpoint(series_character_request: SeriesCharacterRequest, user_id: str = Depends(get_current_user)):
+    user_id=ObjectId(user_id)
+    
     try:
         series_id = series_character_request.series_id
         character_id = series_character_request.character_id
@@ -141,13 +166,24 @@ async def create_series_character_endpoint(series_character_request: SeriesChara
     
 # 作品名一覧取得(検索用)   
 @router.get("/api/series")
-async def get_all_series_endpoint():
+async def get_all_series_endpoint(user_id: str = Depends(get_current_user)):
+    user_id=ObjectId(user_id)
+    
     try:
         series = await get_all_series()
+
+        # 独自データの名前を適応させる
+        custom_series_names = await apply_custom_series_names(user_id)
+
         # 新しい順に並べ替え
         sorted_series = sorted(series, key=lambda x: x.id.generation_time, reverse=True)
-        # リスト形式を辞書形式に変換
-        series_dict = {str(series.id): series.series_name for series in sorted_series}
+
+        # リスト形式を辞書形式に変換する独自データがあればそちらの名前を設定
+        series_dict = {
+            str(series.id): custom_series_names.get(str(series.id), series.series_name) 
+            for series in sorted_series
+            }
+        
         return series_dict
     
     except Exception as e:
@@ -156,13 +192,33 @@ async def get_all_series_endpoint():
             detail=f"Error fetching series: {str(e)}"
         )
 
+# 独自シリーズ名を適応させる
+async def apply_custom_series_names(user_id):
+    user_specific_data = await get_user_specific_data(user_id)
+    custom_series_names = {}
+    if user_specific_data and user_specific_data.custom_series_names:
+            # 辞書形式に変換
+        custom_series_names = {
+                str(custom_series.series_id): custom_series.custom_series_name
+                for custom_series in user_specific_data.custom_series_names
+            }        
+    return custom_series_names
+
+
+
 # 作品名一覧取得(一覧ページ用)
 @router.get("/api/series/page/{current_page}")	
-async def get_all_series_with_pagenation(current_page: int):
+async def get_all_series_with_pagenation(current_page: int, user_id: str = Depends(get_current_user)):
+    user_id=ObjectId(user_id)
+
     try:
         series = await get_all_series()
+
+        # 独自データの名前を適応させる
+        custom_series_names = await apply_custom_series_names(user_id)
+
         # ページごとのアイテム数
-        series_per_page = 2
+        series_per_page = 10
         # 新しい順に並べ替え
         sorted_series = sorted(series, key=lambda x: x.id.generation_time, reverse=True)
         # 現在ページが1以下の場合、1ページ目を表示
@@ -175,10 +231,12 @@ async def get_all_series_with_pagenation(current_page: int):
         # 何ページできるか計算
         total_series_count = len(series)
         all_pages = (total_series_count + series_per_page - 1) // series_per_page # 切り上げ
-        # レスポンスをリストから辞書形式に変換、整形
+        # レスポンスをリストから辞書形式に変換、整形独自名優先
         series_response = {
             "series": [
-                {"id": str(series.id), "series_name": series.series_name}
+                {"id": str(series.id), 
+                 "series_name": custom_series_names.get(str(series.id), series.series_name)
+                 }
                 for series in pagenated_series
             ],
             "all_pages": all_pages
@@ -194,33 +252,20 @@ async def get_all_series_with_pagenation(current_page: int):
 
 # 作品名で絞ったキャラ一覧取得(検索用)
 @router.get("/api/series/{series_id}/characters")
-async def get_filtered_characters(series_id: str):
+async def get_filtered_characters(series_id: str, user_id: str = Depends(get_current_user)):
+    user_id=ObjectId(user_id)
+    
     try:
-        # DBから指定したシリーズIDのシリーズキャラクターを取得
-        series_characters = await get_series_characters(series_id)
+        # シリーズキャラクターを取得して独自キャラクター名を適応させる
+        filtered_characters = await apply_custom_character_names(series_id, user_id)
 
-        if not series_characters:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Characters not found for this series"
-            )
-        # キャラクターIDをリスト化
-        character_ids = [character.character_id for character in series_characters]
-        # キャラクター詳細情報（キャラクター名）を取得
-        characters_with_name = await get_all_characters()
-        # キャラクター情報をキャラクターIDでフィルタリング
-        filtered_characters = [
-            character for character in characters_with_name
-            if character.id in character_ids
-        ]
-        # あいうえお順にソート
-        sorted_characters = sorted(filtered_characters, key=lambda character: character.character_name)
+        # 五十音順にソート
+        sorted_characters = sorted(filtered_characters, key=lambda x: x["name"])
         # 辞書形式に変換
         characters_dict = {
-            str(character.id): character.character_name
+            character["id"]: character["name"]
             for character in sorted_characters
         }
-
         return characters_dict
 
     except Exception as e:
@@ -228,21 +273,60 @@ async def get_filtered_characters(series_id: str):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error fetching sorted characters by series_id: {str(e)}"
         )
+
+
+# シリーズキャラクターを取得して独自キャラクター名を適応させる
+async def apply_custom_character_names(series_id, user_id):
+    series_characters = await get_series_characters(series_id)
+
+    if not series_characters:
+        raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Characters not found for this series"
+            )
+
+    # キャラクターIDをリスト化
+    character_ids = [character.character_id for character in series_characters]
+    # キャラクター詳細情報（キャラクター名）を取得
+    characters = await get_all_characters()
+
+    # 独自データを取得
+    user_specific_data = await get_user_specific_data(user_id)
+    custom_character_names = {}
+    if user_specific_data and user_specific_data.custom_character_names:
+        custom_character_names = {
+                str(custom_character.character_id): custom_character.custom_character_name
+                for custom_character in user_specific_data.custom_character_names
+            }
+
+    # キャラクター詳細情報をキャラクターIDでフィルタリングして独自名を追加
+    filtered_characters = [
+            {
+                "id": str(character.id),
+                "name": custom_character_names.get(str(character.id), character.character_name),
+                "original_name": character.character_name
+            }
+            for character in characters
+            if character.id in character_ids
+        ]
+    
+    return filtered_characters
     
 
 # 作品名で絞ったキャラ一覧取得(一覧ページ用)
 @router.get("/api/series/{series_id}/characters/page/{current_page}")
-async def get_filterd_characters_with_pagenation(series_id: str, current_page: int):
+async def get_filterd_characters_with_pagenation(series_id: str, current_page: int, user_id: str = Depends(get_current_user)):
+    user_id=ObjectId(user_id)
+    
     try:
-        # 既存の関数を利用
-        characters_dict = await get_filtered_characters(series_id)
-        print(characters_dict)
-        # リストに変換
-        characters_list = list(characters_dict.items())
-        # 新しい順にソート
-        sorted_characters_list = sorted(characters_list, key=lambda x: ObjectId(x[0]).generation_time, reverse=True)
+        # シリーズキャラクターを取得して独自キャラクター名を適応させる
+        filtered_characters = await apply_custom_character_names(series_id, user_id)
 
-        characters_per_page = 2
+        # 新しい順にソート
+        sorted_characters_list = sorted(filtered_characters, key=lambda x: ObjectId(x[0]).generation_time, reverse=True)
+
+        characters_per_page = 10
+
         # 現在ページが1以下の場合、1ページ目を表示
         if current_page < 1:
             current_page = 1        
