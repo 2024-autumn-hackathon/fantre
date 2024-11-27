@@ -278,7 +278,7 @@ async def get_filtered_characters(series_id: str, user_id: str = Depends(get_cur
 # シリーズキャラクターを取得して独自キャラクター名を適応させる
 async def apply_custom_character_names(series_id, user_id):
 
-    series_characters = await get_series_characters(ObjectId(series_id))
+    series_characters = await get_series_characters(series_id)
 
     if not series_characters:
 

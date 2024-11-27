@@ -242,8 +242,6 @@ async def get_item_details(item_id: str, user_id: str = Depends(get_current_user
             )
             custom_category_name = custom_category.custom_category_name if custom_category else None
 
-        # custom_category_name = await get_custom_category_name(user_specific_data, item.category) if user_specific_data else None
-
         if custom_item:
             response = {
                 "item_name": custom_item.custom_item_name,
@@ -429,9 +427,6 @@ async def get_filtered_items(
                 query_conditions.append({"_id": {"$in": list(all_item_ids)}})
 
         if category_id:
-            # query_conditions.append({"category": ObjectId(category_id)})
-            category_id = ObjectId(category_id)
-
             # 元のアイテムに指定された category_id があるか検索
             original_category_item_ids = []
             matching_items = await Item.find({"category": category_id}).to_list()
@@ -461,15 +456,12 @@ async def get_filtered_items(
             ]
                 print(f"Custom items matching category: {custom_category_item_ids}")          
                
-            # 結果を統合          
-
             all_item_ids = set(original_category_item_ids + custom_category_item_ids)
             if all_item_ids:
                 query_conditions.append({"_id": {"$in": list(all_item_ids)}})
                 print(f"Query conditions: {query_conditions}")
 
         if tags_list:
-            # 条件を集めるためのリストを初期化
             original_tag_conditions = []
 
             # ユーザーが1つだけタグを入力した場合

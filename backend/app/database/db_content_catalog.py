@@ -37,18 +37,17 @@ async def get_content_catalog():
 
 # カテゴリー重複チェック
 async def existing_categogy_check(category_name) -> bool:
-    await db.connect()
     try:
         existing_category = await ContentCatalog.find_one({"categories.category_name": category_name.strip()})
         return existing_category is not None
     except Exception as e:
         print(f"Error checking for duplicate category: {str(e)}")
         raise RuntimeError(f"Error while checking category duplication: {str(e)}")
-    finally:
-        await db.disconnect()     
+  
 
 # 新しいグッズジャンル(カテゴリー)を作成する 
 async def create_category(category_name: str):
+    await db.connect()
     try:
         category_name = category_name.strip()
 
@@ -57,20 +56,12 @@ async def create_category(category_name: str):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Category with the same name already exists."
-            )
-        
+            )        
         # 新しいカテゴリーを作成
-        content_catalog = await get_content_catalog()
-        if not content_catalog:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Content catalog not found."
-            )
-
         new_category = Category(_id=ObjectId(), category_name=category_name)
-        content_catalog.categories.append(new_category)
+        # ContentCatalogに追加
+        await ContentCatalog.find_one({}).update({"$push":{ContentCatalog.categories:new_category}})
 
-        await save_content_catalog(content_catalog)
         return new_category
     
     except HTTPException as e:
@@ -80,6 +71,8 @@ async def create_category(category_name: str):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An unexpected error occurd while creating the category."
         )
+    finally:
+        await db.disconnect()
 
 # すべてのグッズジャンル（詳細を含む）を取得する
 async def get_all_categories():
@@ -93,8 +86,7 @@ async def get_all_categories():
      
     
 # 作品重複チェック
-async def existing_series_check(series_name) -> bool:
-    await db.connect()
+async def existing_series_check(series_name) -> bool:    
     try:
         series_name = series_name.strip()
         existing_series = await ContentCatalog.find_one({"series.series_name": series_name})
@@ -102,12 +94,11 @@ async def existing_series_check(series_name) -> bool:
     except Exception as e:
         print(f"Error checking for duplicate series: {str(e)}")
         raise RuntimeError(f"Error while checking series duplication: {str(e)}")
-    finally:
-        await db.disconnect()
 
 
 # 新しい作品を作成する
 async def create_series(series_name: str):
+    await db.connect()
     try:
         series_name = series_name.strip()
 
@@ -116,19 +107,12 @@ async def create_series(series_name: str):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Series with the same name already exists."
-            )
-        
-        content_catalog = await get_content_catalog()
-        if not content_catalog:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Content catalog not found."
-            )
-        
-        # 新しい作品を追加
+            )       
+        # 新しい作品を作成
         new_series = Series(_id=ObjectId(), series_name=series_name)
-        content_catalog.series.append(new_series)
-        await save_content_catalog(content_catalog)
+        # ContentCatalogに追加
+        await ContentCatalog.find_one({}).update({"$push":{ContentCatalog.series:new_series}})
+
         return new_series
     
     except HTTPException as e:
@@ -138,7 +122,9 @@ async def create_series(series_name: str):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An unexpected error occurd while creating the series."
         )
-    
+    finally:
+        await db.disconnect()
+
 # すべての作品（詳細を含む）を取得する
 async def get_all_series():
     try:
@@ -151,19 +137,15 @@ async def get_all_series():
 
 # 新しいキャラクターを作成する
 async def create_character(character_name: str):
+    await db.connect()
     try:
         character_name = character_name.strip()
-        content_catalog = await get_content_catalog()
-        if not content_catalog:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Content catalog not found."
-            )
-          
-        # 新しいキャラクターを追加
+
+        # 新しいキャラクターを作成
         new_character = Character(_id=ObjectId(), character_name=character_name)
-        content_catalog.characters.append(new_character)
-        await save_content_catalog(content_catalog)
+        # ContentCatalogに追加
+        await ContentCatalog.find_one({}).update({"$push":{ContentCatalog.characters:new_character}})                                         
+        
         return new_character
     
     except HTTPException as e:
@@ -173,6 +155,8 @@ async def create_character(character_name: str):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An unexpected error occurd while creating the character."
         )
+    finally:
+        await db.disconnect()
     
 # すべてのキャラクター（詳細含む）を取得する
 async def get_all_characters():
@@ -187,7 +171,6 @@ async def get_all_characters():
 
 # 作品＆キャラクターの重複チェック
 async def existing_series_character_check(series_id: ObjectId, character_id: ObjectId) -> bool:
-    await db.connect()
     try:
         content_catalog = await get_content_catalog()
         for pair in content_catalog.series_characters:
@@ -197,12 +180,11 @@ async def existing_series_character_check(series_id: ObjectId, character_id: Obj
     except Exception as e:
         print(f"Error checking for duplicate series-character pair: {str(e)}")
         raise RuntimeError(f"Error while checking series-character duplication: {str(e)}")
-    finally:
-        await db.disconnect()
         
 
 # 新しい作品＆キャラクターの組み合わせを作成する
 async def create_series_character(series_id: ObjectId, character_id: ObjectId):
+    await db.connect()
     try:
         # 同じ作品とキャラクターのペアがすでに存在するか確認
         if await existing_series_character_check(series_id, character_id):
@@ -210,19 +192,12 @@ async def create_series_character(series_id: ObjectId, character_id: ObjectId):
                 "message":"Series and character pair already exists.",
                 "series_id": str(series_id),
                 "character_id": str(character_id)                    
-                }
-                
-        # 新しいペアを作成
-        content_catalog = await get_content_catalog()
-        if not content_catalog:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Content catalog not found."
-            )
-        
+                } 
+        # 新しいペアを作成       
         new_pair = SeriesCharacter(_id=ObjectId(),series_id=series_id, character_id=character_id)
-        content_catalog.series_characters.append(new_pair)
-        await save_content_catalog(content_catalog)
+        # ContentCatalogに追加
+        await ContentCatalog.find_one({}).update({"$push":{ContentCatalog.series_characters:new_pair}})                                        
+        
         return new_pair  
     
     except HTTPException as e:
@@ -232,6 +207,8 @@ async def create_series_character(series_id: ObjectId, character_id: ObjectId):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An unexpected error occurd while creating the series_character."
         )
+    finally:
+        await db.disconnect()
     
 
 # すべての作品＆キャラクターの組み合わせを取得する
@@ -354,9 +331,9 @@ async def create_new_category(category_name: str) -> Category:
 
     if not category_name or len(category_name.strip()) == 0:
         raise ValueError("Category name is required.")
-
+    await db.connect()
     try:
-        if await existing_catecogy_check(category_name):
+        if await existing_categogy_check(category_name):
             raise ValueError(f"Category '{category_name}' already exists.")
         
         new_category = await create_category(category_name)
@@ -364,3 +341,5 @@ async def create_new_category(category_name: str) -> Category:
     except Exception as e:
         print(f"Error during category creation: {str(e)}")
         raise RuntimeError(f"Failed to create category: {str(e)}")
+    finally:
+        await db.disconnect()
