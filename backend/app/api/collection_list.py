@@ -11,9 +11,9 @@ from datetime import datetime
 from app.models import User, Item, UserSpecificData, CollectionList
 from app.api.user import get_current_user
 from app.database.db_user import exists_user
-from app.database.db_item import create_item, existing_item_check, get_item, get_all_items
+from app.database.db_item import create_item, existing_item_check, get_item, get_all_items, get_item_names, exists_item_id
 from app.database.db_content_catalog import character_name_partial_match, get_category_name, get_character_name, get_series_name, series_name_partial_match
-from app.database.db_collection_list import exists_collection_list_name, add_collection_list
+from app.database.db_collection_list import exists_collection_list_name, get_collection_list, add_collection_list, add_item_to_list, delete_item_from_list, delete_list
 
 
 router = APIRouter(dependencies=[Depends(get_current_user)])
@@ -23,7 +23,7 @@ router = APIRouter(dependencies=[Depends(get_current_user)])
 @router.post("/api/lists")
 async def create_collectionlist(list_name: Annotated[str, Form()], user_id: str = Depends(get_current_user)):
     # ユーザー確認
-    if await exists_user(ObjectId(user_id)):
+    if await exists_user(ObjectId(user_id)) is None:
         raise HTTPException(status_code=400, detail="The user not exist.")
     
     # リスト名重複チェック
@@ -37,50 +37,80 @@ async def create_collectionlist(list_name: Annotated[str, Form()], user_id: str 
     return str(new_list_id)
 
 
-#     collection_list = await get_collection_list(ObjectId(user_id))
-#     if list_name in collection_list:
-#         raise HTTPException(status_code=422, detail="The listname already exist.")
-#     created_list = await add_collection_list(CollectionList(list_name=list_name), user_id=ObjectId(user_id))
-#     return created_list.id
-
-
 
 # コレクションリスト一覧取得
 @router.get("/api/lists")
-async def get_lists(user_id: str = Depends(get_current_user)):
+async def get_collection_lists(user_id: str = Depends(get_current_user)):
     # ユーザー確認
-    if await exists_user(ObjectId(user_id)):
+    if await exists_user(ObjectId(user_id)) is None:
         raise HTTPException(status_code=400, detail="The user not exist.")
     
+    # ユーザー固有のコレクションリスト取得して整形
+    collection_lists = await get_collection_list(ObjectId(user_id))
+    collection_lists_response = []
+    for list in collection_lists:
+        collection_lists_response.append({str(list.id): list.list_name})
 
-    
-
+    return collection_lists_response
+        
 
 # コレクションリスト詳細取得
 @router.get("/api/lists/{list_id}")
-async def get_list_detail(list_id: str):
-    pass
+async def get_list_detail(list_id: str, user_id: str = Depends(get_current_user)):
+    # ユーザー確認
+    if await exists_user(ObjectId(user_id)) is None:
+        raise HTTPException(status_code=400, detail="The user not exist.")
+
+    # ユーザー固有のコレクションリスト取得して指定のリストからitem_id取得
+    collection_lists = await get_collection_list(ObjectId(user_id))
+    print("collection_lists:", collection_lists)
+    collection_item_ids = []
+    for list in collection_lists:
+        print(list.id, ObjectId(list_id))
+        if list.id == ObjectId(list_id):
+            collection_item_ids.extend(list.list_items)
+    print("ここ")
+    # item_idからitem_name取得して整形
+    collection_item_response = await get_item_names(collection_item_ids)
+    print("collection_item_response:", collection_item_response)
+    print(type(collection_item_response))
+    return collection_item_response
 
 
 # コレクションリストにグッズ追加
 @router.post("/api/list-items")
-async def create_item_endpoint(list_name: str):
-    pass
-
-
-# 所持/未所持変更
-@router.patch("/api/list-items/{item_id}/own")
-async def create_item_endpoint(list_name: str):
-    pass
+async def add_list_items(list_id: str, item_id: str, user_id: str = Depends(get_current_user)):
+    # ユーザー確認
+    if await exists_user(ObjectId(user_id)) is None:
+        raise HTTPException(status_code=400, detail="The user not exist.")
+    
+    # item_id存在確認
+    if await exists_item_id(ObjectId(item_id)):
+        raise HTTPException(status_code=422, detail="The item does not exist.")
+    
+    await add_item_to_list(ObjectId(list_id), ObjectId(item_id), ObjectId(user_id))
+        
 
 
 # コレクションリストからグッズ削除
 @router.delete("/api/list-items")
-async def cdelete_list_items(list_name: str):
-    pass
+async def delete_list_items(list_id: str, item_id: str, user_id: str = Depends(get_current_user)):
+    # ユーザー確認
+    if await exists_user(ObjectId(user_id)) is None:
+        raise HTTPException(status_code=400, detail="The user not exist.")
+    
+    # item_id存在確認
+    if await exists_item_id(ObjectId(item_id)):
+        raise HTTPException(status_code=422, detail="The item does not exist.")
+    
+    await delete_item_from_list(ObjectId(list_id), ObjectId(item_id), ObjectId(user_id))
 
 
 # コレクションリスト削除
 @router.delete("/api/lists/{list_id}")
-async def cdelete_list_items(list_name: str):
-    pass
+async def cdelete_list_items(list_id: str, user_id: str = Depends(get_current_user)):
+    # ユーザー確認
+    if await exists_user(ObjectId(user_id)) is None:
+        raise HTTPException(status_code=400, detail="The user not exist.")
+    
+    await delete_list(ObjectId(list_id), ObjectId(user_id))

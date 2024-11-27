@@ -1,6 +1,7 @@
 # backend/app/database/db_item.py
 from app.models import Item
 from bson import ObjectId
+from typing import List
 from fastapi import HTTPException, status
 from pydantic import BaseModel, ValidationError
 from app.database.db_connection import Database
@@ -76,6 +77,29 @@ async def exists_item_id(item_id: ObjectId) -> bool:
         raise HTTPException(status_code=422, detail=ve.errors())
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching item: {str(e)}")
+    finally:
+        await db.disconnect()
+
+# item_idのリストからitem_name取得
+async def get_item_names(item_ids: List[ObjectId]):
+    try:
+        print("はいる", item_ids)
+        await db.connect()
+        item_list = []
+        for item_id in item_ids:
+            print(item_id)
+            item = await Item.find_one({"_id": item_id})
+            print(item)
+            if item is None:
+                continue
+            print(item.item_name)
+            item_list.append({str(item_id): item.item_name})
+        print("item_list:", item_list)
+        return item_list
+    except ValidationError as ve:
+        raise HTTPException(status_code=422, detail=ve.errors())
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Item fetching error: {str(e)}")
     finally:
         await db.disconnect()
 
