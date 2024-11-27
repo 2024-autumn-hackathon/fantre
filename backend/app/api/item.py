@@ -446,6 +446,8 @@ async def get_filtered_items(
                 query_conditions.append({"_id": {"$in": list(all_item_ids)}})
 
         if category_id:
+            category_id = ObjectId(category_id)
+            
             # 元のアイテムに指定された category_id があるか検索
             original_category_item_ids = []
             matching_items = await Item.find({"category": category_id}).to_list()
