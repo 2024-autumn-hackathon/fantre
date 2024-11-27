@@ -289,7 +289,7 @@ async def get_item_details(item_id: str, user_id: str = Depends(get_current_user
                 "jan_code": item.jan_code,
                 "release_date": item.release_date,
                 "retailers": item.retailers,
-                "own_status": "false"
+                 "own_status": None
             }
         return response
     
@@ -938,8 +938,8 @@ async def change_exchange_status(item_id: str, status: bool, user_id: str = Depe
                 custom_item_tags = item.tags,
                 custom_item_retailers = item.retailers,
                 custom_item_notes = None,
-                exchange_status = None,
-                own_status = False       
+                exchange_status = status,
+                own_status = None       
             )
             custom_item = await create_custom_item(user_specific_data, custom_item)
 
@@ -995,7 +995,7 @@ async def change_own_status(item_id: str, status: bool, user_id: str = Depends(g
                 custom_item_retailers = item.retailers,
                 custom_item_notes = None,
                 exchange_status = None,
-                own_status = False       
+                own_status = status       
             )
             custom_item = await create_custom_item(user_specific_data, custom_item)
 
