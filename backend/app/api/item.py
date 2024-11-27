@@ -241,16 +241,25 @@ async def get_item_details(item_id: str, user_id: str = Depends(get_current_user
 
         # 独自名を取得
         custom_series_name = await get_custom_series_name(user_specific_data, item.item_series) if user_specific_data else None
-        custom_character_name = await get_custom_character_name(user_specific_data, item.item_character) if user_specific_data else None
+        if not custom_series_name and item.item_series:
+            custom_series_name = await get_series_name(item.item_series)
 
-        # カスタムアイテムの独自カテゴリを取得
-        custom_category_name = None
-        if custom_item and custom_item.custom_item_category_name:
-            custom_category = next(
-                (cat for cat in user_specific_data.custom_category_names if cat.id == custom_item.custom_item_category_name),
-                None
-            )
-            custom_category_name = custom_category.custom_category_name if custom_category else None
+        custom_character_name = await get_custom_character_name(user_specific_data, item.item_character) if user_specific_data else None
+        if not custom_character_name and item.item_character:
+            custom_character_name = await get_character_name(item.item_character)
+
+        custom_category_name = await get_custom_category_name(user_specific_data, item.category) if user_specific_data else None
+        if not custom_category_name and item.category:
+            custom_category_name = await get_category_name(item.category)
+
+        # # カスタムアイテムの独自カテゴリを取得
+        # custom_category_name = None
+        # if custom_item and custom_item.custom_item_category_name:
+        #     custom_category = next(
+        #         (cat for cat in user_specific_data.custom_category_names if cat.id == custom_item.custom_item_category_name),
+        #         None
+        #     )
+        #     custom_category_name = custom_category.custom_category_name if custom_category else None
 
         if custom_item:
             response = {
