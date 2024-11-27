@@ -16,21 +16,21 @@ from datetime import datetime
 router = APIRouter(dependencies=[Depends(get_current_user)])
 
 class ItemRequest(BaseModel):    
-    item_images: Optional[List[str]] = Field(default_factory=list) # image_idのリスト
-    item_name: str
-    item_series: Optional[str] = None # series_id
-    item_character: Optional[str] = None # character_id
-    category: Optional[str] = None # category_id
+    # item_images: Optional[List[str]] = Field(default_factory=list) # image_idのリスト
+    item_name: str = None
+    item_series: str = None # series_id
+    item_character: str = None # character_id
+    category: str = None # category_id
     tags: Optional[List[str]] = Field(default_factory=list)
     jan_code: Optional[str] = Field(None, description="JAN code (8 or 13 degits)") 
     release_date: Optional[str] = Field(None, description="Release date YYYY-MM-DD)") 
     retailers: Optional[List[str]] = Field(default_factory=list)
-    user_data: Optional[List[str]] = Field(default_factory=list) # user_specific_data_id
+    # user_data: Optional[List[str]] = Field(default_factory=list) # user_specific_data_id
 
     # カスタムバリデーションで文字列をObjectIdに変換
-    @field_validator('item_images', 'user_data')
-    def validate_item_images(cls, v):
-        return [ObjectId(i) if isinstance(i, str) else i for i in v]
+    # @field_validator('item_images', 'user_data')
+    # def validate_item_images(cls, v):
+    #     return [ObjectId(i) if isinstance(i, str) else i for i in v]
         
     @field_validator('item_series', 'item_character', 'category')
     def validate_object_id(cls, v):
@@ -65,6 +65,16 @@ async def create_item_endpoint(item_request: ItemRequest, user_id: str = Depends
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Item character must be provided."
+            )
+        if not item_request.item_name:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Item name must be provided."
+            )
+        if not item_request.category:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Category must be provided."
             )
         
         item_data = item_request.model_dump()
