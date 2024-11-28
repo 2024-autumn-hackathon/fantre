@@ -16,21 +16,14 @@ from datetime import datetime
 router = APIRouter(dependencies=[Depends(get_current_user)])
 
 class ItemRequest(BaseModel):    
-    item_images: Optional[List[str]] = Field(default_factory=list) # image_idのリスト
-    item_name: str
-    item_series: Optional[str] = None # series_id
-    item_character: Optional[str] = None # character_id
-    category: Optional[str] = None # category_id
+    item_name: str = None
+    item_series: str = None # series_id
+    item_character: str = None # character_id
+    category: str = None # category_id
     tags: Optional[List[str]] = Field(default_factory=list)
     jan_code: Optional[str] = Field(None, description="JAN code (8 or 13 degits)") 
     release_date: Optional[str] = Field(None, description="Release date YYYY-MM-DD)") 
     retailers: Optional[List[str]] = Field(default_factory=list)
-    user_data: Optional[List[str]] = Field(default_factory=list) # user_specific_data_id
-
-    # カスタムバリデーションで文字列をObjectIdに変換
-    @field_validator('item_images', 'user_data')
-    def validate_item_images(cls, v):
-        return [ObjectId(i) if isinstance(i, str) else i for i in v]
         
     @field_validator('item_series', 'item_character', 'category')
     def validate_object_id(cls, v):
@@ -66,6 +59,16 @@ async def create_item_endpoint(item_request: ItemRequest, user_id: str = Depends
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Item character must be provided."
             )
+        if not item_request.item_name:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Item name must be provided."
+            )
+        if not item_request.category:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Category must be provided."
+            )
         
         item_data = item_request.model_dump()
         
@@ -79,88 +82,6 @@ async def create_item_endpoint(item_request: ItemRequest, user_id: str = Depends
         item = Item(**item_data)
         created_item = await create_item(item)
         return created_item
-
-# アイテム新規登録と同時にカスタムアイテム新規作成機能 現在保留中
-        # # ユーザーの独自データを取得
-        # user_specific_data = await get_user_specific_data(user_id)
-        # # 独自データがない場合新規作成
-        # if not user_specific_data:
-
-        #     user_specific_data = UserSpecificData(
-        #         user_id=user_id,
-        #         custom_items=[],
-        #         custom_category_names=[],
-        #         custom_series_names=[],
-        #         custom_character_names=[]
-        #     )
-        #     user_specific_data = await create_user_specific_data(user_id, user_specific_data)
-
-        # # カスタムアイテムを作成
-
-        # # シリーズIDが独自データ内にあるか？
-        # existing_series_names = next((s for s in user_specific_data.custom_series_names if s.series_id == created_item.item_series), None)
-        # # なければ作成
-        # if not existing_series_names:
-        #     # series_idからseries_nameを取得する
-        #     series_id = created_item.item_series
-        #     series_name = await get_series_name(series_id)
-        #     # custom_series_names に追加する
-        #     new_series = CustomSeriesName(
-        #             _id=ObjectId(),
-        #             series_id=series_id, 
-        #             custom_series_name=series_name
-        #         )
-        #     user_specific_data.custom_series_names.append(new_series)
-
-        # # キャラクターIDが独自データ内にあるか？
-        # existing_character_names = next((c for c in user_specific_data.custom_character_names if c.character_id == item.item_character), None)
-        # # なければ作成
-        # if not existing_character_names:
-        #     # character_idからcharacter_nameを取得する
-        #     character_id = item.item_character
-        #     character_name = await get_character_name(character_id)
-        #     # custom_series_names に追加する
-        #     new_character = CustomCharacterName(
-        #             _id=ObjectId(),
-        #             character_id=character_id, 
-        #             custom_character_name=character_name
-        #         )
-        #     user_specific_data.custom_character_names.append(new_character)
-            
-        # # ユーザーの custom_category_names 内に 該当するcategory_id が存在するか確認
-        # existing_category_names = next((cat for cat in user_specific_data.custom_category_names if cat.category_id == item.category), None)
-        # # なければ作成
-        # if not existing_category_names:
-        #     # series_idからseries_nameを取得する
-        #     category_id = item.category
-        #     category_name = await get_category_name(category_id)
-        #     # custom_series_names に追加する
-        #     new_category = CustomCategoryName(
-        #             _id=ObjectId(),
-        #             category_id=category_id, 
-        #             custom_category_name=category_name
-        #         )
-        #     user_specific_data.custom_category_names.append(new_category)
-
-        # # カスタムアイテム作成        
-        # custom_item = CustomItem(
-        #         _id=ObjectId(),
-        #         item_id=ObjectId(created_item.id),
-        #         custom_item_images=[],
-        #         custom_item_name=item_request.item_name,
-        #         custom_item_series_name=item_request.item_series, 
-        #         custom_item_character_name=item_request.item_character, 
-        #         custom_item_category_name=item_request.category,       
-        #         custom_item_tags = item_request.tags,
-        #         custom_item_retailers = item_request.retailers,
-        #         custom_item_notes = None,
-        #         exchange_status = False,
-        #         own_status = False       
-        #     )
-        # custom_item = await create_custom_item(user_specific_data, custom_item)
-
-        # await user_specific_data.save()        
-        # return created_item
     
     except ValidationError as e:
         raise HTTPException(
@@ -187,7 +108,7 @@ async def get_custom_series_name(user_specific_data, series_id: ObjectId):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error fetching custom series name by series_id: {str(e)}"
         )
-    
+        
 
 # キャラクターIDから独自キャラクター名を取得
 async def get_custom_character_name(user_specific_data, character_id: ObjectId):
@@ -231,18 +152,16 @@ async def get_item_details(item_id: str, user_id: str = Depends(get_current_user
 
         # 独自名を取得
         custom_series_name = await get_custom_series_name(user_specific_data, item.item_series) if user_specific_data else None
+        if not custom_series_name and item.item_series:
+            custom_series_name = await get_series_name(item.item_series)
+
         custom_character_name = await get_custom_character_name(user_specific_data, item.item_character) if user_specific_data else None
+        if not custom_character_name and item.item_character:
+            custom_character_name = await get_character_name(item.item_character)
 
-        # カスタムアイテムの独自カテゴリを取得
-        custom_category_name = None
-        if custom_item and custom_item.custom_item_category_name:
-            custom_category = next(
-                (cat for cat in user_specific_data.custom_category_names if cat.id == custom_item.custom_item_category_name),
-                None
-            )
-            custom_category_name = custom_category.custom_category_name if custom_category else None
-
-        # custom_category_name = await get_custom_category_name(user_specific_data, item.category) if user_specific_data else None
+        custom_category_name = await get_custom_category_name(user_specific_data, item.category) if user_specific_data else None
+        if not custom_category_name and item.category:
+            custom_category_name = await get_category_name(item.category)
 
         if custom_item:
             response = {
@@ -272,7 +191,7 @@ async def get_item_details(item_id: str, user_id: str = Depends(get_current_user
                 "jan_code": item.jan_code,
                 "release_date": item.release_date,
                 "retailers": item.retailers,
-                "own_status": "false"
+                 "own_status": None
             }
         return response
     
@@ -429,9 +348,8 @@ async def get_filtered_items(
                 query_conditions.append({"_id": {"$in": list(all_item_ids)}})
 
         if category_id:
-            # query_conditions.append({"category": ObjectId(category_id)})
             category_id = ObjectId(category_id)
-
+            
             # 元のアイテムに指定された category_id があるか検索
             original_category_item_ids = []
             matching_items = await Item.find({"category": category_id}).to_list()
@@ -461,15 +379,12 @@ async def get_filtered_items(
             ]
                 print(f"Custom items matching category: {custom_category_item_ids}")          
                
-            # 結果を統合          
-
             all_item_ids = set(original_category_item_ids + custom_category_item_ids)
             if all_item_ids:
                 query_conditions.append({"_id": {"$in": list(all_item_ids)}})
                 print(f"Query conditions: {query_conditions}")
 
         if tags_list:
-            # 条件を集めるためのリストを初期化
             original_tag_conditions = []
 
             # ユーザーが1つだけタグを入力した場合
@@ -626,11 +541,11 @@ class CustomItemUpdate(BaseModel):
     custom_category_name: Optional[str] = None
     custom_item_tags: Optional[List[str]] = None  
     custom_item_retailers: Optional[List[str]] = None
-    # exchange_status: Optional[bool] = None
-    # own_status: Optional[bool] = False    
     
     @validator('custom_item_name', 'custom_series_name', 'custom_character_name', 'custom_category_name' , pre=True)
     def check_not_empty_or_whitespace(cls, value):
+        if not isinstance(value, str):
+            raise ValueError("Input must be a string.")
         if value is None or value.strip() == "": 
             raise ValueError("Field cannot be empty or just whitespace.")
         return value
@@ -676,7 +591,6 @@ async def update_custom_item(
                     series_id=series_id, 
                     custom_series_name=series_name
                 )
-            print("new_series", new_series)
             user_specific_data.custom_series_names.append(new_series)
 
         custom_item_series_name = new_series.id if new_series else existing_series_names.id
@@ -703,7 +617,6 @@ async def update_custom_item(
                     character_id=character_id, 
                     custom_character_name=character_name
                 )
-            print("new_character", new_character)
             user_specific_data.custom_character_names.append(new_character)
 
         custom_item_character_name = new_character.id if new_character else existing_character_names.id
@@ -714,125 +627,42 @@ async def update_custom_item(
             existing_character_names = next((c for c in user_specific_data.custom_character_names if c.character_id == item.item_character), None)
             # 名前更新
             existing_character_names.custom_character_name = updated_data.custom_character_name 
-
+            
         # ユーザーの custom_category_names 内に 該当する category_id が存在するか確認
         existing_category_names = next(
             (cat for cat in user_specific_data.custom_category_names if cat.category_id == item.category),
             None
         )
-        print("existing_category_names", existing_category_names)
-        if existing_category_names:
-            existing_category_names.custom_category_name = updated_data.custom_category_name
-            print(f"Custom category name updated: {existing_category_names.custom_category_name}")
 
         new_category = None
-        custom_item_category_name = None
+        if not existing_character_names:
+            # category_idからcategory_nameを取得する
+            category_id = item.category
+            category_name = await get_category_name(category_id)
 
-        # アイテムにカテゴリーが設定されている場合
-        if item.category:  
-            if not existing_category_names:
-                # category_id から category_name を取得する
-                category_id = item.category            
-                # default_category_name = await get_category_name(category_id)
-                
-                # ユーザーが新しいカテゴリー名を入力している場合、その名前を優先
-                if updated_data.custom_category_name:
-                    custom_category_name = updated_data.custom_category_name
-                else:
-                    custom_category_name = await get_category_name(category_id)  
-
-                # 新しい CustomCategoryName を作成して追加
-                new_category = CustomCategoryName(
+            # custom_category_names に追加する
+            new_category = CustomCategoryName(
                     _id=ObjectId(),
                     category_id=category_id, 
-                    custom_category_name=custom_category_name
+                    custom_category_name=category_name
                 )
-                print("new_category", new_category)
-                user_specific_data.custom_category_names.append(new_category)
+            user_specific_data.custom_category_names.append(new_category)
+        
+        custom_item_category_name = new_category.id if new_category else existing_category_names.id
+        if not custom_item_category_name:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid custom item category name."
+            )
 
-                custom_item_category_name = new_category.id
-            else:
-                # 既存のカスタムカテゴリーがある場合
-                custom_item_category_name = existing_category_names.id
-                # ユーザーが新しいカテゴリー名を入力している場合、既存カテゴリーを上書き
-                if updated_data.custom_category_name:
-                    print(f"Updating existing category name from {existing_category_names.custom_category_name} to {updated_data.custom_category_name}")
-                    existing_category_names.custom_category_name = updated_data.custom_category_name
+        # ユーザーがカテゴリー名を入力しているならデータ更新
+        if updated_data.custom_category_name:
+            print(f"Updated custom category name: {updated_data.custom_category_name}")
 
-        # アイテムにカテゴリーが設定されていない場合
-        else:
-            print(f"Updated data category name: {updated_data.custom_category_name}")
-            print("existing_category_names", existing_category_names)
-            # ユーザーがカテゴリー名を入力していた場合
-            if updated_data.custom_category_name:
-                # existing_category_names.custom_category_name = updated_data.custom_category_name
-                # print(f"Updated custom category name: {custom_category_name.custom_category_name}")
-
-                # そのアイテムのカスタムアイテムを持っているか確認
-                custom_item = next(
-                    (ci for ci in user_specific_data.custom_items if ci.item_id == ObjectId(item_id)),
-                    None
-                )
-                print(f"Custom item before linking: {custom_item}")
-
-                if custom_item:
-                    # すでに custom_item にカテゴリが設定されているか確認
-                    if custom_item.custom_item_category_name:
-                        # custom_item_category_name に基づいて既存のカテゴリを取得
-                        existing_cutom_category_names = next(
-                            (cat for cat in user_specific_data.custom_category_names if cat.id == custom_item.custom_item_category_name),
-                            None
-                        )                        
-       
-                        if existing_cutom_category_names:
-                            # 名前を上書き
-                            existing_cutom_category_names.custom_category_name = updated_data.custom_category_name
-                            print(f"Updated custom category name: {existing_cutom_category_names.custom_category_name}")
-                        # else:
-                        #     raise HTTPException(status_code=404, detail="Custom category not found for this item.")
-                    else:
-                        new_category = await create_new_category(updated_data.custom_category_name)
-                        print(f"User input category name: {updated_data.custom_category_name}")
-                        print(f"create_new_category result: {new_category}")
-
-                        # 新しい CustomCategoryName を作成して user_specific_data に追加
-                        new_custom_category = CustomCategoryName(
-                            _id=ObjectId(),
-                            category_id=new_category.id,
-                            custom_category_name=new_category.category_name
-                        )
-                        print(f"New CustomCategoryName: {new_custom_category}")
-
-                        user_specific_data.custom_category_names.append(new_custom_category)
-
-                        print(f"Custom category names after append: {user_specific_data.custom_category_names}")
-                        print(f"New custom category ID to link: {new_custom_category.id}")
-
-                        # custom_item に新しいカテゴリIDをリンク
-                        print(f"Custom item category ID before linking: {custom_item.custom_item_category_name}") 
-                        print(f"custom_item.custom_item_category_name type: {type(custom_item.custom_item_category_name)}")  
-
-                        custom_item.custom_item_category_name = new_custom_category.id
-
-                        print(f"Custom item category ID after linking: {custom_item.custom_item_category_name}")
-                else:
-                    # 新しいカテゴリーを作成
-                    new_category = await create_new_category(updated_data.custom_category_name)
-                    print(f"User input category name: {updated_data.custom_category_name}")
-                    print(f"create_new_category result: {new_category}")
-
-                    # 新しい CustomCategoryName を作成して user_specific_data に追加
-                    new_custom_category = CustomCategoryName(
-                        _id=ObjectId(),
-                        category_id=new_category.id,
-                        custom_category_name=new_category.category_name
-                    )
-                    print(f"New CustomCategoryName: {new_custom_category}")
-                    user_specific_data.custom_category_names.append(new_custom_category)
-                    print(f"Custom category names after append: {user_specific_data.custom_category_names}")
-
-                    # custom_item に新しいカテゴリIDをリンク
-                    custom_item_category_name = new_custom_category.id
+            # 再確認
+            existing_category_names = next((cat for cat in user_specific_data.custom_category_names if cat.category_id == item.category), None)
+            # 名前更新
+            existing_category_names.custom_category_name = updated_data.custom_category_name
 
         # カスタムアイテムがあるか確認
         custom_item = next((ci for ci in user_specific_data.custom_items if ci.item_id == ObjectId(item_id)), None)
@@ -857,7 +687,8 @@ async def update_custom_item(
                 custom_item_character_name=custom_item_character_name, 
                 custom_item_category_name=custom_item_category_name,       
                 custom_item_tags = updated_data.custom_item_tags if updated_data.custom_item_tags is not None else item.tags or [],
-                custom_item_retailers = updated_data.custom_item_retailers if updated_data.custom_item_retailers is not None else item.retailers or []          
+                custom_item_retailers = updated_data.custom_item_retailers if updated_data.custom_item_retailers is not None else item.retailers or [],
+                own_status=None         
             )            
 
             custom_item = await create_custom_item(user_specific_data, custom_item)
@@ -926,8 +757,8 @@ async def change_exchange_status(item_id: str, status: bool, user_id: str = Depe
                 custom_item_tags = item.tags,
                 custom_item_retailers = item.retailers,
                 custom_item_notes = None,
-                exchange_status = None,
-                own_status = False       
+                exchange_status = status,
+                own_status = None       
             )
             custom_item = await create_custom_item(user_specific_data, custom_item)
 
@@ -983,7 +814,7 @@ async def change_own_status(item_id: str, status: bool, user_id: str = Depends(g
                 custom_item_retailers = item.retailers,
                 custom_item_notes = None,
                 exchange_status = None,
-                own_status = False       
+                own_status = status       
             )
             custom_item = await create_custom_item(user_specific_data, custom_item)
 
