@@ -727,51 +727,79 @@ async def update_custom_item(
             existing_character_names = next((c for c in user_specific_data.custom_character_names if c.character_id == item.item_character), None)
             # 名前更新
             existing_character_names.custom_character_name = updated_data.custom_character_name 
-
+            
         # ユーザーの custom_category_names 内に 該当する category_id が存在するか確認
         existing_category_names = next(
             (cat for cat in user_specific_data.custom_category_names if cat.category_id == item.category),
             None
         )
-        
-        if existing_category_names:
-            existing_category_names.custom_category_name = updated_data.custom_category_name
-            print(f"Custom category name updated: {existing_category_names.custom_category_name}")
+        print(f"Existing category names: {user_specific_data.custom_category_names}")
 
         new_category = None
-        custom_item_category_name = None
+        if not existing_character_names:
+            # category_idからcategory_nameを取得する
+            category_id = item.category
+            category_name = await get_category_name(category_id)
 
-        # # アイテムにカテゴリーが設定されている場合
-        # if item.category:  
-
-        if not existing_category_names:
-            # category_id から category_name を取得する
-            category_id = item.category            
-            # default_category_name = await get_category_name(category_id)
-            
-            # ユーザーが新しいカテゴリー名を入力している場合、その名前を優先
-            if updated_data.custom_category_name:
-                custom_category_name = updated_data.custom_category_name
-            else:
-                custom_category_name = await get_category_name(category_id)  
-
-            # 新しい CustomCategoryName を作成して追加
+            # custom_category_names に追加する
             new_category = CustomCategoryName(
-                _id=ObjectId(),
-                category_id=category_id, 
-                custom_category_name=custom_category_name
-            )
-            print("new_category", new_category)
+                    _id=ObjectId(),
+                    category_id=category_id, 
+                    custom_category_name=category_name
+                )
+            print(f"New category: {new_category}")
             user_specific_data.custom_category_names.append(new_category)
+        
+        custom_item_category_name = new_category.id if new_category else existing_category_names.id
+        if not custom_item_category_name:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid custom item category name."
+            )
 
-            custom_item_category_name = new_category.id
-        else:
-            # 既存のカスタムカテゴリーがある場合
-            custom_item_category_name = existing_category_names.id
-            # ユーザーが新しいカテゴリー名を入力している場合、既存カテゴリーを上書き
-            if updated_data.custom_category_name:
-                print(f"Updating existing category name from {existing_category_names.custom_category_name} to {updated_data.custom_category_name}")
-                existing_category_names.custom_category_name = updated_data.custom_category_name
+        # # # アイテムにカテゴリーが設定されている場合
+        # # if item.category:  
+
+        # if not existing_category_names:
+        #     # category_id から category_name を取得する
+        #     category_id = item.category            
+        #     # default_category_name = await get_category_name(category_id)
+
+        # ユーザーがカテゴリー名を入力しているならデータ更新
+        if updated_data.custom_category_name:
+            print(f"Updated custom category name: {updated_data.custom_category_name}")
+
+            # 再確認
+            existing_category_names = next((cat for cat in user_specific_data.custom_category_names if cat.category_id == item.category), None)
+            # 名前更新
+            existing_category_names.custom_category_name = updated_data.custom_category_name
+
+
+
+            
+        #     # ユーザーが新しいカテゴリー名を入力している場合、その名前を優先
+        #     if updated_data.custom_category_name:
+        #         custom_category_name = updated_data.custom_category_name
+        #     else:
+        #         custom_category_name = await get_category_name(category_id)  
+
+        #     # 新しい CustomCategoryName を作成して追加
+        #     new_category = CustomCategoryName(
+        #         _id=ObjectId(),
+        #         category_id=category_id, 
+        #         custom_category_name=custom_category_name
+        #     )
+        #     print("new_category", new_category)
+        #     user_specific_data.custom_category_names.append(new_category)
+
+        #     custom_item_category_name = new_category.id
+        # else:
+        #     # 既存のカスタムカテゴリーがある場合
+        #     custom_item_category_name = existing_category_names.id
+        #     # ユーザーが新しいカテゴリー名を入力している場合、既存カテゴリーを上書き
+        #     if updated_data.custom_category_name:
+        #         print(f"Updating existing category name from {existing_category_names.custom_category_name} to {updated_data.custom_category_name}")
+        #         existing_category_names.custom_category_name = updated_data.custom_category_name
 
         # # アイテムにカテゴリーが設定されていない場合
         # else:
@@ -871,7 +899,8 @@ async def update_custom_item(
                 custom_item_character_name=custom_item_character_name, 
                 custom_item_category_name=custom_item_category_name,       
                 custom_item_tags = updated_data.custom_item_tags if updated_data.custom_item_tags is not None else item.tags or [],
-                custom_item_retailers = updated_data.custom_item_retailers if updated_data.custom_item_retailers is not None else item.retailers or []          
+                custom_item_retailers = updated_data.custom_item_retailers if updated_data.custom_item_retailers is not None else item.retailers or [],
+                own_status=None         
             )            
 
             custom_item = await create_custom_item(user_specific_data, custom_item)
