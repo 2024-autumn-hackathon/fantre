@@ -644,6 +644,8 @@ class CustomItemUpdate(BaseModel):
     
     @validator('custom_item_name', 'custom_series_name', 'custom_character_name', 'custom_category_name' , pre=True)
     def check_not_empty_or_whitespace(cls, value):
+        if not isinstance(value, str):  # 型チェックを追加
+            raise ValueError("Input must be a string.")
         if value is None or value.strip() == "": 
             raise ValueError("Field cannot be empty or just whitespace.")
         return value
