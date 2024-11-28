@@ -26,6 +26,10 @@ async def create_collectionlist(list_name: Annotated[str, Form()], user_id: str 
     if await exists_user(ObjectId(user_id)) is None:
         raise HTTPException(status_code=400, detail="The user not exist.")
     
+    # リスト名空白チェック
+    if not list_name or len(list_name.strip()) == 0:
+        raise HTTPException(status_code=422, detail="Collection List name is required.")                                
+    
     # リスト名重複チェック
     if await exists_collection_list_name(list_name, ObjectId(user_id)):
         raise HTTPException(status_code=422, detail="The listname already exist.")
