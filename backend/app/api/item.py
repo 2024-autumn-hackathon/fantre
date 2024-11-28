@@ -571,6 +571,8 @@ async def update_custom_item(
     user_id: str = Depends(get_current_user)
     ):
     user_id = ObjectId(user_id)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Unauthorized: Invalid user ID")
     
     try:
         # item_idを使ってアイテムを取得
@@ -595,7 +597,7 @@ async def update_custom_item(
         existing_series_names = next((s for s in user_specific_data.custom_series_names if s.series_id == item.item_series), None)
 
         new_series = None
-        if not existing_series_names:
+        if existing_series_names is None:
             # series_idからseries_nameを取得する
             series_id = item.item_series
             series_name = await get_series_name(series_id)
@@ -649,7 +651,7 @@ async def update_custom_item(
         )
 
         new_category = None
-        if not existing_character_names:
+        if existing_category_names is None:
             # category_idからcategory_nameを取得する
             category_id = item.category
             category_name = await get_category_name(category_id)
@@ -706,15 +708,11 @@ async def update_custom_item(
             )            
 
             custom_item = await create_custom_item(user_specific_data, custom_item)
-            
-        try:
+            if not custom_item:
+                raise HTTPException(status_code=500, detail="Failed to create custom item")            
+           
             await user_specific_data.save()
-            refetched_data = await UserSpecificData.find_one({"_id": user_specific_data.id})
-            refetched_data = await UserSpecificData.find_one({"_id": user_specific_data.id})                
 
-        except Exception as e:
-            print(f"Error during saving user_specific_data: {str(e)}")
-  
         return custom_item
 
     except ValidationError as e:
@@ -722,8 +720,8 @@ async def update_custom_item(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         detail={"errors": e.errors()}
         )
-    except HTTPException as e:
-        raise e
+    # except HTTPException as e:
+    #     raise e
     except Exception as e:  
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -743,7 +741,10 @@ async def change_exchange_status(item_id: str, status: bool, user_id: str = Depe
         if not user_specific_data:
             user_specific_data = UserSpecificData(
                 user_id=user_id,
-                custom_items=[]
+                custom_items=[],
+                custom_category_names=[],
+                custom_series_names=[],
+                custom_character_names=[]
             )
             user_specific_data = await create_user_specific_data(user_id, user_specific_data)
 
