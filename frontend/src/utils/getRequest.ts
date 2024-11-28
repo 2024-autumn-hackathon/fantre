@@ -1,14 +1,11 @@
-/**
- * 
- * @param endpoint /から続く、先頭と最後の/は不要
- * @param searchInput
- */
-export const getRequest = async (
+// items
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
+
+export const getRequestItems = async (
   endpoint: string,
   searchInput: URLSearchParams,
   currentPage: number,
 ) => {
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
   const baseURL = `${ apiBaseUrl }${ endpoint }`
   const newSearchInput = new URLSearchParams(searchInput)
   newSearchInput.append("currentPage", currentPage.toString())
@@ -23,5 +20,17 @@ export const getRequest = async (
   //   console.error("接続エラー:", e)
   // })
   // 要ネットワークエラー処理と、fetchの返り値の考慮
+  return response === undefined ? Response.json({}) : response.json()
+}
+      
+export const getRequestItemsCreate = async (
+  endpoint: string,
+  choiced?: string,
+) => {
+  const onlyCharacterParameter = choiced ? `&seriesId=${ choiced }` : ""
+  const requestUrl = `${ apiBaseUrl }items/create?endpoint=${ endpoint }${ onlyCharacterParameter }`
+
+  const response = await fetch(requestUrl)
+
   return response === undefined ? Response.json({}) : response.json()
 }

@@ -1,11 +1,14 @@
+"use client"
+
 import MonitorLayout from "@/components/MonitorLayout"
 import TextLinkButton from "@/components/TextLinkButton"
 import TextViewButton from "@/components/TextViewButton"
 import TopButton from "@/components/TopButton"
 import PagenationListContainer from "@/features/common/pagenation/components/PagenationListContainer"
 import PagenationListItem from "@/features/common/pagenation/components/PagenationListItem"
-import PagenationNavi from "@/features/common/pagenation/components/PagenationNavi"
 import PagenationNaviContainer from "@/features/common/pagenation/components/PagenationNaviContainer"
+import PageState from "@/features/common/pagenation/PageState"
+import { useState } from "react"
 
 // const CharactersPage = ({
 const CharactersPage = async (
@@ -15,6 +18,7 @@ const CharactersPage = async (
     }>
   }
 ) => {
+  const [pageState, setPageState] = useState<PageState>({currentPage: 1, maxPage: 1})
   const { seriesId } = await context.params
   const viewContent = (
     <>
@@ -35,10 +39,10 @@ const CharactersPage = async (
           </TextLinkButton>
         </PagenationListItem>
       </PagenationListContainer>
-      <PagenationNaviContainer>
-        <PagenationNavi href={`/series/${ seriesId }?page=1`}>1</PagenationNavi>
-        <PagenationNavi href={`/series/${ seriesId }?page=2`}>2</PagenationNavi>
-      </PagenationNaviContainer>
+      <PagenationNaviContainer
+        pageState={ pageState }
+        handleSetPageState={ setPageState }
+      />
     </>
   )
   return (

@@ -1,13 +1,17 @@
+"use client"
+
 import MonitorLayout from "@/components/MonitorLayout"
 import TextLinkButton from "@/components/TextLinkButton"
 import TextViewButton from "@/components/TextViewButton"
 import TopButton from "@/components/TopButton"
 import PagenationListContainer from "@/features/common/pagenation/components/PagenationListContainer"
 import PagenationListItem from "@/features/common/pagenation/components/PagenationListItem"
-import PagenationNavi from "@/features/common/pagenation/components/PagenationNavi"
 import PagenationNaviContainer from "@/features/common/pagenation/components/PagenationNaviContainer"
+import PageState from "@/features/common/pagenation/PageState"
+import { useState } from "react"
 
 const SeriesPage = () => {
+  const [pageState, setPageState] = useState<PageState>({currentPage: 1, maxPage: 1})
   const viewContent = (
     // 要素を並べて、最終行にページネーションリンクを置く
     <>
@@ -29,10 +33,10 @@ const SeriesPage = () => {
         </PagenationListItem>
       </PagenationListContainer>
 
-      <PagenationNaviContainer>
-        <PagenationNavi href="/series?page=1">1</PagenationNavi>
-        <PagenationNavi href="/series?page=2">2</PagenationNavi>
-      </PagenationNaviContainer>
+      <PagenationNaviContainer
+        pageState={ pageState }
+        handleSetPageState={ setPageState }
+      />
     </>
   )
 
