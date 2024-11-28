@@ -180,8 +180,7 @@ async def get_item_details(item_id: str, user_id: str = Depends(get_current_user
             series_name = await get_series_name(ObjectId(item.item_series)) if item.item_series else None
             character_name = await get_character_name(ObjectId(item.item_character)) if item.item_character else None
             category_name = await get_category_name(ObjectId(item.category)) if item.category else None
-            print(series_name, character_name, category_name)
-
+            
             response = {
                 "item_name": item.item_name,
                 "series_name": custom_series_name if custom_series_name else series_name,
@@ -273,23 +272,25 @@ async def get_filtered_items(
 
         if series_name:
             # 別関数で部分検索
+            
             series_ids = await series_name_partial_match(series_name)
+            
             # 返ってきたseries_idを含んでいるitemを取得
             if series_ids:
                 matching_items = await Item.find({"item_series": {"$in": series_ids}}).to_list()
                 original_series_item_ids = [item.id for item in matching_items]
 
             # 既存のuser_specific_dataから独自データのマッチングも行う
-            if user_specific_data:
+            if user_specific_data is not None:
                 matching_custom_series = [
                 cs for cs in user_specific_data.custom_series_names
                 if series_name.lower() in cs.custom_series_name.lower()
-            ]
-            custom_series_item_ids = [
-                ci.item_id for ci in user_specific_data.custom_items
-                if any(cs.series_id == ci.custom_item_series_name for cs in matching_custom_series)
-            ]
-                    
+                ]
+                custom_series_item_ids = [
+                    ci.item_id for ci in user_specific_data.custom_items
+                    if any(cs.series_id == ci.custom_item_series_name for cs in matching_custom_series)
+                ]
+                        
             # 結果を統合
             all_item_ids = set(
                 (original_series_item_ids if 'original_series_item_ids' in locals() else []) +
@@ -303,10 +304,9 @@ async def get_filtered_items(
             if character_ids:
                 matching_items = await Item.find({"item_character": {"$in": character_ids}}).to_list()
                 original_character_item_ids = [item.id for item in matching_items]
-                print("Original character_item_ids:", original_character_item_ids)
-           
+                           
             # 既存のuser_specific_dataから独自データのマッチングも行う
-            if user_specific_data:
+            if user_specific_data is not None:
                 matching_item_ids = []                
                 # custom_character_namesの中に一致するものを探す
                 matching_custom_character = [
@@ -327,13 +327,18 @@ async def get_filtered_items(
                 query_conditions.append({"_id": {"$in": list(all_item_ids)}})
 
         if item_name:
+
+            original_item_ids = []
+            custom_item_ids = []
+
             # item_nameが部分一致するものを探す
             matching_items = await Item.find({"item_name": {"$regex": item_name, "$options": "i"}}).to_list()
+            
             # 一致したもののitem_idを取得
             original_item_ids = [item.id for item in matching_items]
 
             # 既存のuser_specific_dataから独自データのマッチングも行う
-            if user_specific_data:         
+            if user_specific_data is not None:       
                 # custom_itemsの中に一致するものを探す
                 matching_custom_items = [
                     ci for ci in user_specific_data.custom_items
@@ -341,7 +346,7 @@ async def get_filtered_items(
                 ]
                 # 部分マッチしたitem_nameを持つアイテムのitem_idを取得
                 custom_item_ids = [ci.item_id for ci in matching_custom_items]
-                print("custom_item_ids:", custom_item_ids)
+                
             # 両方の結果を条件に追加
             all_item_ids = set(original_item_ids + custom_item_ids)
             if all_item_ids:
@@ -353,37 +358,33 @@ async def get_filtered_items(
             # 元のアイテムに指定された category_id があるか検索
             original_category_item_ids = []
             matching_items = await Item.find({"category": category_id}).to_list()
-            print(f"Matching original items: {matching_items}") 
+             
             if matching_items:
                 original_category_item_ids = [item.id for item in matching_items]
-
-                print("original_category_item_ids", original_category_item_ids)
-
+                
             # CustomCategoryName内からcategory_idに一致する_idを収集
             matching_custom_category_ids = []
+
             if user_specific_data and user_specific_data.custom_category_names:
-                print(f"user_specific_data.custom_items: {user_specific_data.custom_items}")
-
                 matching_custom_category_ids = [
-                custom_category.id for custom_category in user_specific_data.custom_category_names
-                if custom_category.category_id == category_id
-            ]
-                print(f"Matching custom category IDs for category_id {category_id}: {matching_custom_category_ids}")
+                    custom_category.id for custom_category in user_specific_data.custom_category_names
+                    if custom_category.category_id == category_id
+                ]
+            else:
+                matching_custom_category_ids = []                
 
-            # カスタムアイテム内でcustom_item_category_name が一致するアイテムIDを収集
+                # カスタムアイテム内でcustom_item_category_name が一致するアイテムIDを収集
             custom_category_item_ids = []
-            if user_specific_data and user_specific_data.custom_items:
+            if user_specific_data and user_specific_data.custom_category_names:
                 custom_category_item_ids = [
                 custom_item.item_id for custom_item in user_specific_data.custom_items
                 if custom_item.custom_item_category_name in matching_custom_category_ids
-            ]
-                print(f"Custom items matching category: {custom_category_item_ids}")          
+            ]                      
                
             all_item_ids = set(original_category_item_ids + custom_category_item_ids)
             if all_item_ids:
                 query_conditions.append({"_id": {"$in": list(all_item_ids)}})
-                print(f"Query conditions: {query_conditions}")
-
+                
         if tags_list:
             original_tag_conditions = []
 
@@ -408,7 +409,7 @@ async def get_filtered_items(
             # 既存のuser_specific_dataから独自データのマッチングも行う            
             custom_item_ids = []
 
-            if user_specific_data:
+            if user_specific_data is not None:
                 if len(tags_list) == 1:
                     tag = tags_list[0].strip()
                     # custom_items内のタグに一致するものを探す
@@ -440,83 +441,96 @@ async def get_filtered_items(
             })
 
         if retailers:
+            retailers_list = [
+                retailer.strip() for retailer in retailers_list if isinstance(retailer, str)
+            ]
+            
             regex_conditions_retailers = [{"retailers": {"$regex": retailer.strip(), "$options": "i"}} for retailer in retailers_list]
                    
             # アイテムIDのリストを取得
             original_item_ids = await Item.find({"$or": regex_conditions_retailers}).to_list()
             original_item_ids_list = [item.id  for item in original_item_ids]
-            print("original_item_ids_list", original_item_ids_list)
+                
+            # カスタムアイテムの検索
+            custom_item_ids = []
 
-            if user_specific_data:
-                custom_matching_item = [{"custom_item_retailers": {"$regex": retailer.strip(), "$options": "i"}} for retailer in retailers_list]
+            if user_specific_data and user_specific_data.custom_items:
+                for custom_item in user_specific_data.custom_items:
+                    # カスタムリテイラーが存在し、検索条件に一致するかチェック
+                    if custom_item.custom_item_retailers:
+                        matching_retailers = [
+                            retailer_value
+                            for retailer_value in custom_item.custom_item_retailers
+                            if any(re.search(retailer, retailer_value, re.IGNORECASE) for retailer in retailers_list)
+                        ]
+                        if matching_retailers and custom_item.item_id:
+                            custom_item_ids.append(custom_item.item_id)
 
-                matching_items = await UserSpecificData.find(
-                    {"custom_items": {"$elemMatch": {"$or": custom_matching_item}}}
-                ).to_list()
+            # 結果を統合
+            all_item_ids = set(original_item_ids_list + custom_item_ids)
 
-                custom_item_ids = []
-                for data in matching_items:
-                    for custom_item in data.custom_items:
-                        # custom_item_retailersが条件に一致するかを確認
-                        if any(
-                            re.search(retailer.strip(), retailer_value, re.IGNORECASE)
-                            for retailer in retailers_list
-                            for retailer_value in (custom_item.custom_item_retailers or [])
-                        ):
-                            if custom_item.item_id:
-                                custom_item_ids.append(custom_item.item_id)
-
-            all_item_ids = set(original_item_ids + custom_item_ids)
             if all_item_ids:
-                query_conditions.append({"_id": {"$in": all_item_ids}})
+                query_conditions.append({"_id": {"$in": list(all_item_ids)}})
 
         if not query_conditions:
-            print("Query conditions are empty.")
             return {
                 "message": "No items found matching the queries."
             }
-        else:
-            print(f"Query conditions: {query_conditions}")
+
                                 
         # 条件をANDで結合
         query = {"$and": query_conditions}  
         # 条件にマッチするアイテム取得
         matched_items = await Item.find(query).to_list()
-
+        
         if not matched_items:
             return{
                 "message": "No items found matching the queries."
             } 
         
         sorted_items =  sorted(matched_items, key=lambda x: x.id.generation_time, reverse=True)
+        
         # ページネーション
         items_per_page = 10
    
         start_index = (current_page - 1) * items_per_page
         end_index = start_index + items_per_page
         pagenated_items = sorted_items[start_index:end_index]
+        
 
         total_items_count = len(sorted_items)
         all_pages = (total_items_count + items_per_page - 1) // items_per_page
 
-        response = {        
-                "items": [
-                {
-                    "id": str(sorted_item.id),
-                    "item_name": next(
-                        (
-                            ci.custom_item_name
-                            for ci in user_specific_data.custom_items
-                            if ci.item_id == sorted_item.id
+        try:
+            response = {        
+                    "items": [
+                    {
+                        "id": str(sorted_item.id),
+                        "item_name": next(
+                            (
+                                ci.custom_item_name
+                                for ci in (user_specific_data.custom_items if user_specific_data and user_specific_data.custom_items else [])
+                                if ci.item_id == sorted_item.id
+                            ),
+                            sorted_item.item_name  # カスタムアイテムがない場合は元の名前を使用
                         ),
-                        sorted_item.item_name  # カスタムアイテムがない場合は元の名前を使用
-                    ),
-                }
-                for sorted_item in pagenated_items
-                ],
-                "all_pages": all_pages,
-                }       
-        
+                    }
+                    for sorted_item in pagenated_items
+
+                    ],
+                    "all_pages": all_pages,
+                    }  
+        except Exception as e:
+            import traceback
+            error_trace = traceback.format_exc()
+            print(f"Error trace during response generation: {error_trace}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"An error occurred during response generation: {str(e)}"
+            )
+     
+        print(f"Response: {response}")
+
         return response
 
     except ValidationError as e:
@@ -692,13 +706,11 @@ async def update_custom_item(
             )            
 
             custom_item = await create_custom_item(user_specific_data, custom_item)
-            print("created_custom_item", custom_item)
-
+            
         try:
             await user_specific_data.save()
             refetched_data = await UserSpecificData.find_one({"_id": user_specific_data.id})
-            refetched_data = await UserSpecificData.find_one({"_id": user_specific_data.id})
-            print(f"Refetched custom item: {refetched_data.custom_items}")      
+            refetched_data = await UserSpecificData.find_one({"_id": user_specific_data.id})                
 
         except Exception as e:
             print(f"Error during saving user_specific_data: {str(e)}")
@@ -712,10 +724,7 @@ async def update_custom_item(
         )
     except HTTPException as e:
         raise e
-    except Exception as e:
-        import traceback
-        error_trace = traceback.format_exc()  # 詳細なエラー情報を取得
-        print(f"Error trace: {error_trace}")  # コンソールに出力
+    except Exception as e:  
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An error occurred while updating the custom item details: {str(e)}"
