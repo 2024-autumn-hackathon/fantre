@@ -65,7 +65,7 @@ const ItemsPage = () => {
             <InputButton type="search" inputName="character_name" placeholder="キャラ名"/>
             <InputButton type="search" inputName="item_name" placeholder="商品名"/>
             <InputButton type="search" inputName="tags" placeholder="タグ"/>
-            <InputButton type="text" inputName="category_id" placeholder="グッズカテゴリー"/>
+            <InputButton type="search" inputName="category_id" placeholder="グッズカテゴリー"/>
             <InputButton type="search" inputName="jan_code" pattern="[a-zA-Z0-9]*" placeholder="JANコード"/>
             <InputButton type="date" inputName="release_date" placeholder="発売日"/>
             <InputButton type="search" inputName="retailers" placeholder="購入場所"/>
