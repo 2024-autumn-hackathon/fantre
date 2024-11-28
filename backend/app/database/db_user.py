@@ -1,6 +1,7 @@
 # backend/app/database/db_user.py
 from fastapi import HTTPException
 from pydantic import EmailStr, ValidationError
+from bson import ObjectId
 
 from app.database.db_connection import Database
 from app.models import User
@@ -63,4 +64,17 @@ async def exists_email(email: EmailStr) -> bool:
         raise HTTPException(status_code=500, detail="User fetching error")
     finally:
         await db.disconnect()
+        
 
+# user_id存在確認
+async def exists_user(user_id: ObjectId) -> bool:
+    try:
+        await db.connect()
+        result = await User.find_one({"_id": user_id})
+        return result is not None
+    except ValidationError as ve:
+        raise HTTPException(status_code=422, detail=ve.errors())
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="User fetching error")
+    finally:
+        await db.disconnect()

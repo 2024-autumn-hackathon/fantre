@@ -27,7 +27,7 @@ async def init_schema(database):
                 _id=ObjectId("507f1f77bcf86cd799439011"),
                 user_name="Test User",
                 email="test@example.com",
-                password="hashed_password",
+                password="$2b$12$.gpxTo/xdgQ5fbVCEORpIuU4LUMMhjALICRqP.nAXOVfHb6jVgdlW", # "password"のハッシュ値
                 bg_image_id=ObjectId("61f5f484a2d21a1d4cf1b0e6")
             )
             await test_user.insert()  # データベースにユーザーを追加
