@@ -27,18 +27,15 @@ async def get_user_specific_data(user_id: ObjectId):
   finally:
         await db.disconnect()
 
+
 # 新しいユーザー独自データを作成する
 async def create_user_specific_data(user_id: ObjectId, user_specific_data: UserSpecificData):
-    print("Starting to create user-specific data...")
+
     user_specific_data.user_id = user_id
-    print(f"User ID assigned: {user_id}")
     
     await db.connect()
-    print("Database connected.")
     try:
-        print("Attempting to insert user_specific_data into the database...")
         await user_specific_data.insert()
-        print("User specific data inserted successfully.")
         return user_specific_data
     
     except Exception as e:
@@ -49,7 +46,6 @@ async def create_user_specific_data(user_id: ObjectId, user_specific_data: UserS
         )
     finally:
         await db.disconnect()  
-        print("Database disconnected.")
 
 
 # 独自アイテムを作成する
@@ -73,10 +69,10 @@ async def create_custom_item(user_specific_data, custom_item: CustomItem):
 
 # custom_series_nameの部分一致検索
 async def custom_series_name_partial_match(series_name: str):
+
     content_catalog = await get_content_catalog()
 
     matched_series_ids = []
-
     for series in content_catalog.series:
         if series_name.lower() in series.series_name.lower():
             matched_series_ids.append(series.id)
