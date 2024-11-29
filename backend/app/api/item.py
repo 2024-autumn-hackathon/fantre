@@ -738,11 +738,11 @@ async def update_custom_item(
             )            
 
             custom_item = await create_custom_item(user_specific_data, custom_item)
-            if not custom_item:
-                raise HTTPException(status_code=500, detail="Failed to create custom item")            
-           
             await user_specific_data.save()
-
+            if not custom_item:
+                raise HTTPException(status_code=500, detail="Failed to create custom item") 
+           
+        await user_specific_data.save()
         return custom_item
 
     except ValidationError as e:
@@ -801,6 +801,7 @@ async def change_exchange_status(item_id: str, status: bool, user_id: str = Depe
                 own_status = None       
             )
             custom_item = await create_custom_item(user_specific_data, custom_item)
+
 
         # 欲しい/譲れるフラグ変更
         if status is not None:
