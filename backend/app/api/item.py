@@ -305,41 +305,55 @@ async def get_filtered_items(
                     custom_series_item_ids = [ci.item_id for ci in matching_custom_items]                                   
 
             all_item_ids = set(original_series_item_ids + custom_series_item_ids)
-            # print(f"Original series item IDs: {original_series_item_ids}")
-            # print(f"Custom series item IDs: {custom_series_item_ids}")
-            # print(f"All item IDs: {all_item_ids}")
 
             if all_item_ids:
-                # query_conditions.append({"_id": {"$in": list(all_item_ids)}})
-                query_conditions.append({"_id": {"$in": all_item_ids}})
+                query_conditions.append({"_id": {"$in": list(all_item_ids)}})
 
 
 
 
         if character_name:
             character_ids = await character_name_partial_match(character_name)
+            print("character_ids", character_ids)  # デバッグ: character_ids の内容を確認
+            original_character_item_ids = []
+            custom_character_item_ids = []
+
             if character_ids:
                 matching_items = await Item.find({"item_character": {"$in": character_ids}}).to_list()
+                print("matching_items", matching_items)  # デバッグ: Item.find() の結果を確認
                 original_character_item_ids = [item.id for item in matching_items]
-                           
+                print("original_character_item_ids",original_character_item_ids)
+
             # 既存のuser_specific_dataから独自データのマッチングも行う
-            if user_specific_data is not None:
-                matching_item_ids = []                
-                # custom_character_namesの中に一致するものを探す
+            if user_specific_data and user_specific_data.custom_character_names:
+
                 matching_custom_character = [
-                    cc for cc in user_specific_data.custom_character_names 
-                    if character_name.lower() in cc.custom_character_name.lower()
+                    cha for cha in user_specific_data.custom_character_names
+                    if character_name.lower() in cha.custom_character_name.lower()
                 ]
-                # マッチしたcharacter_idを持つアイテムのitem_idを取得
-                custom_character_item_ids = [
-                ci.item_id for ci in user_specific_data.custom_items
-                if any(cc.character_id == ci.custom_item_character_name for cc in matching_custom_character)
-            ]                
+                print("matching_custom_character",matching_custom_character)
+
+                # 見つかった独自シリーズから series_id を収集
+                matching_character_ids = [cha.character_id for cha in matching_custom_character]
+                print("matching_character_ids",matching_character_ids)
+
+                # そのcharacter_idを持つ独自アイテムを検索
+                if matching_character_ids:
+                    matching_character_items = [
+                        ci for ci in user_specific_data.custom_items
+                        if ci.custom_item_character_name in [cha.id for cha in matching_custom_character]
+                    ]
+                    print("matching_character_items",matching_character_items)
+
+                    # その独自アイテムの中のitem_idを収集
+                    custom_character_item_ids = [ci.item_id for ci in matching_character_items]  
+                    print("custom_character_item_ids",custom_character_item_ids)   
+
             # 結果を統合
             all_item_ids = set(original_character_item_ids + custom_character_item_ids)
+
             if all_item_ids:
-                # query_conditions.append({"_id": {"$in": list(all_item_ids)}})
-                query_conditions.append({"_id": {"$in": all_item_ids}})
+                query_conditions.append({"_id": {"$in": list(all_item_ids)}})
                 
 
         if item_name:
@@ -366,8 +380,7 @@ async def get_filtered_items(
             # 両方の結果を条件に追加
             all_item_ids = set(original_item_ids + custom_item_ids)
             if all_item_ids:
-                # query_conditions.append({"_id": {"$in": list(all_item_ids)}})
-                query_conditions.append({"_id": {"$in": all_item_ids}})
+                query_conditions.append({"_id": {"$in": list(all_item_ids)}})
 
         if category_id:
             category_id = ObjectId(category_id)
@@ -400,8 +413,7 @@ async def get_filtered_items(
                
             all_item_ids = set(original_category_item_ids + custom_category_item_ids)
             if all_item_ids:
-                # query_conditions.append({"_id": {"$in": list(all_item_ids)}})
-                query_conditions.append({"_id": {"$in": all_item_ids}})
+                query_conditions.append({"_id": {"$in": list(all_item_ids)}})
                 
         if tags_list:
             original_tag_conditions = []
@@ -444,7 +456,7 @@ async def get_filtered_items(
 
             all_item_ids = set(original_item_ids + custom_item_ids)
             if all_item_ids:
-                query_conditions.append({"_id": {"$in": all_item_ids}})
+                query_conditions.append({"_id": {"$in": list(all_item_ids)}})
 
         if jan_code:
             query_conditions.append({"jan_code": jan_code})
