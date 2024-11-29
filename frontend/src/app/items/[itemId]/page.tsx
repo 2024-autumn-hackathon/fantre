@@ -1,7 +1,7 @@
 import InputButton from "@/components/InputButton"
 import MonitorLayout from "@/components/MonitorLayout"
 import TopButton from "@/components/TopButton"
-import ImageUploadForm from "@/features/common/ImageUploadForm"
+import ImageUploadForm from "@/features/common/uploadImage/ImageUploadForm"
 
 const ItemDetailPage = () => {
   return (

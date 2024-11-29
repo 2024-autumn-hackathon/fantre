@@ -1,3 +1,4 @@
+import makeToken from "@/utils/makeToken"
 import { NextRequest } from "next/server"
 
 const backendUrl = process.env.BACKEND_API_URL
@@ -5,6 +6,10 @@ const backendUrl = process.env.BACKEND_API_URL
 export async function POST(
   request: NextRequest,
 ) {
+  const cookie = request.headers.get("set-cookie")
+  if (!cookie) return Response.error()
+  const token = makeToken(cookie)
+
   const formData = await request.formData()
   // booleanに変換
   const isNewSeries = formData.get("is_new_series") === "true"
@@ -18,7 +23,10 @@ export async function POST(
   const response = await fetch(
     requestUrl,
     {
-      headers: {"Content-Type":"application/json"},
+      headers: {
+        "Content-Type":"application/json",
+        Authorization: token,
+      },
       method: "POST",
       body: json
     }

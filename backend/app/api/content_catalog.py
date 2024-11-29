@@ -277,9 +277,11 @@ async def get_filtered_characters(series_id: str, user_id: str = Depends(get_cur
 
 # シリーズキャラクターを取得して独自キャラクター名を適応させる
 async def apply_custom_character_names(series_id, user_id):
+
     series_characters = await get_series_characters(series_id)
 
     if not series_characters:
+
         raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Characters not found for this series"
@@ -287,11 +289,13 @@ async def apply_custom_character_names(series_id, user_id):
 
     # キャラクターIDをリスト化
     character_ids = [character.character_id for character in series_characters]
+
     # キャラクター詳細情報（キャラクター名）を取得
     characters = await get_all_characters()
 
     # 独自データを取得
     user_specific_data = await get_user_specific_data(user_id)
+
     custom_character_names = {}
     if user_specific_data and user_specific_data.custom_character_names:
         custom_character_names = {
@@ -309,7 +313,7 @@ async def apply_custom_character_names(series_id, user_id):
             for character in characters
             if character.id in character_ids
         ]
-    
+
     return filtered_characters
     
 
@@ -323,7 +327,10 @@ async def get_filterd_characters_with_pagenation(series_id: str, current_page: i
         filtered_characters = await apply_custom_character_names(series_id, user_id)
 
         # 新しい順にソート
-        sorted_characters_list = sorted(filtered_characters, key=lambda x: ObjectId(x[0]).generation_time, reverse=True)
+        sorted_characters_list = sorted(filtered_characters, key=lambda x: ObjectId(x["id"]).generation_time, reverse=True)
+
+        # トータルカウントを定義
+        total_characters_count = len(sorted_characters_list)
 
         characters_per_page = 10
 
@@ -333,7 +340,9 @@ async def get_filterd_characters_with_pagenation(series_id: str, current_page: i
         # ページに分けるためにsorted_characters_listをスライス
         start_index = (current_page - 1) * characters_per_page
         end_index = start_index + characters_per_page
+
         pagenated_characters = sorted_characters_list[start_index:end_index]
+
         # 何ページできるか計算
         total_characters_count = len(sorted_characters_list)
         all_pages = (total_characters_count + characters_per_page - 1) // characters_per_page # 切り上げ
@@ -341,11 +350,12 @@ async def get_filterd_characters_with_pagenation(series_id: str, current_page: i
         # レスポンスを整形
         characters_response = {
                 "characters": [
-                    {"id": str(character[0]), "character_name": character[1]}
+                    {"id": str(character["id"]), "character_name": character["name"]}
                     for character in pagenated_characters
                 ],
                 "all_pages": all_pages
             }
+
         return characters_response
 
     except Exception as e:

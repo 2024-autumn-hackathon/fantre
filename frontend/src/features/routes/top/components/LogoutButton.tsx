@@ -1,13 +1,17 @@
-import OnClickButton from "@/features/common/OnClickButton"
-
+import logoutAction from "../logoutAction"
 
 const LogoutButton = () => {
   return (
-    <OnClickButton
-      addClass="mr-0 bg-my-yellow w-[136px] max-h-[32px] leading-none"
+    <form
+      className="block ml-auto py-2 rounded-3xl text-center bg-my-yellow w-[136px] max-h-[32px] leading-none"
+      action={ logoutAction }
     >
-      ログアウト
-    </OnClickButton>
+      <button>
+        <p>
+          ログアウト
+        </p>
+      </button>
+    </form>
   )
 }
 
