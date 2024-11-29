@@ -274,6 +274,9 @@ async def get_filtered_items(
             # 別関数で部分検索
             
             series_ids = await series_name_partial_match(series_name)
+            print("series_ids", series_ids)
+            original_series_item_ids = []
+            custom_series_item_ids = []
             
             # 返ってきたseries_idを含んでいるitemを取得
             if series_ids:
@@ -281,24 +284,38 @@ async def get_filtered_items(
                 original_series_item_ids = [item.id for item in matching_items]
 
             # 既存のuser_specific_dataから独自データのマッチングも行う
-            if user_specific_data is not None:
+            if user_specific_data and user_specific_data.custom_series_names:
+
                 matching_custom_series = [
-                cs for cs in user_specific_data.custom_series_names
-                if series_name.lower() in cs.custom_series_name.lower()
+                    cs for cs in user_specific_data.custom_series_names
+                    if series_name.lower() in cs.custom_series_name.lower()
                 ]
-                custom_series_item_ids = [
-                    ci.item_id for ci in user_specific_data.custom_items
-                    if any(cs.series_id == ci.custom_item_series_name for cs in matching_custom_series)
-                ]
-                        
-            # 結果を統合
-            all_item_ids = set(
-                (original_series_item_ids if 'original_series_item_ids' in locals() else []) +
-                (custom_series_item_ids if 'custom_series_item_ids' in locals() else [])     
-            )
-            if all_item_ids:
-                query_conditions.append({"_id": {"$in": list(all_item_ids)}})
+
+                # 見つかった独自シリーズから series_id を収集
+                matching_series_ids = [cs.series_id for cs in matching_custom_series]
                 
+                # そのseries_idを持つ独自アイテムを検索
+                if matching_series_ids:
+                    matching_custom_items = [
+                        ci for ci in user_specific_data.custom_items
+                        if ci.custom_item_series_name in [cs.id for cs in matching_custom_series]
+                    ]
+
+                    # その独自アイテムの中のitem_idを収集
+                    custom_series_item_ids = [ci.item_id for ci in matching_custom_items]                                   
+
+            all_item_ids = set(original_series_item_ids + custom_series_item_ids)
+            # print(f"Original series item IDs: {original_series_item_ids}")
+            # print(f"Custom series item IDs: {custom_series_item_ids}")
+            # print(f"All item IDs: {all_item_ids}")
+
+            if all_item_ids:
+                # query_conditions.append({"_id": {"$in": list(all_item_ids)}})
+                query_conditions.append({"_id": {"$in": all_item_ids}})
+
+
+
+
         if character_name:
             character_ids = await character_name_partial_match(character_name)
             if character_ids:
@@ -319,12 +336,11 @@ async def get_filtered_items(
                 if any(cc.character_id == ci.custom_item_character_name for cc in matching_custom_character)
             ]                
             # 結果を統合
-            all_item_ids = set(
-                (original_character_item_ids if 'original_character_item_ids' in locals() else []) +
-                (custom_character_item_ids if 'custom_character_item_ids' in locals() else [])     
-            )
+            all_item_ids = set(original_character_item_ids + custom_character_item_ids)
             if all_item_ids:
-                query_conditions.append({"_id": {"$in": list(all_item_ids)}})
+                # query_conditions.append({"_id": {"$in": list(all_item_ids)}})
+                query_conditions.append({"_id": {"$in": all_item_ids}})
+                
 
         if item_name:
 
@@ -350,7 +366,8 @@ async def get_filtered_items(
             # 両方の結果を条件に追加
             all_item_ids = set(original_item_ids + custom_item_ids)
             if all_item_ids:
-                query_conditions.append({"_id": {"$in": list(all_item_ids)}})
+                # query_conditions.append({"_id": {"$in": list(all_item_ids)}})
+                query_conditions.append({"_id": {"$in": all_item_ids}})
 
         if category_id:
             category_id = ObjectId(category_id)
@@ -383,7 +400,8 @@ async def get_filtered_items(
                
             all_item_ids = set(original_category_item_ids + custom_category_item_ids)
             if all_item_ids:
-                query_conditions.append({"_id": {"$in": list(all_item_ids)}})
+                # query_conditions.append({"_id": {"$in": list(all_item_ids)}})
+                query_conditions.append({"_id": {"$in": all_item_ids}})
                 
         if tags_list:
             original_tag_conditions = []
@@ -720,8 +738,8 @@ async def update_custom_item(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         detail={"errors": e.errors()}
         )
-    # except HTTPException as e:
-    #     raise e
+    except HTTPException as e:
+        raise e
     except Exception as e:  
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
