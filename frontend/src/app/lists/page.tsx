@@ -1,58 +1,73 @@
+"use client"
+
 import InputButton from "@/components/InputButton"
 import MonitorLayout from "@/components/MonitorLayout"
 import TopButton from "@/components/TopButton"
 import PagenationListContainer from "@/features/common/pagenation/components/PagenationListContainer"
-import PagenationListItem from "@/features/common/pagenation/components/PagenationListItem"
-import PagenationNavi from "@/features/common/pagenation/components/PagenationNavi"
 import PagenationNaviContainer from "@/features/common/pagenation/components/PagenationNaviContainer"
-import TextLinkButton from "@/components/TextLinkButton"
 import LinkButton from "@/components/LinkButton"
 import TextViewButton from "@/components/TextViewButton"
 import SubmitButton from "@/components/SubmitButton"
+import { useEffect, useState } from "react"
+import PageState from "@/features/common/pagenation/PageState"
+import getListsByQuery from "@/features/routes/lists/getListsByQuery"
 
 const ListsPage = () => {
-  const viewContent = (
-    <>
-      <PagenationListContainer>
-        <PagenationListItem>
-          <TextLinkButton href="/lists/1">
-            list 1
-          </TextLinkButton>
-        </PagenationListItem>
-        <PagenationListItem>
-          <TextLinkButton href="/lists/2">
-            list 2
-          </TextLinkButton>
-        </PagenationListItem>
-        <PagenationListItem>
-          <TextLinkButton href="/lists/3">
-            list 3
-          </TextLinkButton>
-        </PagenationListItem>
-      </PagenationListContainer>
-      <PagenationNaviContainer>
-        <PagenationNavi href="/lists?page=1">1</PagenationNavi>
-        <PagenationNavi href="/lists?page=2">2</PagenationNavi>
-      </PagenationNaviContainer>
-    </>
-  )
+  const [listList, setListList] = useState<{
+    id: string,
+    list_name: string
+  }[]>([])
+  const [searchInput, setSearchInput] = useState<URLSearchParams>(new URLSearchParams())
+  const [pageState, setPageState] = useState<PageState>({currentPage: 1, maxPage: 1})
 
-  const naviContent = (
-    <>
-      <div className="h-full">
-        <TextViewButton addClass="h-[60px]">コレクションリスト一覧を表示中...</TextViewButton>
-        <LinkButton href="/items" addClass="mt-4 w-60">グッズを探す</LinkButton>
-        <InputButton inputName="list_name" placeholder="コレクションリスト名"/>
-        <SubmitButton>コレクションリストを作成</SubmitButton>
-      </div>
-    </>
-  ) 
+  useEffect(() => {
+    const fetchData = async () => {
+      const response = await getListsByQuery(searchInput, pageState)
+      if (response.maxPage && response.maxPage !== pageState.maxPage) {
+        const newPageState: PageState = {currentPage: pageState.currentPage, maxPage: pageState.maxPage}
+        newPageState.maxPage = response.maxPage
+        setPageState(newPageState)
+      }
+      setListList(response.items[0]?.id === "" ? [] : response.items)
+    }
+    fetchData()
+  }, [pageState, searchInput])
+
+
+  const viewContent = () => {
+    return (
+      <>
+        <PagenationListContainer>
+          <ListList
+            listList={ listList }
+          />
+        </PagenationListContainer>
+        <PagenationNaviContainer
+          pageState={ pageState }
+          handleSetPageState={ setPageState }
+        />
+      </>
+    )
+  }
+
+  const naviContent = () => {
+    return (
+      <>
+        <div className="h-full">
+          <TextViewButton addClass="h-[60px]">コレクションリスト一覧を表示中...</TextViewButton>
+          <LinkButton href="/items" addClass="mt-4 w-60">グッズを探す</LinkButton>
+          <InputButton inputName="list_name" placeholder="コレクションリスト名"/>
+          <SubmitButton>コレクションリストを作成</SubmitButton>
+        </div>
+      </>
+    )
+  }
 
   return (
     <MonitorLayout
       headerContent={ <TopButton/> }
-      viewContent={ viewContent }
-      naviContent={ naviContent }
+      viewContent={ viewContent() }
+      naviContent={ naviContent() }
       footerContent
     />
   )
