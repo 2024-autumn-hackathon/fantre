@@ -26,6 +26,18 @@ export const COOKIE_OPTIONS = {
 
 export const TOKEN_PREFIX = "Bearer "
 
+export const IMAGE_FORMAT_ALLOW_LIST = [
+  "image/png",
+  "image/jpg",
+  "image/jpeg",
+]
+
+export const MIME_TO_EXTENSION = {
+  "image/png": ".png",
+  "image/jpg": ".jpg",
+  "image/jpeg": ".jpeg",
+}
+
 export const VALIDATION_EMAIL = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
 // 8字以上 & 数値1以上 & 小英数1以上 & 大英数1以上
 export const VALIDATION_PASSWORD = "(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
