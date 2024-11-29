@@ -1,14 +1,10 @@
 "use server"
 
-import { cookies } from "next/headers"
-
-const sendFormAction = async (
+const authAction = async (
   formData: FormData,
   endpoint: string,
   requires: string[],
-): Promise<{category_id?: string, category_name?: string, character_id: string, series_id: string, access_token?: string} | void> => {
-  console.log("--------------------", requires)
-  console.log("--------------------", formData)
+): Promise<{access_token: string} | void> => {
   // 空白パラメータは除去 & 必須項目が空白の場合リクエスト中止
   const newFormData = new FormData()
   for (const query of formData.entries()) {
@@ -22,14 +18,6 @@ const sendFormAction = async (
     if (!newFormData.get(requireKey)) return
   }
 
-  const cookieStore = cookies()
-  const cookie = (await cookieStore).get("fantre")
-  if (!cookie) return
-  const cookieKey = cookie.name
-  const cookieValue = cookie.value
-  if (cookieKey !== "fantre") return
-
-  const header = new Headers({"Set-Cookie": `${ cookieKey }=${ cookieValue }`})
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
   const requestUrl = `${ apiBaseUrl }${ endpoint }`
   
@@ -37,11 +25,10 @@ const sendFormAction = async (
     requestUrl,
     {
       method: "POST",
-      headers: header,
       body: newFormData
     })
 
   return response.status === 200 ? response.json() : null
 }
 
-export default sendFormAction
+export default authAction

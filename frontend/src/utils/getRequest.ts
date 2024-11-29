@@ -20,7 +20,7 @@ export const getRequestItems = async (
   //   console.error("接続エラー:", e)
   // })
   // 要ネットワークエラー処理と、fetchの返り値の考慮
-  return response === undefined ? Response.json({}) : response.json()
+  return response.status !== 200 ? null : response.json()
 }
       
 export const getRequestItemsCreate = async (
@@ -32,5 +32,5 @@ export const getRequestItemsCreate = async (
 
   const response = await fetch(requestUrl)
 
-  return response === undefined ? Response.json({}) : response.json()
+  return response.status !== 200 ? null : response.json()
 }

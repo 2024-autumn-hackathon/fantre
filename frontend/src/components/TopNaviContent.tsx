@@ -1,4 +1,4 @@
-import ImageUploadForm from "@/features/common/ImageUploadForm"
+import ImageUploadForm from "@/features/common/uploadImage/ImageUploadForm"
 import BackgroundImageResetButton from "@/features/components/BackgroundImageResetButton"
 import LinkButton from "./LinkButton"
 import LinkSet from "./LinkSet"
@@ -19,6 +19,8 @@ const TopNaviContent = () => {
           formId="top-page-form"
           buttonText="画像送信"
           uploadImageText="背景画像を設定する"
+          endpoint=""
+          imageId="bg_image"
         />
         <BackgroundImageResetButton/>
       </div>

@@ -1,17 +1,23 @@
+import { IMAGE_FORMAT_ALLOW_LIST as allowedImages } from "@/constants"
 import concatClassName from "@/utils/concatClassName"
+import uploadImage from "./uploadImageForm"
 
 const ImageUploadForm = ({
   formId,
   children,
   uploadImageText,
   buttonText,
-  addClass = ""
+  addClass = "",
+  endpoint,
+  imageId,
 }: Readonly<{
   formId: string
   children?: React.ReactNode
   uploadImageText: string
   buttonText: string
   addClass?: string
+  endpoint: string
+  imageId: string
 }>) => {
   const formBaseClass = "mx-auto flex flex-col"
   const className = concatClassName(formBaseClass, addClass)
@@ -21,7 +27,7 @@ const ImageUploadForm = ({
       className={ className }
       id={ formId }
       name={ formId }
-      // action
+      action={ formData => uploadImage(formData, endpoint) }
     >
       { children }
       <div>
@@ -32,10 +38,11 @@ const ImageUploadForm = ({
           { uploadImageText }
         </label>
         <input
-          accept="image/*"
+          accept={ allowedImages.join(",") }
           type="file"
           id={ formId }
           className="file:opacity-0 file:block file:bg-my-orange file:h-0 file:border-0 h-[40px] mx-auto rounded-[40px] pl-10 bg-my-orange leading-normal cursor-pointer w-60"
+          name={ imageId }
         />
       </div>
       <button
