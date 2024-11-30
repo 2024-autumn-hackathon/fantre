@@ -1,5 +1,6 @@
 "use server"
 
+import { BACKEND_ITEM_KEYS as keys } from "@/constants"
 import { cookies } from "next/headers"
 
 const sendFormAction = async (
@@ -14,8 +15,15 @@ const sendFormAction = async (
   for (const query of formData.entries()) {
     const key = query[0]
     const value = query[1]
-    if (value !== "") {
-      newFormData.append(key, value)
+    if (value !== "") {      
+      if (key === keys.tags || key === keys.retailers) {
+        const splitValue = value.toString().split(",")
+        splitValue.forEach(val => {
+          newFormData.append(`${key}[]`, val)
+        })
+      } else {        
+        newFormData.append(key, value)
+      }
     }
   }
   for (const requireKey of requires) {
