@@ -306,10 +306,10 @@ async def get_filtered_items(
 
             all_item_ids = set(original_series_item_ids + custom_series_item_ids)
 
-            if all_item_ids:
-                query_conditions.append({"_id": {"$in": list(all_item_ids)}})
+            if not all_item_ids:
+                return {"message": "No items found matching the queries."}
 
-
+            query_conditions.append({"_id": {"$in": list(all_item_ids)}})
 
 
         if character_name:
@@ -352,8 +352,10 @@ async def get_filtered_items(
             # 結果を統合
             all_item_ids = set(original_character_item_ids + custom_character_item_ids)
 
-            if all_item_ids:
-                query_conditions.append({"_id": {"$in": list(all_item_ids)}})
+            if not all_item_ids:
+                return {"message": "No items found matching the queries."}
+
+            query_conditions.append({"_id": {"$in": list(all_item_ids)}})
                 
 
         if item_name:
@@ -379,8 +381,11 @@ async def get_filtered_items(
                 
             # 両方の結果を条件に追加
             all_item_ids = set(original_item_ids + custom_item_ids)
-            if all_item_ids:
-                query_conditions.append({"_id": {"$in": list(all_item_ids)}})
+
+            if not all_item_ids:
+                return {"message": "No items found matching the queries."}
+
+            query_conditions.append({"_id": {"$in": list(all_item_ids)}})                
 
         if category_id:
             category_id = ObjectId(category_id)
@@ -412,8 +417,11 @@ async def get_filtered_items(
             ]                      
                
             all_item_ids = set(original_category_item_ids + custom_category_item_ids)
-            if all_item_ids:
-                query_conditions.append({"_id": {"$in": list(all_item_ids)}})
+
+            if not all_item_ids:
+                return {"message": "No items found matching the queries."}
+
+            query_conditions.append({"_id": {"$in": list(all_item_ids)}})
                 
         if tags_list:
             original_tag_conditions = []
@@ -454,9 +462,10 @@ async def get_filtered_items(
                     ]
                     custom_item_ids.extend(matching_custom_items)
 
-            all_item_ids = set(original_item_ids + custom_item_ids)
-            if all_item_ids:
-                query_conditions.append({"_id": {"$in": list(all_item_ids)}})
+            if not all_item_ids:
+                return {"message": "No items found matching the queries."}
+
+            query_conditions.append({"_id": {"$in": list(all_item_ids)}})
 
         if jan_code:
             query_conditions.append({"jan_code": jan_code})
@@ -499,8 +508,10 @@ async def get_filtered_items(
             # 結果を統合
             all_item_ids = set(original_item_ids_list + custom_item_ids)
 
-            if all_item_ids:
-                query_conditions.append({"_id": {"$in": list(all_item_ids)}})
+            if not all_item_ids:
+                return {"message": "No items found matching the queries."}
+
+            query_conditions.append({"_id": {"$in": list(all_item_ids)}})
 
         if not query_conditions:
             return {
