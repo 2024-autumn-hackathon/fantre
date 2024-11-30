@@ -1,7 +1,6 @@
 "use client"
 
 import BackgroundImageViewer from "@/components/BackgroundImageViewer"
-import LinkButton from "@/components/LinkButton"
 import MonitorLayout from "@/components/MonitorLayout"
 import TopNaviContent from "@/components/TopNaviContent"
 import fetchImage from "@/features/common/getImage/fetchImage"
@@ -47,7 +46,7 @@ const Home = () => {
         />
       }
       naviContent={ <TopNaviContent/> }
-      footerContent={ <LinkButton addClass="mr-0" href="/login">ログインへ(仮置き)</LinkButton> }
+      footerContent
     />
   )
 }

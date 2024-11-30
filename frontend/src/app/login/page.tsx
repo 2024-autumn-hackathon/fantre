@@ -15,7 +15,7 @@ const LoginPage = () => {
   const requires = ["email", "password"]
   return (
     <MonitorLayout
-      headerContent={ <LinkButton href="/"addClass="mr-0">TOPへ(仮置き)</LinkButton> }
+      headerContent
       viewContent={
         <form
           className="h-full flex flex-col justify-around"
