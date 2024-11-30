@@ -462,6 +462,7 @@ async def get_filtered_items(
                     ]
                     custom_item_ids.extend(matching_custom_items)
 
+            all_item_ids = set(original_item_ids + custom_item_ids)
             if not all_item_ids:
                 return {"message": "No items found matching the queries."}
 
