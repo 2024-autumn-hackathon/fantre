@@ -19,7 +19,7 @@ from app.database.db_image import save_image, get_imagename_from_itemid, get_ima
 
 router = APIRouter(dependencies=[Depends(get_current_user)])
 
-USER=ObjectId("507f1f77bcf86cd799439011")
+
 
 # ----------変数--------------------------------------
 
@@ -101,7 +101,7 @@ def generate_presigned_url(s3_client, bucketname, key, expires_in):
 # 画像登録
 @router.post('/api/image/{item_id}')
 async def upload_item_image(item_id: str, item_image: UploadFile, user_id: str = Depends(get_current_user)):
-    print(user_id)
+
     # item_id存在確認
     if await exists_item_id(ObjectId(item_id)):
         raise HTTPException(status_code=422, detail="The item does not exist.")
@@ -118,7 +118,7 @@ async def upload_item_image(item_id: str, item_image: UploadFile, user_id: str =
     # 画像加工して保存           
     cropped_image = await crop_image(item_image)
     save_image_to_S3(cropped_image, bucket, hashed_image_name)
-    image_info = Img(user_id=user_id, item_id=ObjectId(item_id), image_name = hashed_image_name, created_at=datetime.now(), is_background=False)
+    image_info = Img(user_id=ObjectId(user_id), item_id=ObjectId(item_id), image_name = hashed_image_name, created_at=datetime.now(), is_background=False)
 
     await save_image(image_info)
     return image_info
@@ -127,7 +127,7 @@ async def upload_item_image(item_id: str, item_image: UploadFile, user_id: str =
 # 画像取得
 @router.get('/api/images/{item_id}')
 async def get_item_image_url(item_id: str, user_id: str = Depends(get_current_user)):
-    print(user_id)
+
     # item_id存在確認
     if await exists_item_id(ObjectId(item_id)):
         raise HTTPException(status_code=422, detail="The item does not exist.")
@@ -140,14 +140,14 @@ async def get_item_image_url(item_id: str, user_id: str = Depends(get_current_us
     # ダウンロード用署名付きURL生成
     presigned_url = generate_presigned_url(s3, bucket, image_name, 30)
     presigned_url = presigned_url.replace("s3-minio","localhost") # コンテナ間通信でなければ要らないはず
-    print(presigned_url) 
+
     return presigned_url
 
 
 # 背景画像登録・更新
 @router.post('/api/user/bg-images')
 async def upload_bg_image(bg_image: UploadFile, user_id: str = Depends(get_current_user)):
-    print(user_id)
+
     ext = os.path.splitext(bg_image.filename)[1]
     if ext.lower() not in valid_extensions: #拡張子チェック
         raise HTTPException(status_code=422, detail="Extension is not allowed.")    
@@ -158,7 +158,7 @@ async def upload_bg_image(bg_image: UploadFile, user_id: str = Depends(get_curre
     # 画像加工して保存           
     cropped_image = await crop_image(bg_image)
     save_image_to_S3(cropped_image, bucket, hashed_bg_image_name)
-    print("ここまで")
+
     bg_image_info = Img(user_id=ObjectId(user_id), image_name = hashed_bg_image_name, created_at=datetime.now(), is_background=True)
    
     await save_bg_image(bg_image_info)
@@ -176,7 +176,7 @@ async def get_bg_image_url(user_id: str = Depends(get_current_user)):
     # ダウンロード用署名付きURL生成
     presigned_url = generate_presigned_url(s3, bucket, bg_image_name, 30)
     presigned_url = presigned_url.replace("s3-minio","localhost") # コンテナ間通信でなければ要らないはず
-    print(presigned_url) 
+
     return presigned_url
 
 
