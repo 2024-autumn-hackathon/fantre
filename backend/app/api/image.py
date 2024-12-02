@@ -1,27 +1,23 @@
 # app/api/image.py
 import os, io, boto3, hashlib
 
-from datetime import datetime, timedelta
-from typing import Annotated
+from datetime import datetime
 from fastapi import APIRouter, Depends, UploadFile, HTTPException
-from pydantic import BaseModel
 from bson import ObjectId
 from PIL import Image
-import urllib.parse as urlparse
 from dotenv import load_dotenv
-from minio import Minio
 
 from app.api.user import get_current_user
 from app.models import Image as Img
 from app.database.db_item import exists_item_id
-from app.database.db_image import save_image, get_imagename_from_itemid, get_image_name, save_bg_image, exists_image_name, get_bg_image_name
+from app.database.db_image import save_image, get_image_name, save_bg_image, exists_image_name, get_bg_image_name
 
 
 router = APIRouter(dependencies=[Depends(get_current_user)])
 
+# -----------------------------------------------
 
-
-# ----------変数--------------------------------------
+load_dotenv()
 
 # S3接続情報
 s3 = boto3.client(
@@ -41,7 +37,7 @@ MAX_WIDTH = 1080
 MAX_HEIGHT = 1080
 
 
-# ----------関数--------------------------------------
+# -----------------------------------------------
 
 # 画像トリミング
 async def crop_image(imagefile):
@@ -96,7 +92,7 @@ def generate_presigned_url(s3_client, bucketname, key, expires_in):
     return presign_url
 
 
-# ----------API--------------------------------------
+# -----------------------------------------------
 
 # 画像登録
 @router.post('/api/image/{item_id}')
@@ -178,6 +174,3 @@ async def get_bg_image_url(user_id: str = Depends(get_current_user)):
     presigned_url = presigned_url.replace("s3-minio","localhost") # コンテナ間通信でなければ要らないはず
 
     return presigned_url
-
-
-# テスト用item_id : 6736b102d2bffe77f23d75db
