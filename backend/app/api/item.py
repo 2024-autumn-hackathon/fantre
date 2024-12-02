@@ -2,7 +2,7 @@
 from typing import List, Optional
 from app.models import CustomCategoryName, CustomCharacterName, CustomItem, CustomSeriesName, Item, UserSpecificData
 from app.api.user import get_current_user
-from app.database.db_item import create_item, existing_item_check, get_item, get_all_items
+from app.database.db_item import create_item, existing_item_check, exists_item_id, get_item, get_all_items
 from app.database.db_content_catalog import character_name_partial_match, create_new_category, get_category_name, get_character_name, get_series_name, series_name_partial_match
 from app.database.db_user_specific import create_custom_item, create_user_specific_data, get_user_specific_data
 from pydantic import BaseModel, field_validator, ValidationError, Field, validator
@@ -773,10 +773,12 @@ async def update_custom_item(
 
 # 欲しい/譲れるフラグ変更
 @router.patch("/api/items/{item_id}/exchange-status")
-async def change_exchange_status(item_id: str, status: bool, user_id: str = Depends(get_current_user)):
+async def change_exchange_status(item_id: str, exchange_status: bool, user_id: str = Depends(get_current_user)):
     user_id=ObjectId(user_id)
     
     try:
+        if await exists_item_id(ObjectId(item_id)):
+            raise HTTPException(status_code=404, detail=f"Item with id {item_id} not found")
         # 独自データがあるか？
         user_specific_data = await get_user_specific_data(user_id)
         # なければ作成
@@ -809,7 +811,7 @@ async def change_exchange_status(item_id: str, status: bool, user_id: str = Depe
                 custom_item_tags = item.tags,
                 custom_item_retailers = item.retailers,
                 custom_item_notes = None,
-                exchange_status = status,
+                exchange_status = exchange_status,
                 own_status = None       
             )
             custom_item = await create_custom_item(user_specific_data, custom_item)
@@ -817,7 +819,7 @@ async def change_exchange_status(item_id: str, status: bool, user_id: str = Depe
 
         # 欲しい/譲れるフラグ変更
         if status is not None:
-            custom_item.exchange_status = status
+            custom_item.exchange_status = exchange_status
 
         await user_specific_data.save()
         return {"message": "Exchange status updated successfully", "exchange_status": custom_item.exchange_status}
@@ -833,10 +835,12 @@ async def change_exchange_status(item_id: str, status: bool, user_id: str = Depe
 
 # 所持/未所持フラグ変更
 @router.patch("/api/items/{item_id}/own-status")
-async def change_own_status(item_id: str, status: bool, user_id: str = Depends(get_current_user)):
+async def change_own_status(item_id: str, own_status: bool, user_id: str = Depends(get_current_user)):
     user_id=ObjectId(user_id)
     
     try:
+        if await exists_item_id(ObjectId(item_id)):
+            raise HTTPException(status_code=404, detail=f"Item with id {item_id} not found")
         # 独自データがあるか？
         user_specific_data = await get_user_specific_data(user_id)
         # なければ作成
@@ -867,13 +871,13 @@ async def change_own_status(item_id: str, status: bool, user_id: str = Depends(g
                 custom_item_retailers = item.retailers,
                 custom_item_notes = None,
                 exchange_status = None,
-                own_status = status       
+                own_status = own_status       
             )
             custom_item = await create_custom_item(user_specific_data, custom_item)
 
         # 所持/未所持フラグ変更
         if status is not None:
-            custom_item.own_status = status
+            custom_item.own_status = own_status
 
         await user_specific_data.save()
         return {"message": "Own status updated successfully", "own_status": custom_item.own_status}
