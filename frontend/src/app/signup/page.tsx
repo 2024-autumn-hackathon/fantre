@@ -39,16 +39,10 @@ const SignupPage = () => {
           <InputButton
             type="password"
             inputName={ keys.pass1 }
-            placeholder="パスワード"
+            placeholder="パスワードは、最低8文字で小英文字・大英文字・数字を各ひとつずつ含む必要があります"
             pattern={ passwordPattern }
             required
           />
-          <div className="bg-my-light-blue w-4/5 mx-auto rounded-full">
-            <p className="wrap">
-              パスワードは最低8文字で、<br/>
-              小英文字・大英文字・数字を各ひとつずつ含む必要があります
-            </p>
-          </div>
           <InputButton
             type="password"
             inputName={ keys.pass2 }
