@@ -35,7 +35,7 @@ class CollectionList(DocumentWithConfig):
 # itemsコレクション
 class Item(DocumentWithConfig):
     _id: ObjectId
-    item_images: Optional[List[ObjectId]] = Field(default_factory=list) # image_idのリスト
+    # item_images: Optional[List[ObjectId]] = Field(default_factory=list) # image_idのリスト
     item_name: str = Indexed(unique=True)
     item_series: Optional[ObjectId] = None # series_id
     item_character: Optional[ObjectId] = None # character_id
@@ -108,7 +108,7 @@ class UserSpecificData(DocumentWithConfig):
 class CustomItem(DocumentWithConfig):
     _id: ObjectId
     item_id: ObjectId
-    custom_item_images: Optional[List[ObjectId]] = Field(default_factory=list) # image_id
+    # custom_item_images: Optional[List[ObjectId]] = Field(default_factory=list) # image_id
     custom_item_name: Optional[str] = None
     custom_item_series_name: Optional[ObjectId] = None # CustomSeriesName_id
     custom_item_character_name: Optional[ObjectId] = None # CustomCategoryName_id

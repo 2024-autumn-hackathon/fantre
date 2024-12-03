@@ -46,7 +46,7 @@ async def init_schema(database):
                 CustomItem(
                     _id=ObjectId(),
                     item_id=ObjectId("6736b102d2bffe77f23d75db"),
-                    custom_item_images=[ObjectId("61f5f484a2d21a1d4cf1b0e6")],
+                    # custom_item_images=[ObjectId("61f5f484a2d21a1d4cf1b0e6")],
                     custom_item_name="My Test Custom Item",
                     custom_item_series_name=ObjectId("6739c48fc49c15be3d1dccb7"),
                     custom_item_character_name=ObjectId("6739c48fc49c15be3d1dccb8"),
@@ -108,7 +108,7 @@ async def init_schema(database):
         test_item = Item(
             _id=("6736b102d2bffe77f23d75db"),           
             item_name="Test Item",
-            item_images=[ObjectId("61f5f484a2d21a1d4cf1b0e6")],
+            # item_images=[ObjectId("61f5f484a2d21a1d4cf1b0e6")],
             item_series=ObjectId("6731371a31c29bb05c8a1275"),
             item_character=ObjectId("6731371a31c29bb05c8a1276"),
             category=ObjectId("6736ae992ca618e77d720a9f"),

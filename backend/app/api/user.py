@@ -1,4 +1,5 @@
 # app/api/user.py
+import os
 import jwt
 from jwt.exceptions import InvalidTokenError
 from datetime import datetime, timedelta, timezone
@@ -8,19 +9,25 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel, Field, field_validator, ValidationInfo, EmailStr, SecretStr
 from passlib.context import CryptContext
 from bson import ObjectId
+from dotenv import load_dotenv
 
 from app.models import User
 from app.database.db_user import create_user, get_user, exists_username, exists_email
 
 
-# 作り直して.envとかに入れてgitignoreすること
-SECRET_KEY = "6756c09af93c374a8c58f22c02fa4ae0b92639f117328c511af9fa1f4176626b"
+router = APIRouter()
+
+
+load_dotenv()
+
+SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-router = APIRouter()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl = "login")
+
+
 
 
 class SignupFormData(BaseModel):
@@ -50,6 +57,8 @@ class CurrentUser(BaseModel):
     user_id: str
 
 
+
+
 # passwordハッシュ化
 def password_hash(password):
     return pwd_context.hash(password)
@@ -63,7 +72,6 @@ def verify_password(plain_password, hashed_password):
 # 入力された情報と一致するユーザーを取得
 async def authenticate_user(email: EmailStr, password: str):
     user = await get_user(email)
-    print(type(user.password))
 
     if not user:
         raise HTTPException(status_code=401, detail="The user is not exit.")
@@ -103,6 +111,8 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
     return user_id
 
 
+
+
 # サインアップ
 @router.post("/signup")
 async def signup(signup_request: Annotated[SignupFormData, Form()]):
@@ -128,9 +138,8 @@ async def login(login_request: Annotated[OAuth2PasswordRequestForm, Depends()]) 
     access_token = create_access_token(login_user.id)
     return Token(access_token=access_token, token_type="bearer")
 
+
 # tokenからuser_idを取るテスト用
-# テスト時のcurlは以下の<token>を生成したtokenに置き換えたもの
-# curl -X GET 'http://localhost:8000/token-test' -H 'Content-Type:application/json;charset=utf-8' -H 'Authorization: Bearer <taken>' | jq .
 @router.get("/token-test") 
 async def token_test(user_id: str = Depends(get_current_user)):
     return user_id

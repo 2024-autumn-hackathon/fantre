@@ -12,4 +12,4 @@ PyJWT==2.10.0
 pillow==11.0.0 # 画像処理
 minio==7.2.11 # いらないかも？
 boto3== 1.35.65 # S3操作
-load_dotenv==0.1.0 #環境変数読み込み
+python-dotenv
