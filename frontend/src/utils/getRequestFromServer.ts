@@ -20,3 +20,22 @@ export const getRequestItemDetail = async (
   )
   return response.status !== 200 ? null : response.json()
 }
+
+export const getImageUrl = async (
+  endpoint: string,
+) => {
+  const cookie = (await cookies()).get("fantre")
+  if (!cookie) return Response.error()
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || ""
+  const requestUrl = `${ apiBaseUrl }/getImageUrl?endpoint=${ endpoint }`
+  const response = await fetch(
+    requestUrl,
+    {
+      headers: {
+        cookie: cookie.value,
+      },
+    }
+  )
+
+  return response?.status === 200 ? await response.json() : null
+}

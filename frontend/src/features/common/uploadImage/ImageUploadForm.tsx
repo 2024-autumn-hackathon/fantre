@@ -1,6 +1,8 @@
+"use client"
+
 import { IMAGE_FORMAT_ALLOW_LIST as allowedImages } from "@/constants"
 import concatClassName from "@/utils/concatClassName"
-import uploadImage from "./uploadImageForm"
+import uploadImage from "./uploadImage"
 
 const ImageUploadForm = ({
   formId,
@@ -8,16 +10,18 @@ const ImageUploadForm = ({
   uploadImageText,
   buttonText,
   addClass = "",
-  endpoint,
   imageId,
+  itemId,
+  endpoint,
 }: Readonly<{
   formId: string
   children?: React.ReactNode
   uploadImageText: string
   buttonText: string
   addClass?: string
-  endpoint: string
   imageId: string
+  itemId?: string
+  endpoint: string
 }>) => {
   const formBaseClass = "mx-auto flex flex-col"
   const className = concatClassName(formBaseClass, addClass)
@@ -27,7 +31,7 @@ const ImageUploadForm = ({
       className={ className }
       id={ formId }
       name={ formId }
-      action={ formData => uploadImage(formData, endpoint) }
+      action={ formData => uploadImage(formData, imageId, itemId, endpoint) }
     >
       { children }
       <div>
