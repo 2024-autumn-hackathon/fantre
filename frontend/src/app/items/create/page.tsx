@@ -37,7 +37,7 @@ const ItemCreatePage = () => {
                 state={ seriesList }
                 handleSetState={ setSeriesList }
                 inputName={ keys.series }
-                placeholder="作品名"
+                labelValue="作品名"
               />
               <ClickAndInputButton
                 endpoint="characters"
@@ -45,20 +45,20 @@ const ItemCreatePage = () => {
                 handleSetState={ setChractersList }
                 inputName={ keys.character }
                 seriesList={ seriesList }
-                placeholder="キャラ名"
+                labelValue="キャラ名"
               />
-              <InputButton inputName={ keys.name } placeholder="商品名" required/>
-              <InputButton inputName={ keys.tags } placeholder="タグ"/>
+              <InputButton inputName={ keys.name } labelValue="商品名" required/>
+              <InputButton inputName={ keys.tags } labelValue="タグ"/>
               <ClickAndInputButton
                 endpoint="category"
                 state={ categoriesList }
                 handleSetState={ setCategoriesList }
                 inputName={ keys.category }
-                placeholder="グッズカテゴリー"
+                labelValue="グッズカテゴリー"
               />
-              <InputButton inputName={ keys.janCode } pattern="[a-zA-Z0-9]*" placeholder="JANコード"/>
-              <InputButton inputName={ keys.releaseDate } type="date" placeholder="発売日"/>
-              <InputButton inputName={ keys.retailers } placeholder="購入場所"/>
+              <InputButton inputName={ keys.janCode } pattern="[a-zA-Z0-9]*" labelValue="JANコード"/>
+              <InputButton inputName={ keys.releaseDate } type="date" labelValue="発売日"/>
+              <InputButton inputName={ keys.retailers } labelValue="購入場所"/>
             </UploadItemsForm>
           </>
         }

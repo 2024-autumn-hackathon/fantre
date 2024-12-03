@@ -35,14 +35,14 @@ const LoginPage = () => {
           <InputButton
             type="email"
             inputName={ requires[0] }
-            placeholder="メールアドレス"
+            labelValue="メールアドレス"
             // pattern={ emailPattern }うまく機能しないのでコメントアウト
             required
           />
           <InputButton
             type="password"
             inputName={ requires[1] }
-            placeholder="パスワード"
+            labelValue="パスワード"
             pattern={ passwordPattern }
             required
           />

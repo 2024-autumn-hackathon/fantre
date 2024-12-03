@@ -2,7 +2,7 @@ import concatClassName from "@/utils/concatClassName"
 
 const InputButton = ({
   addClass = "",
-  placeholder = "",
+  labelValue = "",
   defaultValue = "",
   inputName,
   type = "text",
@@ -12,7 +12,7 @@ const InputButton = ({
   inputId,
 }: Readonly<{
   addClass?: string
-  placeholder?: string
+  labelValue?: string
   defaultValue?: string
   inputName: string
   type?: string
@@ -29,7 +29,7 @@ const InputButton = ({
         htmlFor={ inputId }
         className="h-5 mt-1 overflow-auto w-full"
       >
-        { placeholder }
+        { labelValue }
       </label>
       <input
         className={ className }

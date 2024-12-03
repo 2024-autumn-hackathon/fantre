@@ -17,7 +17,7 @@ const PagenationNavi = ({
   newCurrentPage: number
   liClass: string
 }>) => {
-  const baseClass = "block h-6 bg-my-yellow rounded-full text-sm"
+  const baseClass = "block h-6 bg-my-yellow rounded-full text-sm hover:opacity-80"
   const className = concatClassName(baseClass, addClass)
   return (
     <li className={ liClass }>
