@@ -739,7 +739,7 @@ async def update_custom_item(
             custom_item = CustomItem(
                 _id=ObjectId(),
                 item_id=ObjectId(item_id),
-                custom_item_images=item.item_images,
+                # custom_item_images=item.item_images,
                 custom_item_name=updated_data.custom_item_name if updated_data.custom_item_name is not None else item.item_name,
                 custom_item_series_name=custom_item_series_name, 
                 custom_item_character_name=custom_item_character_name, 
@@ -803,7 +803,7 @@ async def change_exchange_status(item_id: str, exchange_status: bool, user_id: s
             custom_item = CustomItem(
                 _id=ObjectId(),
                 item_id=ObjectId(item_id),
-                custom_item_images=[],
+                # custom_item_images=[],
                 custom_item_name=item.item_name,
                 custom_item_series_name=item.item_series, 
                 custom_item_character_name=item.item_character, 
@@ -862,7 +862,7 @@ async def change_own_status(item_id: str, own_status: bool, user_id: str = Depen
             custom_item = CustomItem(
                 _id=ObjectId(),
                 item_id=ObjectId(item_id),
-                custom_item_images=[],
+                # custom_item_images=[],
                 custom_item_name=item.item_name,
                 custom_item_series_name=item.item_series, 
                 custom_item_character_name=item.item_character, 
