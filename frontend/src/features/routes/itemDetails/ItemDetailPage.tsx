@@ -1,32 +1,42 @@
-"use client"
-
+import BackgroundImageViewer from "@/components/BackgroundImageViewer"
 import MonitorLayout from "@/components/MonitorLayout"
 import TopButton from "@/components/TopButton"
 import ImageUploadForm from "@/features/common/uploadImage/ImageUploadForm"
-import { useState } from "react"
 import ItemDetails from "./ItemDetails"
 import ItemDetailValues from "./ItemDetailValues"
 
 const ItemDetailPage = ({
   initialItemDetail,
+  itemId,
+  imageSrc = "",
 }: Readonly<{
   initialItemDetail: ItemDetailValues
+  itemId: string
+  imageSrc: string
 }>) => {
-  const [itemDetailValues, setItemDetailValues] = useState<ItemDetailValues>(initialItemDetail)
+  const formId = "item-form"
   return (
     <MonitorLayout
       headerContent={ <TopButton/> }
-      viewContent
+      viewContent={
+        <BackgroundImageViewer
+          imageSrc={ imageSrc }
+        />
+      }
       naviContent={
         <>
           <ImageUploadForm
             buttonText="編集項目を確定"
-            formId="item_create"
+            formId={ formId }
             uploadImageText="My画像を選択"
             addClass="h-full flex flex-col justify-around Y-tab:grid Y-tab:grid-cols-2 Y-tab:gap-4"
+            imageId="item_image"
+            itemId={ itemId }
+            endpoint="itemDetail"
           >
             <ItemDetails
-              itemDetailValues={ itemDetailValues }
+              itemDetailValues={ initialItemDetail }
+              formId={ formId }
             />
           </ImageUploadForm>
         </>
