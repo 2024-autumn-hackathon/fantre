@@ -21,6 +21,18 @@ export const getRequestItemDetail = async (
   return response.status !== 200 ? null : response.json()
 }
 
+export const getRequestByPage = async (
+  endpoint: string,
+) => {
+  const cookie = (await cookies()).get("fantre")
+  if (!cookie) return Response.error()
+  const baseURL = `${ apiBaseUrl }${ endpoint }`
+  const searchParams = new URLSearchParams([["currentPage", "1"]])
+  const requestUrl = `${ baseURL }?${ searchParams }`
+  const response = await fetch(requestUrl, {headers: {cookie: `fantre=${cookie.value}`}})
+  return response.status !== 200 ? null : response.json()
+}
+
 export const getImageUrl = async (
   endpoint: string,
 ) => {
