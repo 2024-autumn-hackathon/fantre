@@ -1,3 +1,5 @@
+import { KeyTypeIsStringObject } from "@/constants"
+
 // items
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
 
@@ -20,7 +22,7 @@ export const getRequestItems = async (
 export const getRequestItemsCreate = async (
   endpoint: string,
   choiced?: string,
-) => {
+): Promise<KeyTypeIsStringObject | null> => {
   const onlyCharacterParameter = choiced ? `&seriesId=${ choiced }` : ""
   const requestUrl = `${ apiBaseUrl }items/create?endpoint=${ endpoint }${ onlyCharacterParameter }`
 
