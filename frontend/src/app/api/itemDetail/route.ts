@@ -7,6 +7,11 @@ import { NextRequest } from "next/server"
 
 const backendUrl = process.env.BACKEND_API_URL
 
+/**
+ * 送信先fastapiエンドポイント
+ * /api/items/{item_id}
+ * 
+ */
 export async function GET(
   request: NextRequest,
 ) {
@@ -33,6 +38,11 @@ export async function GET(
 }
 
 // itemDetailの更新用api
+/**
+ * 送信先fastapiエンドポイント
+ * /api/items/{item_id}
+ * 
+ */
 export async function POST(
   request: NextRequest,
 ) {

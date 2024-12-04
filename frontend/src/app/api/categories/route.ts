@@ -3,6 +3,11 @@ import { NextRequest } from "next/server"
 
 const backendUrl = process.env.BACKEND_API_URL
 
+/**
+ * 送信先fastapiエンドポイント
+ * /api/categories
+ * 
+ */
 export async function POST(
   request: NextRequest,
 ) {

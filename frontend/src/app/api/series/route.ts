@@ -1,6 +1,11 @@
 import makeToken from "@/utils/makeToken"
 import { NextRequest } from "next/server"
 
+/**
+ * 送信先fastapiエンドポイント
+ * /api/series/page/{current_page}
+ * 
+ */
 export async function GET(
   request: NextRequest,
 ) {

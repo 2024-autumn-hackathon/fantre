@@ -6,6 +6,11 @@ import { NextRequest } from "next/server"
 
 const backendUrl = process.env.BACKEND_API_URL
 
+/**
+ * 送信先fastapiエンドポイント
+ * /api/user/bg-images
+ * /api/image/{item_id}
+ */
 export async function POST(
   request: NextRequest,
 ) {

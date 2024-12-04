@@ -3,6 +3,11 @@ import { NextRequest } from "next/server"
 
 const backendUrl = process.env.BACKEND_AUTH_URL
 
+/**
+ * 送信先fastapiエンドポイント
+ * /signup
+ * 
+ */
 export async function POST(
   request: NextRequest,
 ) {
