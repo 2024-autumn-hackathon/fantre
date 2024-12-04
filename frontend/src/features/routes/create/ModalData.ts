@@ -1,5 +1,8 @@
+import { KeyTypeIsStringObject } from "@/constants"
+
 export default interface ModalData {
-  data: object | false,
+  data: KeyTypeIsStringObject,
+  hasData: boolean,
   isShow: boolean,
   choiced: string,
 }

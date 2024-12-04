@@ -6,8 +6,8 @@ const closeModal = (
   cancelChoice: boolean = false,// 未選択状態に戻すフラグ
 ) => {
   const closedData: ModalData = !cancelChoice ?
-    {data: state.data, isShow: false, choiced: state.choiced} :
-    {data: state.data, isShow: false, choiced: ""}
+    {data: state.data, hasData: true, isShow: false, choiced: state.choiced} :
+    {data: state.data, hasData: true, isShow: false, choiced: ""}
   setState(closedData)
 }
 

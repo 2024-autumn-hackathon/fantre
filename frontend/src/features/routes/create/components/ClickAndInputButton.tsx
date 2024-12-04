@@ -8,6 +8,8 @@ const ClickAndInputButton = ({
   inputName,
   seriesList,
   labelValue,
+  charactersList,
+  handleSetCharactersList,
 }: Readonly<{
   endpoint: string
   state: ModalData
@@ -15,8 +17,10 @@ const ClickAndInputButton = ({
   inputName: string
   seriesList?: ModalData
   labelValue: string
+  charactersList?: ModalData
+  handleSetCharactersList?: React.Dispatch<React.SetStateAction<ModalData>>
 }>) => {
-  const naviChara = state.choiced === "" ? placeholder : state.data[state.choiced]
+  const naviChara = state.data[state.choiced]
   return (
     <>
       <label
@@ -27,7 +31,7 @@ const ClickAndInputButton = ({
       </label>
       <button
         className="bg-[#5271ff] w-60 bg-opacity-80 block mx-auto w-60 h-[40px] py-2 rounded-3xl text-center hover:opacity-80"
-        onClick={ () => getInputList(endpoint, handleSetState, seriesList) }
+        onClick={ () => getInputList(endpoint, handleSetState, seriesList, charactersList, handleSetCharactersList) }
         type="button"
       >
         <input

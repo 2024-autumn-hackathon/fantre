@@ -7,8 +7,8 @@ import { BACKEND_ITEM_KEYS as keys } from "@/constants"
 import ErrorModal from "@/features/common/errorModal/ErrorModal"
 import UploadItemsForm from "@/features/common/UploadItemsForm"
 import ClickAndInputButton from "@/features/routes/create/components/ClickAndInputButton"
+import CreateForm from "@/features/routes/create/components/CreateCategoryForm"
 import CreateCharacterForm from "@/features/routes/create/components/CreateCharacterForm"
-import CreateForm from "@/features/routes/create/components/CreateForm"
 import CreateSeriesAndCharacterForm from "@/features/routes/create/components/CreateSeriesAndCharacterForm"
 import SelectModal from "@/features/routes/create/components/SelectModal"
 import ModalData from "@/features/routes/create/ModalData"
@@ -16,11 +16,11 @@ import { useState } from "react"
 
 const ItemCreatePage = () => {
   const [seriesList, setSeriesList] =
-    useState<ModalData>({data: false, isShow: false, choiced: ""})
+    useState<ModalData>({data: {}, hasData: false, isShow: false, choiced: ""})
   const [charactersList, setChractersList] =
-    useState<ModalData>({data: false, isShow: false, choiced: ""})
+    useState<ModalData>({data: {}, hasData: false, isShow: false, choiced: ""})
   const [categoriesList, setCategoriesList] =
-    useState<ModalData>({data: false, isShow: false, choiced: ""})
+    useState<ModalData>({data: {}, hasData: false, isShow: false, choiced: ""})
   const [error, setError] = useState<boolean>(false)
   return (
     <>
@@ -38,6 +38,8 @@ const ItemCreatePage = () => {
                 handleSetState={ setSeriesList }
                 inputName={ keys.series }
                 labelValue="作品名"
+                charactersList={ charactersList }
+                handleSetCharactersList={ setChractersList }
               />
               <ClickAndInputButton
                 endpoint="characters"
@@ -72,8 +74,10 @@ const ItemCreatePage = () => {
         setChractersList={ setChractersList }
       >
         <CreateSeriesAndCharacterForm
+          seriesList={ seriesList }
+          setSeriesList={ setSeriesList }
           charactersList={ charactersList }
-          setCharacterList={ setChractersList }
+          setCharactersList={ setChractersList }
           setError={ setError }
         />
       </SelectModal>
