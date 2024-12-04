@@ -9,7 +9,7 @@ const OnClickButton = ({
     addClass?: string
     // handleClick: () => void
 }>) => {
-  const baseClass = "block bg-my-orange mx-auto w-60 h-[40px] py-2 rounded-3xl text-center"
+  const baseClass = "block bg-my-orange mx-auto w-60 h-[40px] py-2 rounded-3xl text-center hover:opacity-80"
   const className = concatClassName(baseClass, addClass)
   return (
     <button

@@ -15,7 +15,7 @@ const LoginPage = () => {
   const requires = ["email", "password"]
   return (
     <MonitorLayout
-      headerContent={ <LinkButton href="/"addClass="mr-0">TOPへ(仮置き)</LinkButton> }
+      headerContent
       viewContent={
         <form
           className="h-full flex flex-col justify-around"
@@ -35,14 +35,14 @@ const LoginPage = () => {
           <InputButton
             type="email"
             inputName={ requires[0] }
-            placeholder="メールアドレス"
+            labelValue="メールアドレス"
             // pattern={ emailPattern }うまく機能しないのでコメントアウト
             required
           />
           <InputButton
             type="password"
             inputName={ requires[1] }
-            placeholder="パスワード"
+            labelValue="パスワード"
             pattern={ passwordPattern }
             required
           />

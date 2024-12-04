@@ -3,11 +3,15 @@ import { NextRequest } from "next/server"
 
 const backendUrl = process.env.BACKEND_API_URL
 
+/**
+ * 送信先fastapiエンドポイント
+ * /api/images/{item_id}
+ * /api/user/bg-images
+ */
 export async function GET(
   request: NextRequest,
 ) {
-  const cookie = request.cookies.get("fantre")
-
+  const cookie = request.cookies.get("fantre") || {value: request.headers.get("cookie")}
   if (!cookie) return Response.error()
   const token = `${ pre }${ cookie.value }`
 

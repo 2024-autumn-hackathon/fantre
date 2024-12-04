@@ -1,14 +1,14 @@
 import Image from "next/image"
 
 const BackgroundImageViewer = ({
-  imageUrl = "",
+  imageSrc = "",
 }: Readonly<{
-  imageUrl: string
+  imageSrc: string
 }>) => {
-  const image = imageUrl === "" ? null :
+  const image = imageSrc === "" ? null :
     <Image
       fill
-      src={ imageUrl }
+      src={ imageSrc }
       alt="背景として表示する画像です"
       style={{objectFit:"contain"}}
     />

@@ -17,7 +17,7 @@ const CloseModalButton = ({
       onClick={
         () => {
           closeModal(state, setState)
-          if (setChractersList) closeModal(charactersList, setChractersList, true)
+          if (setChractersList && charactersList) closeModal(charactersList, setChractersList, true)
         }
       }
       type="button"

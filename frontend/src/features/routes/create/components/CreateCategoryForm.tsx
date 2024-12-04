@@ -1,7 +1,8 @@
+import { DummyModalDataResponse } from "@/constants"
 import sendFormAction from "@/utils/sendFormAction"
 import ModalData from "../ModalData"
 
-const CreateForm = ({
+const CreateCategoryForm = ({
   inputName,
   categoriesList,
   setCategoriesList,
@@ -18,16 +19,16 @@ const CreateForm = ({
     <form
       action={
         async formData => {
-          const result = await sendFormAction(formData, endpoint, [inputName])
-          if (!result) {// サーバーエラー・重複などで作成に失敗した場合
-            const closedState: ModalData = {data: categoriesList.data, isShow: false, choiced: categoriesList.choiced}
+          const result = await sendFormAction(formData, endpoint, [inputName]) || DummyModalDataResponse
+          if (result === DummyModalDataResponse) {// サーバーエラー・重複などで作成に失敗した場合
+            const closedState: ModalData = {data: categoriesList.data, hasData: true, isShow: false, choiced: categoriesList.choiced}
             setError(true)
             setCategoriesList(closedState)
           } else {
             const newStateData = {...categoriesList.data}
             const categoryId = result.category_id
-            newStateData[categoryId] = result["category_name"]
-            const newState: ModalData = {data: newStateData, isShow: false, choiced: result["category_id"]}
+            newStateData[categoryId] = result.category_name
+            const newState: ModalData = {data: newStateData, hasData: true, isShow: false, choiced: result["category_id"]}
             setCategoriesList(newState)
           }
         }
@@ -50,4 +51,4 @@ const CreateForm = ({
   )
 }
 
-export default CreateForm
+export default CreateCategoryForm

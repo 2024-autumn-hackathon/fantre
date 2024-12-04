@@ -1,13 +1,18 @@
+import { DummyModalDataResponse } from "@/constants"
 import sendFormAction from "@/utils/sendFormAction"
 import ModalData from "../ModalData"
   
 const CreateSeriesAndCharacterForm = ({
+  seriesList,
+  setSeriesList,
   charactersList,
-  setCharacterList,
+  setCharactersList,
   setError,
 }: Readonly<{
+  seriesList: ModalData
+  setSeriesList: React.Dispatch<React.SetStateAction<ModalData>>
   charactersList: ModalData
-  setCharacterList: React.Dispatch<React.SetStateAction<ModalData>>
+  setCharactersList: React.Dispatch<React.SetStateAction<ModalData>>
   setError: React.Dispatch<React.SetStateAction<boolean>>
 }>) => {
   return (
@@ -26,17 +31,35 @@ const CreateSeriesAndCharacterForm = ({
           formData.append(requires[1], "true")
           formData.append(requires[3], "true")
 
-          const result = await sendFormAction(formData, endpoint, requires)
-          if (!result) {// サーバーエラー・重複などで作成に失敗した場合
-            const closedState: ModalData = {data: charactersList.data, isShow: false, choiced: charactersList.choiced}
+          const result = await sendFormAction(formData, endpoint, requires) || DummyModalDataResponse
+          if (result === DummyModalDataResponse) {// サーバーエラー・重複などで作成に失敗した場合
+            const closedState: ModalData = {data: seriesList.data, hasData: true, isShow: false, choiced: seriesList.choiced}
             setError(true)
-            setCharacterList(closedState)
+            setSeriesList(closedState)
           } else {
-            const newStateData = {...charactersList.data}
+            // 新しいstateにresultからid・nameを追加、choicedにも追加、isShowをfalseでモーダル閉じられる
+            const seriesId = result.series_id
+            const seriesName = formData.get(requires[0])?.toString() || ""
+            const newSeriesList: ModalData = {
+              data: { ...seriesList.data },
+              hasData: true,
+              isShow: false,
+              choiced: seriesId,
+            }
+            newSeriesList.data[seriesId] = seriesName
+
             const characterId = result.character_id
-            newStateData[characterId] = formData.get("character_name")
-            const newState: ModalData = {data: newStateData, isShow: false, choiced: characterId}
-            setCharacterList(newState)
+            const characterName = formData.get(requires[2])?.toString() || ""
+            const newCharactersList: ModalData = {
+              data: { ...charactersList.data },
+              hasData: true,
+              isShow: false,
+              choiced: characterId,
+            }
+            newCharactersList.data[characterId] = characterName
+
+            setSeriesList(newSeriesList)
+            setCharactersList(newCharactersList)
           }
         }
       }

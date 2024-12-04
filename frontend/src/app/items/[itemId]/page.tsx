@@ -1,35 +1,36 @@
-import InputButton from "@/components/InputButton"
-import MonitorLayout from "@/components/MonitorLayout"
-import TopButton from "@/components/TopButton"
-import ImageUploadForm from "@/features/common/uploadImage/ImageUploadForm"
 
-const ItemDetailPage = () => {
-  return (
-    <MonitorLayout
-      headerContent={ <TopButton/> }
-      viewContent
-      naviContent={
-        <>
-          <ImageUploadForm
-            buttonText="編集項目を確定"
-            formId="item_create"
-            uploadImageText="My画像を選択"
-            addClass="h-full flex flex-col justify-around Y-tab:grid Y-tab:grid-cols-2 Y-tab:gap-4"
-          >
-            <InputButton defaultValue="作品名"/>
-            <InputButton defaultValue="キャラ名"/>
-            <InputButton defaultValue="商品名"/>
-            <InputButton defaultValue="タグ"/>
-            <InputButton defaultValue="グッズカテゴリー"/>
-            <InputButton defaultValue="JANコード"/>
-            <InputButton defaultValue="発売日"/>
-            <InputButton defaultValue="購入場所"/>
-          </ImageUploadForm>
-        </>
+import ItemDetailPage from "@/features/routes/itemDetails/ItemDetailPage"
+import { getImageUrl, getRequestItemDetail } from "@/utils/getRequestFromServer"
+
+const InitialFetchedItemDetailPage = async ({
+  params,
+}: Readonly<{
+  params: Promise<{ itemId: string}>
+}>) => {
+  const itemId = (await params).itemId
+  const searchParams = new URLSearchParams([["itemId",itemId]])
+  const initialItemData = await getRequestItemDetail("itemDetail", searchParams)
+  const endpoint = `images/${ itemId }`
+  const initialImageUrl = await getImageUrl(endpoint) || ""
+  const minioUrl = initialImageUrl.split("localhost").join("s3-minio") || ""
+
+  return <ItemDetailPage
+    initialItemDetail={ initialItemData ||
+      {
+        item_name: "",
+        series_name: "",
+        character_name: "",
+        category_name: "",
+        tags: [""],
+        jan_code: "",
+        release_date: "",
+        retailers: [""],
+        own_status: "",
       }
-      footerContent
-    />
-  )
+    }
+    itemId={ itemId }
+    imageSrc={ minioUrl }
+  />
 }
 
-export default ItemDetailPage
+export default InitialFetchedItemDetailPage

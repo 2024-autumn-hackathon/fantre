@@ -7,21 +7,31 @@ const ClickAndInputButton = ({
   handleSetState,
   inputName,
   seriesList,
-  placeholder,
+  labelValue,
+  charactersList,
+  handleSetCharactersList,
 }: Readonly<{
   endpoint: string
   state: ModalData
   handleSetState: React.Dispatch<React.SetStateAction<ModalData>>
   inputName: string
   seriesList?: ModalData
-  placeholder: string
+  labelValue: string
+  charactersList?: ModalData
+  handleSetCharactersList?: React.Dispatch<React.SetStateAction<ModalData>>
 }>) => {
-  const naviChara = state.choiced === "" ? placeholder : state.data[state.choiced]
+  const naviChara = state.data[state.choiced]
   return (
     <>
+      <label
+        htmlFor={ labelValue }
+        className="h-5 mt-1"
+      >
+        { labelValue }
+      </label>
       <button
-        className="bg-[#5271ff] w-60 mt-4 bg-opacity-80 block mx-auto w-60 h-[40px] py-2 rounded-3xl text-center"
-        onClick={ () => getInputList(endpoint, handleSetState, seriesList) }
+        className="bg-[#5271ff] w-60 bg-opacity-80 block mx-auto w-60 h-[40px] py-2 rounded-3xl text-center hover:opacity-80"
+        onClick={ () => getInputList(endpoint, handleSetState, seriesList, charactersList, handleSetCharactersList) }
         type="button"
       >
         <input
@@ -30,6 +40,7 @@ const ClickAndInputButton = ({
           defaultValue={ state.choiced }
           form="item-create"
           required
+          id={ labelValue }
         />
         { naviChara }
       </button>

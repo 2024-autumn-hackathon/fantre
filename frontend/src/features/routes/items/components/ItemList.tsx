@@ -1,17 +1,19 @@
 import Checkbox from "@/components/Checkbox"
 import TextLinkButton from "@/components/TextLinkButton"
 import PagenationListItem from "@/features/common/pagenation/components/PagenationListItem"
+
+import ItemListType from "./ItemListType"
 import ShowItemImageButton from "./ShowItemImageButton"
 
 const ItemList = ({
   itemList,
 }: Readonly<{
-  itemList: {id: string, item_name: string}[]
-}>) => {  
+  itemList: ItemListType[]
+}>) => {
   const itemListResult = itemList.map((
-    obj: {id: string, item_name: string}
+    obj: ItemListType
   ) => {
-    return (
+    return (obj.id === "" ? null :
       <PagenationListItem
         key={ obj.id }
       >

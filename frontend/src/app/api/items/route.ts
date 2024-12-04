@@ -1,10 +1,14 @@
 import makeToken from "@/utils/makeToken"
 import { NextRequest } from "next/server"
 
+/**
+ * 送信先fastapiエンドポイント
+ * /api/items/page/{current_page}
+ * 
+ */
 export async function GET(
   request: NextRequest,
 ) {
-  // これはapi/items/にリクエストとしてきたものを受け取る
   const cookie = request.headers.get("cookie")
   if (!cookie) return Response.error()
   const token = makeToken(cookie)
