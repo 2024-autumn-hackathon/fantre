@@ -1,9 +1,11 @@
+import { KeyTypeIsStringObject } from "@/constants"
 import ModalData from "./ModalData"
 
 const processDataInputList = (
-  response: object,
+  response: KeyTypeIsStringObject | null,
 ): ModalData => {
-  return {data: response, isShow: true, choiced: ""}
+  const processedData = response ? response : {}
+  return {data: processedData, hasData: false, isShow: true, choiced: ""}
 }
 
 export default processDataInputList

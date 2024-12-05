@@ -5,7 +5,7 @@ const setInputList = (
   state: ModalData,
   setState: React.Dispatch<React.SetStateAction<ModalData>>,
 ) => {
-  const newState: ModalData = {data: state.data, isShow: false, choiced: id}
+  const newState: ModalData = {data: state.data, hasData: true, isShow: false, choiced: id}
   setState(newState)
 }
 

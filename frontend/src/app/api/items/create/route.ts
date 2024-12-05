@@ -3,6 +3,11 @@ import { NextRequest } from "next/server"
 
 const backendUrl = process.env.BACKEND_API_URL
 
+/**
+ * 送信先fastapiエンドポイント
+ * /api/series 作品一覧全取得
+ * /api/series/{series_id}/characters 作品内キャラクター一覧全取得
+ */
 export async function GET(
   request: NextRequest,
 ) {
@@ -17,6 +22,7 @@ export async function GET(
   const seriesId = searchParams.get("seriesId")
   const onlyCharacterEndpoint = seriesId ? `series/${ seriesId }/` : ""
   const requestUrl = `${ backendUrl }${ onlyCharacterEndpoint }${ endpoint }`
+
   const response = await fetch(
     requestUrl,
     {
@@ -28,6 +34,11 @@ export async function GET(
   return response
 }
 
+/**
+ * 送信先fastapiエンドポイント
+ * /api/items アイテム作成
+ * 
+ */
 export async function POST(
   request: NextRequest,
 ) {

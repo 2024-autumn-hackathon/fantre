@@ -1,6 +1,6 @@
 # backend/app/database/db_image.py
 from fastapi import HTTPException
-from pydantic import EmailStr, ValidationError
+from pydantic import ValidationError
 from bson import ObjectId
 from datetime import datetime
 
@@ -37,26 +37,6 @@ async def exists_image_name(image_name: str) -> bool:
         raise HTTPException(status_code=422, detail=ve.errors())
     except Exception as e:
         raise HTTPException(status_code=500, detail="Image fetching error")
-    finally:
-        await db.disconnect()
-
-
-# item_idに紐づいている画像URL全て取得
-async def get_imagename_from_itemid(item_id: ObjectId):
-    try:
-        await db.connect()
-        images = await Image.find({"item_id": item_id}).to_list()  # クエリ結果をリストとして取得
-
-        image_names = []
-        if images:
-            image_names = [image.image_name for image in images]
-            return image_names
-        return image_names
-    
-    except ValidationError as ve:
-        raise HTTPException(status_code=422, detail=ve.errors())
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error fetching item : {str(e)}")
     finally:
         await db.disconnect()
 

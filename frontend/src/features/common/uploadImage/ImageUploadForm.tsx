@@ -1,6 +1,8 @@
+"use client"
+
 import { IMAGE_FORMAT_ALLOW_LIST as allowedImages } from "@/constants"
 import concatClassName from "@/utils/concatClassName"
-import uploadImage from "./uploadImageForm"
+import uploadImage from "./uploadImage"
 
 const ImageUploadForm = ({
   formId,
@@ -8,16 +10,18 @@ const ImageUploadForm = ({
   uploadImageText,
   buttonText,
   addClass = "",
-  endpoint,
   imageId,
+  itemId,
+  endpoint,
 }: Readonly<{
   formId: string
   children?: React.ReactNode
   uploadImageText: string
   buttonText: string
   addClass?: string
-  endpoint: string
   imageId: string
+  itemId?: string
+  endpoint: string
 }>) => {
   const formBaseClass = "mx-auto flex flex-col"
   const className = concatClassName(formBaseClass, addClass)
@@ -27,7 +31,7 @@ const ImageUploadForm = ({
       className={ className }
       id={ formId }
       name={ formId }
-      action={ formData => uploadImage(formData, endpoint) }
+      action={ formData => uploadImage(formData, imageId, itemId, endpoint) }
     >
       { children }
       <div>
@@ -41,12 +45,12 @@ const ImageUploadForm = ({
           accept={ allowedImages.join(",") }
           type="file"
           id={ formId }
-          className="file:opacity-0 file:block file:bg-my-orange file:h-0 file:border-0 h-[40px] mx-auto rounded-[40px] pl-10 bg-my-orange leading-normal cursor-pointer w-60"
+          className="file:opacity-0 file:block file:bg-my-orange file:h-0 file:border-0 h-[40px] mx-auto rounded-[40px] pl-10 bg-my-orange leading-normal cursor-pointer w-60 hover:opacity-80"
           name={ imageId }
         />
       </div>
       <button
-        className="block h-[40px] w-60 rounded-3xl bg-my-orange mx-auto mt-4"
+        className="block h-[40px] w-60 rounded-3xl bg-my-orange mx-auto mt-4 hover:opacity-80"
         type="submit"
       >
         <p>{ buttonText }</p>

@@ -31,28 +31,22 @@ const SignupPage = () => {
           <InputButton
             type="email"
             inputName={ keys.email }
-            placeholder="メールアドレス"
+            labelValue="メールアドレス"
             // pattern={ emailPattern }
             required
           />
-          <InputButton inputName={ keys.name } placeholder="ニックネーム" required/>
+          <InputButton inputName={ keys.name } labelValue="ニックネーム" required/>
           <InputButton
             type="password"
             inputName={ keys.pass1 }
-            placeholder="パスワード"
+            labelValue="パスワードは、最低8文字で小英文字・大英文字・数字を各ひとつずつ含む必要があります"
             pattern={ passwordPattern }
             required
           />
-          <div className="bg-my-light-blue w-4/5 mx-auto rounded-full">
-            <p className="wrap">
-              パスワードは最低8文字で、<br/>
-              小英文字・大英文字・数字を各ひとつずつ含む必要があります
-            </p>
-          </div>
           <InputButton
             type="password"
             inputName={ keys.pass2 }
-            placeholder="パスワード確認用"
+            labelValue="パスワード確認用"
             pattern={ passwordPattern }
             required
           />

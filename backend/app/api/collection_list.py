@@ -1,20 +1,18 @@
 # backend/app/api/list.py
-from typing import List, Optional, Annotated
-from pydantic import BaseModel, field_validator, ValidationError, Field, StringConstraints
-from datetime import date, timedelta
+from typing import Annotated
 from bson import ObjectId
-from fastapi import APIRouter, Depends, HTTPException, status, Query, Form
-from beanie import Indexed
-import re, calendar
+from fastapi import APIRouter, Depends, HTTPException, Form
 from datetime import datetime
 
-from app.models import User, Item, UserSpecificData, CollectionList
+from app.models import CollectionList
 from app.api.user import get_current_user
 from app.database.db_user import exists_user
-from app.database.db_item import create_item, existing_item_check, get_item, get_all_items, get_item_names, exists_item_id
-from app.database.db_content_catalog import character_name_partial_match, get_category_name, get_character_name, get_series_name, series_name_partial_match
+from app.database.db_item import get_item_names, exists_item_id
 from app.database.db_collection_list import exists_collection_list_name, get_collection_list, add_collection_list, add_item_to_list, delete_item_from_list, delete_list
 from app.database.db_user_specific import exists_user_custom_items
+
+
+
 
 router = APIRouter(dependencies=[Depends(get_current_user)])
 
@@ -102,6 +100,7 @@ async def add_list_items(list_id: str, item_id: str, user_id: str = Depends(get_
     
     await add_item_to_list(ObjectId(list_id), ObjectId(item_id), ObjectId(user_id))
         
+
 
 
 # コレクションリストからグッズ削除

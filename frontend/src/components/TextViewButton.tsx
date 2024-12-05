@@ -3,17 +3,20 @@ import concatClassName from "@/utils/concatClassName"
 const TextViewButton = ({
   children,
   addClass = "",
+  labelText,
 }: Readonly<{
   children: string
   addClass?: string
+  labelText?: string
 }>) => {
-  const baseClass = "bg-my-green w-60 h-[40px] rounded-3xl mx-auto"
+  const baseClass = "w-60 h-16 mx-auto select-none"
   const className = concatClassName(baseClass, addClass)
   return (
     <div
       className={ className }
     >
-      <p className="py-2">
+      <p className="h-6">{ labelText }</p>
+      <p className="py-2 h-[40px] bg-my-green rounded-3xl">
         { children }
       </p>
     </div>

@@ -1,3 +1,4 @@
+import { DummyModalDataResponse } from "@/constants"
 import sendFormAction from "@/utils/sendFormAction"
 import ModalData from "../ModalData"
 
@@ -29,16 +30,16 @@ const CreateCharacterForm = ({
           formData.append(requires[1], "false")
           formData.append(requires[3], "true")
 
-          const result = await sendFormAction(formData, endpoint, requires)
-          if (!result) {// サーバーエラー・重複などで作成に失敗した場合
-            const closedState: ModalData = {data: charactersList.data, isShow: false, choiced: charactersList.choiced}
+          const result = await sendFormAction(formData, endpoint, requires) || DummyModalDataResponse
+          if (result === DummyModalDataResponse) {// サーバーエラー・重複などで作成に失敗した場合
+            const closedState: ModalData = {data: charactersList.data, hasData: true, isShow: false, choiced: charactersList.choiced}
             setError(true)
             setChractersList(closedState)
           } else {
             const newStateData = {...charactersList.data}
             const characterId = result.character_id
-            newStateData[characterId] = formData.get("character_name")
-            const newState: ModalData = {data: newStateData, isShow: false, choiced: characterId}
+            newStateData[characterId] = formData.get("character_name")?.toString() || ""
+            const newState: ModalData = {data: newStateData, hasData: true, isShow: false, choiced: characterId}
             setChractersList(newState)
           }
         }

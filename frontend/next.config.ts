@@ -1,7 +1,17 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from "next"
 
 const nextConfig: NextConfig = {
-  /* config options here */
-};
+  // imageタグのsrcとして有効にする許可オリジンを設定する
+  images: {
+    remotePatterns: [
+      {
+        protocol: "http",
+        hostname: "s3-minio",
+        port: "9000",
+        pathname: "/**",
+      },
+    ],
+  },
+}
 
-export default nextConfig;
+export default nextConfig
