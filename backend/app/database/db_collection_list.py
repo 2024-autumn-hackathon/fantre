@@ -41,14 +41,18 @@ async def get_collection_list(user_id: ObjectId):
 
 
 # コレクションリストにグッズ追加
-async def add_item_to_list(list_id: ObjectId, item_id: ObjectId, user_id: ObjectId):
+async def add_item_to_list(list_id: ObjectId, item_id: List[ObjectId], user_id: ObjectId):
     try:
         await db.connect()
         user = await User.find_one({"_id": user_id})
         user_collection_lists = user.collection_lists
         for list in user_collection_lists:
             if list.id == list_id:
-                list.list_items.append(item_id)
+                for item in item_id:
+                    if item in list.list_items:
+                        continue
+                    else:
+                        list.list_items.append(item)
         await user.save()
     except ValidationError as ve:
         raise HTTPException(status_code=422, detail=ve.errors())
@@ -59,14 +63,18 @@ async def add_item_to_list(list_id: ObjectId, item_id: ObjectId, user_id: Object
 
 
 # コレクションリストからグッズ削除
-async def delete_item_from_list(list_id: ObjectId, item_id: ObjectId, user_id: ObjectId):
+async def delete_item_from_list(list_id: ObjectId, item_id: List[ObjectId], user_id: ObjectId):
     try:
         await db.connect()
         user = await User.find_one({"_id": user_id})
         user_collection_lists = user.collection_lists
         for list in user_collection_lists:
             if list.id == list_id:
-                list.list_items.remove(item_id)
+                for item in item_id:
+                    if item not in list.list_items:
+                        continue
+                    else:
+                        list.list_items.remove(item)
         await user.save()
     except ValidationError as ve:
         raise HTTPException(status_code=422, detail=ve.errors())
