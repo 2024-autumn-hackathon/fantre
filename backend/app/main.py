@@ -33,22 +33,6 @@ app = FastAPI(lifespan=lifespan)
 #         content={"detail": "There was an error in your input. Please"}, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY
 #     )
 
-# tokenデコードしてuser_id取得
-# def get_current_user(token: str = Depends(oauth2_scheme)):
-#     credentials_exception = HTTPException(
-#         status_code=401,
-#         detail="Could not validate credentials",
-#         headers={"WWW-Authenticate": "Bearer"},
-#     )
-#     try:
-#         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-#         user_id: str = payload.get("sub")
-        
-#         if user_id is None:
-#             raise credentials_exception
-#     except InvalidTokenError:
-#         raise credentials_exception
-#     return user_id
 
 # ルーター追加
 app.include_router(user_router)  # ユーザー関連のルーターを追加
