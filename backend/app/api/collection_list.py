@@ -1,8 +1,9 @@
 # backend/app/api/list.py
-from typing import Annotated
+from typing import Annotated, List
 from bson import ObjectId
 from fastapi import APIRouter, Depends, HTTPException, Form
 from datetime import datetime
+from pydantic import BaseModel, Field, field_validator, ValidationInfo
 
 from app.models import CollectionList
 from app.api.user import get_current_user
@@ -15,6 +16,16 @@ from app.database.db_user_specific import exists_user_custom_items
 
 
 router = APIRouter(dependencies=[Depends(get_current_user)])
+
+
+class ListItems(BaseModel):
+    list_id: str
+    item_id: List[str]
+
+    @field_validator("item_id")
+    def item_id_list(cls, v) -> List[str]:
+        id_list = v[0].split(',')
+        return id_list
 
 
 # コレクションリスト作成
@@ -89,32 +100,46 @@ async def get_list_detail(list_id: str, user_id: str = Depends(get_current_user)
 
 # コレクションリストにグッズ追加
 @router.post("/api/list-items")
-async def add_list_items(list_id: str, item_id: str, user_id: str = Depends(get_current_user)):
+async def add_list_items(list_items: Annotated[ListItems, Form()], user_id: str = Depends(get_current_user)):
     # ユーザー確認
     if await exists_user(ObjectId(user_id)) is None:
         raise HTTPException(status_code=400, detail="The user not exist.")
     
     # item_id存在確認
-    if await exists_item_id(ObjectId(item_id)):
-        raise HTTPException(status_code=422, detail="The item does not exist.")
+    item_ids = []
+    for id in list_items.item_id:
+        if id == '':
+            continue
+        id = ObjectId(id)
+        if await exists_item_id(ObjectId(id)):
+            raise HTTPException(status_code=422, detail="The item does not exist.")
+        item_ids.append(id)
     
-    await add_item_to_list(ObjectId(list_id), ObjectId(item_id), ObjectId(user_id))
-        
+    await add_item_to_list(ObjectId(list_items.list_id), item_ids, ObjectId(user_id))
 
+    return 'OK'
 
 
 # コレクションリストからグッズ削除
 @router.delete("/api/list-items")
-async def delete_list_items(list_id: str, item_id: str, user_id: str = Depends(get_current_user)):
+async def delete_list_items(list_items: Annotated[ListItems, Form()], user_id: str = Depends(get_current_user)):
     # ユーザー確認
     if await exists_user(ObjectId(user_id)) is None:
         raise HTTPException(status_code=400, detail="The user not exist.")
     
     # item_id存在確認
-    if await exists_item_id(ObjectId(item_id)):
-        raise HTTPException(status_code=422, detail="The item does not exist.")
+    item_ids = []
+    for id in list_items.item_id:
+        if id == '':
+            continue
+        id = ObjectId(id)
+        if await exists_item_id(ObjectId(id)):
+            raise HTTPException(status_code=422, detail="The item does not exist.")
+        item_ids.append(id)
     
-    await delete_item_from_list(ObjectId(list_id), ObjectId(item_id), ObjectId(user_id))
+    await delete_item_from_list(ObjectId(list_items.list_id), item_ids, ObjectId(user_id))
+
+    return 'OK'
 
 
 # コレクションリスト削除
