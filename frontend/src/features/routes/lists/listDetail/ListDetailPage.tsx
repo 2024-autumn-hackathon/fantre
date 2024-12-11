@@ -40,7 +40,7 @@ const ListDetailPage = ({
         </PagenationListItem>
       )
     })
-    return (
+    return (isImageView ? null :
       <>
         <PagenationListContainer>
           { collectionListItems }
@@ -59,7 +59,11 @@ const ListDetailPage = ({
           >
             チェック項目をリストから削除
           </OnClickButton>
-          <OnClickButton>画像ビューに切り替え</OnClickButton>
+          <OnClickButton
+            handleClick={ () => setIsImageView(!isImageView) }
+          >
+            { isImageView ? "リストビューに切り替え" : "画像ビューに切り替え" }
+          </OnClickButton>
         </div>
       </>
     )
