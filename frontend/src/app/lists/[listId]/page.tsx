@@ -1,63 +1,26 @@
-import MonitorLayout from "@/components/MonitorLayout"
-import TopButton from "@/components/TopButton"
-import Checkbox from "@/components/Checkbox"
-import PagenationListContainer from "@/features/common/pagenation/components/PagenationListContainer"
-import PagenationListItem from "@/features/common/pagenation/components/PagenationListItem"
-import PagenationNavi from "@/features/common/pagenation/components/PagenationNavi"
-import PagenationNaviContainer from "@/features/common/pagenation/components/PagenationNaviContainer"
-import TextLinkButton from "@/components/TextLinkButton"
-import OnClickButton from "@/features/common/OnClickButton"
-import TextViewButton from "@/components/TextViewButton"
-import SubmitButton from "@/components/SubmitButton"
+import ListDetailPage from "@/features/routes/lists/listDetail/ListDetailPage"
+import { getRequestItems } from "@/utils/getRequest"
+import { cookies } from "next/headers"
+import { redirect } from "next/navigation"
 
-const ListDetailPage = () => {
-  const viewContent = (
-    <>
-      <PagenationListContainer>
-        <PagenationListItem>
-          <TextLinkButton href="/items/itemId1">
-            グッズ 1
-          </TextLinkButton>
-          <Checkbox/>
-        </PagenationListItem>
-        <PagenationListItem>
-          <TextLinkButton href="/items/itemId2">
-            グッズ 2
-          </TextLinkButton>
-          <Checkbox/>
-        </PagenationListItem>
-        <PagenationListItem>
-          <TextLinkButton href="/items/itemId3">
-            グッズ 3
-          </TextLinkButton>
-          <Checkbox/>
-        </PagenationListItem>
-      </PagenationListContainer>
-      <PagenationNaviContainer>
-        <PagenationNavi href="/lists/1?page=1">1</PagenationNavi>
-        <PagenationNavi href="/lists/1?page=2">2</PagenationNavi>
-      </PagenationNaviContainer>
-    </>
-  )
+const initialFetchedListDetailPage = async ({
+  params,
+}: Readonly<{
+  params: Promise<{ listId: string }>
+}>) => {
+  const cookie = (await cookies()).get("fantre")
+  if (!cookie) redirect("/login")
+  const listId = (await params).listId
+  const endpoint = `lists/${ listId }`
+  const searchParams = new URLSearchParams([["listId", listId]])
+  const listDetail = await getRequestItems(
+    endpoint,
+    searchParams,
+    1,
+    `${ cookie.name }=${ cookie.value }`
+  ) || []
 
-  const naviContent = (
-    <>
-      <div className="h-full">
-        <TextViewButton >コレクション一覧を表示中...</TextViewButton>
-        <SubmitButton>チェック項目をリストから削除</SubmitButton>
-        <OnClickButton>画像ビューに切り替え</OnClickButton>
-      </div>
-    </>
-  ) 
-
-  return (
-    <MonitorLayout
-      headerContent={ <TopButton/> }
-      viewContent={ viewContent }
-      naviContent={ naviContent }
-      footerContent
-    />
-  )
+  return <ListDetailPage listId={ listId } listDetail={ listDetail } />
 }
 
-export default ListDetailPage
+export default initialFetchedListDetailPage
