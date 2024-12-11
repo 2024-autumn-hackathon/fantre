@@ -2,13 +2,18 @@ import Checkbox from "@/components/Checkbox"
 import TextLinkButton from "@/components/TextLinkButton"
 import PagenationListItem from "@/features/common/pagenation/components/PagenationListItem"
 
+import { Dispatch, SetStateAction } from "react"
 import ItemListType from "./ItemListType"
 import ShowItemImageButton from "./ShowItemImageButton"
 
 const ItemList = ({
   itemList,
+  itemsToAddToCollectionList,
+  setItemsToAddToCollectionList,
 }: Readonly<{
   itemList: ItemListType[]
+  itemsToAddToCollectionList: string[]
+  setItemsToAddToCollectionList: Dispatch<SetStateAction<string[]>>
 }>) => {
   const itemListResult = itemList.map((
     obj: ItemListType
@@ -22,7 +27,11 @@ const ItemList = ({
         >
           { obj.item_name }
         </TextLinkButton>
-        <Checkbox/>
+        <Checkbox
+          itemsToAddToCollectionList={ itemsToAddToCollectionList }
+          setItemsToAddToCollectionList={ setItemsToAddToCollectionList }
+          itemId={ obj.id }
+        />
         <ShowItemImageButton/>
       </PagenationListItem>
     )

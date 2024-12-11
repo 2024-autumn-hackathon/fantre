@@ -1,5 +1,6 @@
 import ItemsPage from "@/features/routes/items/components/ItemsPage"
 import getItemsByQuery from "@/features/routes/items/getItemsByQuery"
+import { getRequestItems } from "@/utils/getRequest"
 import { cookies } from "next/headers"
 
 const initialFetchedItemsPage = async ({
@@ -30,6 +31,8 @@ const initialFetchedItemsPage = async ({
   )
   const initialItemList = response.items
   initialPageState.maxPage = response.maxPage
+
+  const collectionLists = await getRequestItems("lists", new URLSearchParams(), 1, cookieString)
   
   return <ItemsPage
     initialSearchInput={ initialSearchInput }
@@ -37,6 +40,7 @@ const initialFetchedItemsPage = async ({
     initialPageState={ initialPageState }
     seriesName={ seriesName }
     characterName={ characterName }
+    collectionLists={ collectionLists }
   />
 }
 

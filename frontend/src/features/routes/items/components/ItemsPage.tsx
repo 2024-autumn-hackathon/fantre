@@ -5,11 +5,12 @@ import LinkButton from "@/components/LinkButton"
 import MonitorLayout from "@/components/MonitorLayout"
 import SubmitButton from "@/components/SubmitButton"
 import TopButton from "@/components/TopButton"
-import OnClickButton from "@/features/common/OnClickButton"
+import { KeyTypeIsStringObject } from "@/constants"
 import PagenationListContainer from "@/features/common/pagenation/components/PagenationListContainer"
 import PagenationNaviContainer from "@/features/common/pagenation/components/PagenationNaviContainer"
 import PageState from "@/features/common/pagenation/PageState"
 import { useEffect, useRef, useState } from "react"
+import addItemsToCollectionList from "../addItemsToCollectionList"
 import getItemsByQuery from "../getItemsByQuery"
 import ItemList from "./ItemList"
 import ItemListType from "./ItemListType"
@@ -22,17 +23,20 @@ const ItemsPage = ({
   initialPageState,
   seriesName,
   characterName,
+  collectionLists,
 }: Readonly<{
   initialSearchInput: URLSearchParams
   initialItemList: ItemListType[]
   initialPageState: PageState
   seriesName: string
   characterName: string
+  collectionLists: KeyTypeIsStringObject[]
 }>) => {
   const isFirstRender = useRef(true)
   const [itemList, setItemList] = useState<ItemListType[]>(initialItemList)
   const [searchInput, setSearchInput] = useState<URLSearchParams>(initialSearchInput)
   const [pageState, setPageState] = useState<PageState>(initialPageState)
+  const [itemsToAddToCollectionList, setItemsToAddToCollectionList] = useState<string[]>([])
 
   // searchInputかpageStateの変更を検知するとitemListの再取得を行う
   useEffect(() => {
@@ -60,6 +64,8 @@ const ItemsPage = ({
         <PagenationListContainer>
           <ItemList
             itemList={ itemList }
+            itemsToAddToCollectionList={ itemsToAddToCollectionList }
+            setItemsToAddToCollectionList={ setItemsToAddToCollectionList }
           />
         </PagenationListContainer>
         <PagenationNaviContainer
@@ -89,8 +95,12 @@ const ItemsPage = ({
           </ItemsSearchForm>
           <div className="min-h-[calc(56px*3)] flex flex-col h-[calc(100%*3/12)]">
             <LinkButton href="/lists" addClass="mt-4 w-60">コレクションリスト作成</LinkButton>
-            <SelectCollectionListButton/>
-            <OnClickButton addClass="mt-4 w-60">選択項目をリストに追加</OnClickButton>
+            <form
+              onSubmit={ (e) => addItemsToCollectionList(e, itemsToAddToCollectionList) }
+            >
+              <SelectCollectionListButton collectionLists={ collectionLists }/>
+              <SubmitButton>選択項目をリストに追加</SubmitButton>
+            </form>
           </div>
         </div>
       </>
