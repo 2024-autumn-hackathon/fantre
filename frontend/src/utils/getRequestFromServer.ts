@@ -51,3 +51,11 @@ export const getImageUrl = async (
 
   return response?.status === 200 ? await response.json() : null
 }
+
+export const getCollectionList = async () => {
+  const cookie = (await cookies()).get("fantre")
+  if (!cookie) return Response.error()
+  const requestUrl = `${ apiBaseUrl }lists`
+  const response = await fetch(requestUrl, {headers: {cookie: `fantre=${cookie.value}`}})
+  return response.status !== 200 ? null : response.json()
+}
