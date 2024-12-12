@@ -31,7 +31,7 @@ export async function POST(
     }
   )
 
-  return Response.json(response.status)
+  return response
 }
 
 export async function DELETE(

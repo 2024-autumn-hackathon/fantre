@@ -1,9 +1,14 @@
 import { KeyTypeIsStringObject } from "@/constants"
+import { Dispatch, SetStateAction } from "react"
 
 const SelectCollectionListButton = ({
   collectionLists,
+  selectList,
+  setSelectList,
 }: {
   collectionLists: KeyTypeIsStringObject[]
+  selectList: string
+  setSelectList: Dispatch<SetStateAction<string>>
 }) => {
   const collectionListNames = collectionLists.map((collectionList) => {
     const [listId, listName] = Object.entries(collectionList)[0]
@@ -15,8 +20,10 @@ const SelectCollectionListButton = ({
       id="list_id"
       name="list-id"
       required
+      value={ selectList }
+      onChange={ (e) => setSelectList(e.currentTarget.value) }
     >
-      <option>追加先リスト選択</option>
+      <option value="default">追加先リスト選択</option>
       { collectionListNames }
     </select>
   )

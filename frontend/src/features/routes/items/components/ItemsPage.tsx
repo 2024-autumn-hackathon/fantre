@@ -37,6 +37,7 @@ const ItemsPage = ({
   const [searchInput, setSearchInput] = useState<URLSearchParams>(initialSearchInput)
   const [pageState, setPageState] = useState<PageState>(initialPageState)
   const [itemsToAddToCollectionList, setItemsToAddToCollectionList] = useState<string[]>([])
+  const [selectList, setSelectList] = useState<string>("default")
 
   // searchInputかpageStateの変更を検知するとitemListの再取得を行う
   useEffect(() => {
@@ -96,9 +97,13 @@ const ItemsPage = ({
           <div className="min-h-[calc(56px*3)] flex flex-col h-[calc(100%*3/12)]">
             <LinkButton href="/lists" addClass="mt-4 w-60">コレクションリスト作成</LinkButton>
             <form
-              onSubmit={ (e) => addItemsToCollectionList(e, itemsToAddToCollectionList) }
+              onSubmit={ (e) => addItemsToCollectionList(e, itemsToAddToCollectionList, setItemsToAddToCollectionList, setSelectList) }
             >
-              <SelectCollectionListButton collectionLists={ collectionLists }/>
+              <SelectCollectionListButton
+                collectionLists={ collectionLists }
+                selectList={ selectList }
+                setSelectList={ setSelectList }
+              />
               <SubmitButton>選択項目をリストに追加</SubmitButton>
             </form>
           </div>

@@ -13,6 +13,7 @@ const Checkbox = ({
     <input
       type="checkbox"
       className="block h-8 aspect-square"
+      checked={ itemsToAddToCollectionList.includes(itemId) }
       onChange={
         (e) => {
           if (itemsToAddToCollectionList.includes(itemId)) {
