@@ -31,3 +31,29 @@ export async function GET(
   )
   return response
 }
+
+export async function DELETE(
+  request: NextRequest,
+  segmentData: {
+    params: Promise<{
+      listId: string,
+    }>,
+  },
+) {
+  const cookie = request.headers.get("cookie")
+  if (!cookie) return Response.error()
+  const token = makeToken(cookie)
+  const params = await segmentData.params
+  const listId = params.listId
+  const requestUrl = `${ backendUrl }lists/${ listId }`
+  const response = await fetch(
+    requestUrl,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: token,
+      },
+    }
+  )
+  return response
+}

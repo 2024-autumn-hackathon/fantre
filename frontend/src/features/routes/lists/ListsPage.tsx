@@ -1,3 +1,5 @@
+"use client"
+
 import InputButton from "@/components/InputButton"
 import LinkButton from "@/components/LinkButton"
 import MonitorLayout from "@/components/MonitorLayout"
@@ -8,6 +10,8 @@ import TopButton from "@/components/TopButton"
 import { KeyTypeIsStringObject } from "@/constants"
 import PagenationListContainer from "@/features/common/pagenation/components/PagenationListContainer"
 import PagenationListItem from "@/features/common/pagenation/components/PagenationListItem"
+import { useRouter } from "next/navigation"
+import { deleteCollectionList } from "./deleteCollectionList"
 import listFormAction from "./listFormAction"
 
 const ListsPage = ({
@@ -15,6 +19,7 @@ const ListsPage = ({
 }: Readonly<{
   collectionList: KeyTypeIsStringObject[]
 }>) => {
+  const router = useRouter()
   const viewContent = () => {
     const collectionListItems = []
     for (const collection of collectionList) {
@@ -24,6 +29,13 @@ const ListsPage = ({
           <TextLinkButton href={ `/lists/${ key }` }>
             { value }
           </TextLinkButton>
+          <button
+            onClick={ () => deleteCollectionList(key, value, router) }
+            className="w-16 bg-my-orange rounded-full h-10 ml-2"
+            type="button"
+          >
+            削除
+          </button>
         </PagenationListItem>
       )
     }
