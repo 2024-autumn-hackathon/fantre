@@ -17,7 +17,7 @@ const ImageViewPagenationContainer = ({
   itemImageUrlList: string[]
 }>) => {
   const itemIdList = itemImageIdList.map((item, idx) => {
-    const [itemId] = Object.entries(item)[0]
+    const [itemId, itemName] = Object.entries(item)[0]
     const imageUrl = itemImageUrlList[idx]
 
     return (
@@ -25,6 +25,7 @@ const ImageViewPagenationContainer = ({
         key={ itemId }
         itemId={ itemId }
         imageUrl={ imageUrl }
+        itemName={ itemName }
       />
     )
   })
