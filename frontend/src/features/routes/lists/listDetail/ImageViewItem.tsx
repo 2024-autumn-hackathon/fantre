@@ -1,4 +1,5 @@
 import Image from "next/image"
+import Link from "next/link"
 
 const ImageViewItem = ({
   itemId,
@@ -9,12 +10,15 @@ const ImageViewItem = ({
 }>) => {
   return (
     <li>
-      <Image
-        src={ imageUrl }
-        alt="グッズの画像です"
-        width={300}
-        height={300}
-      />
+      <Link href={`items/${ itemId }`}>
+        <Image
+          src={ imageUrl }
+          alt="グッズの画像です"
+          width={300}
+          height={300}
+          className="hover:opacity-80"
+        />
+      </Link>
     </li>
   )
 }
