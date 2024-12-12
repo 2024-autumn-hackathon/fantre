@@ -85,7 +85,7 @@ const ListDetailPage = ({
   const naviContent = () => {
     return (
       <>
-        <div className="h-full">
+        <div className="h-full flex flex-col items-center justify-around">
           <TextViewButton >コレクション一覧を表示中...</TextViewButton>
           <OnClickButton
             handleClick={ () => removeItemsFromList(listId, itemsToRemoveToCollectionList, setItemsToRemoveToCollectionList, listItems, setListItems) }

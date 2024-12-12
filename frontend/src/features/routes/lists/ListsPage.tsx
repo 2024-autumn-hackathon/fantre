@@ -39,11 +39,12 @@ const ListsPage = ({
   const naviContent = () => {
     return (
       <>
-        <div className="h-full">
-          <TextViewButton addClass="h-[60px]">コレクションリスト一覧を表示中...</TextViewButton>
+        <div className="h-full flex flex-col items-center justify-around">
+          <TextViewButton addClass="h-[60px] w-80">コレクションリスト一覧を表示中...</TextViewButton>
           <LinkButton href="/items" addClass="mt-4 w-60">グッズを探す</LinkButton>
           <form
             action={ listFormAction }
+            className="flex flex-col items-center justify-around h-1/2"
           >
             <InputButton inputName="list_name" labelValue="コレクションリスト名"/>
             <SubmitButton>
