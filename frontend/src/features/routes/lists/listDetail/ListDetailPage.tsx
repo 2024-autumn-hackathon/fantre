@@ -17,16 +17,18 @@ import TextViewItem from "./TextViewItem"
 const ListDetailPage = ({
   listId,
   listDetail,
+  maxPage,
 }: Readonly<{
   listId: string
   listDetail: KeyTypeIsStringObject[]
+  maxPage: number
 }>) => {
   const [listItems, setListItems] = useState<KeyTypeIsStringObject[]>(listDetail)
   const [itemsToRemoveToCollectionList, setItemsToRemoveToCollectionList] = useState<string[]>([])
   const [isImageView, setIsImageView] = useState<boolean>(false)
   const [pageState, setPageState] = useState<PageState>({
     currentPage: 1,
-    maxPage: 1,
+    maxPage: maxPage,
   })
   const [itemImageIdList, setItemImageIdList] = useState<KeyTypeIsStringObject[]>([])
   const [itemImageUrlList, setItemImageUrlList] = useState<string[]>([])

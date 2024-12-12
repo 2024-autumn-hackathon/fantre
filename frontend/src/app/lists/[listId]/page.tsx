@@ -19,8 +19,8 @@ const initialFetchedListDetailPage = async ({
     1,
     `${ cookie.name }=${ cookie.value }`
   ) || []
-
-  return <ListDetailPage listId={ listId } listDetail={ listDetail } />
+  const maxPage = Math.ceil(listDetail.length / 9)
+  return <ListDetailPage listId={ listId } listDetail={ listDetail } maxPage={ maxPage } />
 }
 
 export default initialFetchedListDetailPage
