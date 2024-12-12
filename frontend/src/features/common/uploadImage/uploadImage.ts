@@ -42,6 +42,7 @@ const uploadImage = async (
   ).then(res => {
     if (res.status === 200) {
       if (endpoint === "top") redirect("/")
+      if (endpoint === "itemDetail") redirect(`/items/${ itemId }`)
     } else {
       // redirect("/error")
     }
