@@ -33,7 +33,10 @@ export async function POST(
   const apiEndpoint = recipientInformation[endpoint].endpoint
   const formData = await request.formData()
   const imageFile = formData.get(formKey) as File
-  if (!imageFile.size || !allowedImages.includes(imageFile.type)) return Response.error()
+  if (!imageFile.size ||
+    !allowedImages.includes(imageFile.type) ||
+    imageFile.size >= 2**20
+  ) return Response.error()
   const requestUrl = `${ backendUrl }${ apiEndpoint }`
   // 第三引数に拡張子付きのfile名が必須
   // formData.set("bg_image", imageFile, `Next${ extensions[imageFile.type] }`)

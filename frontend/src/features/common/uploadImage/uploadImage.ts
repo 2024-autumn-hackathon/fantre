@@ -26,8 +26,9 @@ const uploadImage = async (
     updateItemDetail(formData, header, apiBaseUrl, itemId)
   }
 
-  const imageFile = formData.get(imageId)
+  const imageFile = formData.get(imageId) as File
   if (!imageFile) return
+  if (imageFile.size >= 2**20) return
   const newFormData = new FormData()
   newFormData.set(imageId, imageFile)
 
