@@ -3,12 +3,14 @@
 import MonitorLayout from "@/components/MonitorLayout"
 import TextViewButton from "@/components/TextViewButton"
 import TopButton from "@/components/TopButton"
-import { KeyTypeIsStringObject } from "@/constants"
+import { KeyTypeIsStringObject, LOADING_IMAGE_URL as loading } from "@/constants"
 import OnClickButton from "@/features/common/OnClickButton"
 import PagenationListContainer from "@/features/common/pagenation/components/PagenationListContainer"
 import PagenationListItem from "@/features/common/pagenation/components/PagenationListItem"
-import { useState } from "react"
-import ImageViewItem from "./ImageViewItem"
+import PageState from "@/features/common/pagenation/PageState"
+import { useEffect, useState } from "react"
+import calcImageIdList from "./calcImageIdList"
+import ImageViewPagenationContainer from "./ImageViewPagenationContainer"
 import { removeItemsFromList } from "./removeItemsFromList"
 import TextViewItem from "./TextViewItem"
 
@@ -22,25 +24,54 @@ const ListDetailPage = ({
   const [listItems, setListItems] = useState<KeyTypeIsStringObject[]>(listDetail)
   const [itemsToRemoveToCollectionList, setItemsToRemoveToCollectionList] = useState<string[]>([])
   const [isImageView, setIsImageView] = useState<boolean>(false)
+  const [pageState, setPageState] = useState<PageState>({
+    currentPage: 1,
+    maxPage: 1,
+  })
+  const [itemImageIdList, setItemImageIdList] = useState<KeyTypeIsStringObject[]>([])
+  const [itemImageUrlList, setItemImageUrlList] = useState<string[]>([])
+
+  useEffect(() => {
+    if (!isImageView) return
+    const fetchImageUrl = async () => {
+      const imageIdList = calcImageIdList(listItems, pageState.currentPage)
+      const imageUrlList: string[] = []
+      for (const item of imageIdList) {
+        const [itemId] = Object.entries(item)[0]
+        const response = await fetch(`/api/getImageUrl?endpoint=images/${ itemId }`)
+        const imageUrl = response.status !== 200 ? loading : (await response.json()).split("localhost").join("s3-minio")
+        imageUrlList.push(imageUrl)
+      }
+      setItemImageUrlList(imageUrlList)
+      setItemImageIdList(imageIdList)
+    }
+    fetchImageUrl()
+  }, [pageState.currentPage, isImageView])
+
   const viewContent = () => {
-    const collectionListItems = listItems.map((listItem) => {
+    const collectionListItems = isImageView ? null : listItems.map((listItem) => {
       const [itemId, itemName] = Object.entries(listItem)[0]
       return (
         <PagenationListItem key={ itemId }>
-          {
-            isImageView ?
-              <ImageViewItem itemId={ itemId } /> :
-              <TextViewItem
-                itemId={ itemId }
-                itemName={ itemName }
-                itemsToRemoveToCollectionList={ itemsToRemoveToCollectionList }
-                setItemsToRemoveToCollectionList={ setItemsToRemoveToCollectionList }
-              />
-          }
+          <TextViewItem
+            itemId={ itemId }
+            itemName={ itemName }
+            itemsToRemoveToCollectionList={ itemsToRemoveToCollectionList }
+            setItemsToRemoveToCollectionList={ setItemsToRemoveToCollectionList }
+          />
         </PagenationListItem>
       )
     })
-    return (isImageView ? null :
+    return (
+      isImageView ?
+      <>
+        <ImageViewPagenationContainer
+          pageState={ pageState }
+          handleSetPageState={ setPageState }
+          itemImageIdList={ itemImageIdList }
+          itemImageUrlList={ itemImageUrlList }
+        />
+      </> :
       <>
         <PagenationListContainer>
           { collectionListItems }

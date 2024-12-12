@@ -74,3 +74,5 @@ export const DummyModalDataResponse = {
 export interface KeyTypeIsStringObject {
   [key: string]: string
 }
+
+export const LOADING_IMAGE_URL = "/no-image.svg"

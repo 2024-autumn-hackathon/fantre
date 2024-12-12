@@ -1,19 +1,21 @@
 import Image from "next/image"
 
-const ImageViewItem = async ({
+const ImageViewItem = ({
   itemId,
+  imageUrl,
 }: Readonly<{
   itemId: string
+  imageUrl: string
 }>) => {
-  const response = await fetch(`/api/images/${ itemId }`)
-  const imageUrl = response.status !== 200 ? "" : await response.json()
   return (
-    <Image
-      src={ imageUrl }
-      alt="グッズの画像です"
-      width={300}
-      height={300}
-    />
+    <li>
+      <Image
+        src={ imageUrl }
+        alt="グッズの画像です"
+        width={300}
+        height={300}
+      />
+    </li>
   )
 }
 
