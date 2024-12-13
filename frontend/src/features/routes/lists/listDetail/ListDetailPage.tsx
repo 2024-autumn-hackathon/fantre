@@ -87,11 +87,14 @@ const ListDetailPage = ({
       <>
         <div className="h-full flex flex-col items-center justify-around">
           <TextViewButton >コレクション一覧を表示中...</TextViewButton>
-          <OnClickButton
-            handleClick={ () => removeItemsFromList(listId, itemsToRemoveToCollectionList, setItemsToRemoveToCollectionList, listItems, setListItems) }
-          >
-            チェック項目をリストから削除
-          </OnClickButton>
+          {
+            isImageView ? null :
+            <OnClickButton
+              handleClick={ () => removeItemsFromList(listId, itemsToRemoveToCollectionList, setItemsToRemoveToCollectionList, listItems, setListItems) }
+            >
+              チェック項目をリストから削除
+            </OnClickButton>
+          }
           <OnClickButton
             handleClick={ () => setIsImageView(!isImageView) }
           >

@@ -2,8 +2,8 @@ import { KeyTypeIsStringObject } from "@/constants"
 import PagenationNaviContainer from "@/features/common/pagenation/components/PagenationNaviContainer"
 import PageState from "@/features/common/pagenation/PageState"
 import { Dispatch, SetStateAction } from "react"
-import PagenationListGridContainer from "../../itemDetails/PagenationListGridContainer"
 import ImageViewItem from "./ImageViewItem"
+import PagenationListGridContainer from "./PagenationListGridContainer"
 
 const ImageViewPagenationContainer = ({
   pageState,
