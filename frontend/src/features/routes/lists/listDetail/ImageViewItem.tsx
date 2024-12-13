@@ -12,7 +12,7 @@ const ImageViewItem = ({
 }>) => {
   return (
     <li>
-      <Link href={`items/${ itemId }`} className="tooltip">
+      <Link href={`/items/${ itemId }`} className="tooltip">
         <Image
           src={ imageUrl }
           alt="グッズの画像です"
