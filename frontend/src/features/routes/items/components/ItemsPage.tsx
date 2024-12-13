@@ -7,6 +7,7 @@ import SubmitButton from "@/components/SubmitButton"
 import TopButton from "@/components/TopButton"
 import {
   KeyTypeIsStringObject,
+  LOADING_IMAGE_URL as loading,
   SEARCH_INPUT_KEYS as searchKeys,
 } from "@/constants"
 import PagenationListContainer from "@/features/common/pagenation/components/PagenationListContainer"
@@ -27,6 +28,7 @@ const ItemsPage = ({
   seriesName,
   characterName,
   collectionLists,
+  initialImageUrlList,
 }: Readonly<{
   initialSearchInput: URLSearchParams
   initialItemList: ItemListType[]
@@ -34,6 +36,7 @@ const ItemsPage = ({
   seriesName: string
   characterName: string
   collectionLists: KeyTypeIsStringObject[]
+  initialImageUrlList: string[]
 }>) => {
   const isFirstRender = useRef(true)
   const [itemList, setItemList] = useState<ItemListType[]>(initialItemList)
@@ -41,6 +44,7 @@ const ItemsPage = ({
   const [pageState, setPageState] = useState<PageState>(initialPageState)
   const [itemsToAddToCollectionList, setItemsToAddToCollectionList] = useState<string[]>([])
   const [selectList, setSelectList] = useState<string>("default")
+  const [currentImageUrlList, setCurrentImageUrlList] = useState<string[]>(initialImageUrlList)
 
   // searchInputかpageStateの変更を検知するとitemListの再取得を行う
   useEffect(() => {
@@ -50,17 +54,34 @@ const ItemsPage = ({
     }
     const fetchData = async () => {
       const response = await getItemsByQuery("items", searchInput, pageState)
-      console.log(response)
       if (response.maxPage && response.maxPage !== pageState.maxPage) {
         const newPageState: PageState = {currentPage: pageState.currentPage, maxPage: pageState.maxPage}
         newPageState.maxPage = response.maxPage
         setPageState(newPageState)
       }
-      console.log("---------", response)
       setItemList(response.items[0]?.id === "" ? [] : response.items)
     }
     fetchData()
   }, [pageState, searchInput])
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false
+      return
+    }
+    const fetchImageUrl = async () => {
+      const imageUrlList: string[] = Array(10).fill(loading)
+      for (let i=0; i<itemList.length; i++) {
+        const itemId = itemList[i].id
+        if (itemId === "") return
+        const response = await fetch(`/api/getImageUrl?endpoint=images/${ itemId }`)
+        const imageUrl = response.status !== 200 ? loading : (await response.json()).split("localhost").join("s3-minio")
+        imageUrlList[i] = imageUrl
+      }
+      setCurrentImageUrlList(imageUrlList)
+    }
+    fetchImageUrl()
+  }, [itemList])
 
   const viewContent = () => {
     return (
@@ -70,6 +91,7 @@ const ItemsPage = ({
             itemList={ itemList }
             itemsToAddToCollectionList={ itemsToAddToCollectionList }
             setItemsToAddToCollectionList={ setItemsToAddToCollectionList }
+            currentImageUrlList={ currentImageUrlList }
           />
         </PagenationListContainer>
         <PagenationNaviContainer

@@ -18,7 +18,6 @@ const getItemsByQuery = async (
   const response = await getRequestItems(endpoint, searchInput, pageState.currentPage, cookie)
   // const response = testResponse(searchInput, pageState.currentPage)
   const result = processData(response)
-  console.log(result,"~~~~~~~~~~~~~~~~",response)
   return result
 }
 

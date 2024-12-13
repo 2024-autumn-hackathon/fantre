@@ -1,6 +1,8 @@
+import { LOADING_IMAGE_URL as loading } from "@/constants"
 import ItemsPage from "@/features/routes/items/components/ItemsPage"
 import getItemsByQuery from "@/features/routes/items/getItemsByQuery"
 import { getRequestItems } from "@/utils/getRequest"
+import { getImageUrl } from "@/utils/getRequestFromServer"
 import { cookies } from "next/headers"
 
 const initialFetchedItemsPage = async ({
@@ -33,6 +35,15 @@ const initialFetchedItemsPage = async ({
   initialPageState.maxPage = response.maxPage
 
   const collectionLists = await getRequestItems("lists", new URLSearchParams(), 1, cookieString)
+
+  const initialImageUrlList: string[] = Array(10).fill(loading)
+  for (let i=0; i<initialItemList.length; i++) {
+    if (initialItemList[i].id === "") break
+    const endpoint = `images/${ initialItemList[i].id }`
+    const initialImageUrl = await getImageUrl(endpoint) || loading
+    const minioUrl = initialImageUrl === loading ? loading : initialImageUrl.split("localhost").join("s3-minio")
+    initialImageUrlList[i] = minioUrl
+  }
   
   return <ItemsPage
     initialSearchInput={ initialSearchInput }
@@ -41,6 +52,7 @@ const initialFetchedItemsPage = async ({
     seriesName={ seriesName }
     characterName={ characterName }
     collectionLists={ collectionLists }
+    initialImageUrlList={ initialImageUrlList }
   />
 }
 

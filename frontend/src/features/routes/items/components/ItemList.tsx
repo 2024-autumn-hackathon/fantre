@@ -3,20 +3,23 @@ import TextLinkButton from "@/components/TextLinkButton"
 import PagenationListItem from "@/features/common/pagenation/components/PagenationListItem"
 
 import { Dispatch, SetStateAction } from "react"
+import ItemImageViewer from "./ItemImageViewer"
 import ItemListType from "./ItemListType"
-import ShowItemImageButton from "./ShowItemImageButton"
 
 const ItemList = ({
   itemList,
   itemsToAddToCollectionList,
   setItemsToAddToCollectionList,
+  currentImageUrlList,
 }: Readonly<{
   itemList: ItemListType[]
   itemsToAddToCollectionList: string[]
   setItemsToAddToCollectionList: Dispatch<SetStateAction<string[]>>
+  currentImageUrlList: string[]
 }>) => {
   const itemListResult = itemList.map((
-    obj: ItemListType
+    obj: ItemListType,
+    idx: number,
   ) => {
     return (obj.id === "" ? null :
       <PagenationListItem
@@ -32,7 +35,9 @@ const ItemList = ({
           setItemsToAddToCollectionList={ setItemsToAddToCollectionList }
           itemId={ obj.id }
         />
-        <ShowItemImageButton/>
+        <ItemImageViewer
+          imageUrl={ currentImageUrlList[idx] }
+        />
       </PagenationListItem>
     )
   })
