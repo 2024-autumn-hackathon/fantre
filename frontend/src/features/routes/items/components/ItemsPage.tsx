@@ -5,7 +5,10 @@ import LinkButton from "@/components/LinkButton"
 import MonitorLayout from "@/components/MonitorLayout"
 import SubmitButton from "@/components/SubmitButton"
 import TopButton from "@/components/TopButton"
-import { KeyTypeIsStringObject } from "@/constants"
+import {
+  KeyTypeIsStringObject,
+  SEARCH_INPUT_KEYS as searchKeys,
+} from "@/constants"
 import PagenationListContainer from "@/features/common/pagenation/components/PagenationListContainer"
 import PagenationNaviContainer from "@/features/common/pagenation/components/PagenationNaviContainer"
 import PageState from "@/features/common/pagenation/PageState"
@@ -84,14 +87,14 @@ const ItemsPage = ({
           <ItemsSearchForm
             handleSetSearchInput={ setSearchInput }
           >
-            <InputButton defaultValue={ seriesName || "" } type="search" inputName="series_name" labelValue="作品名"/>
-            <InputButton defaultValue={ characterName || "" } type="search" inputName="character_name" labelValue="キャラ名"/>
-            <InputButton type="search" inputName="item_name" labelValue="商品名"/>
-            <InputButton type="search" inputName="tags" labelValue="タグ"/>
-            <InputButton type="search" inputName="category_id" labelValue="グッズカテゴリー"/>
-            <InputButton type="search" inputName="jan_code" pattern="[a-zA-Z0-9]*" labelValue="JANコード"/>
-            <InputButton type="date" inputName="release_date" labelValue="発売日"/>
-            <InputButton type="search" inputName="retailers" labelValue="購入場所"/>
+            <InputButton defaultValue={ seriesName || "" } type="search" inputName={ searchKeys[0] } labelValue="作品名"/>
+            <InputButton defaultValue={ characterName || "" } type="search" inputName={ searchKeys[1] } labelValue="キャラ名"/>
+            <InputButton type="search" inputName={ searchKeys[2] } labelValue="商品名"/>
+            <InputButton type="search" inputName={ searchKeys[3] } labelValue="タグ"/>
+            <InputButton type="search" inputName={ searchKeys[4] } labelValue="グッズカテゴリー"/>
+            <InputButton type="search" inputName={ searchKeys[5] } pattern="[a-zA-Z0-9]*" labelValue="JANコード"/>
+            <InputButton type="date" inputName={ searchKeys[6] } labelValue="発売日"/>
+            <InputButton type="search" inputName={ searchKeys[7] } labelValue="購入場所"/>
             <SubmitButton>検索する！</SubmitButton>
           </ItemsSearchForm>
           <div className="min-h-[calc(56px*3)] flex flex-col h-[calc(100%*3/12)]">

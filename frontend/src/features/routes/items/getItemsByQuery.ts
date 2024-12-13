@@ -1,5 +1,6 @@
 import PageState from "@/features/common/pagenation/PageState"
 // import testResponse from "@/utils/testResponse"
+import checkIsSearchInputEmpty from "@/utils/checkIsSearchInputEmpty"
 import { getRequestItems } from "@/utils/getRequest"
 import ItemSearchResponse from "./ItemSearchResponse"
 import processData from "./processData"
@@ -10,7 +11,9 @@ const getItemsByQuery = async (
   pageState: PageState,
   cookie: string = "",
 ): Promise<ItemSearchResponse> => {
-  if (!searchInput.size) return processData()
+  if (searchInput.size === 0 ||
+    !checkIsSearchInputEmpty(searchInput)
+  ) return processData()
   // 以下2行は、入れ替えで固定データとフェッチが切り替わる
   const response = await getRequestItems(endpoint, searchInput, pageState.currentPage, cookie)
   // const response = testResponse(searchInput, pageState.currentPage)

@@ -1,5 +1,17 @@
 
 // 検索
+export const SEARCH_INPUT_KEYS = [
+  "series_name",
+  "character_name",
+  "item_name",
+  "tags",
+  "category_id",
+  "jan_code",
+  "release_date",
+  "retailers",
+]
+
+// 作成
 export const BACKEND_ITEM_KEYS = {
   series: "item_series",
   character: "item_character",
