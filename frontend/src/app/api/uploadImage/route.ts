@@ -1,7 +1,7 @@
 import {
   IMAGE_FORMAT_ALLOW_LIST as allowedImages,
+  TOKEN_PREFIX as pre,
 } from "@/constants"
-import makeToken from "@/utils/makeToken"
 import { NextRequest } from "next/server"
 
 const backendUrl = process.env.BACKEND_API_URL
@@ -14,9 +14,9 @@ const backendUrl = process.env.BACKEND_API_URL
 export async function POST(
   request: NextRequest,
 ) {
-  const cookie = request.headers.get("set-cookie")
+  const cookie = request.headers.get("cookie")
   if (!cookie) return Response.error()
-  const token = makeToken(cookie)
+  const token = `${ pre }${ cookie }`
   const itemId = request.nextUrl.searchParams.get("itemId")
   const endpoint = request.nextUrl.searchParams.get("endpoint") || ""
   const recipientInformation: { [key: string]: { formKey: string, endpoint: string } } = {
@@ -25,6 +25,10 @@ export async function POST(
       endpoint: "user/bg-images",
     },
     itemDetail: {
+      formKey: "item_image",
+      endpoint: `image/${ itemId }`,
+    },
+    itemCreate: {
       formKey: "item_image",
       endpoint: `image/${ itemId }`,
     },
@@ -38,8 +42,7 @@ export async function POST(
     imageFile.size >= 2**20
   ) return Response.error()
   const requestUrl = `${ backendUrl }${ apiEndpoint }`
-  // 第三引数に拡張子付きのfile名が必須
-  // formData.set("bg_image", imageFile, `Next${ extensions[imageFile.type] }`)
+  console.log(formData, requestUrl)
   const response = await fetch(
     requestUrl,
     {

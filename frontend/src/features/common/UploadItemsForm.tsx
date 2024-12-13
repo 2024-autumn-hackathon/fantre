@@ -1,6 +1,7 @@
-import { BACKEND_ITEM_KEYS as keys } from "@/constants"
-import sendFormAction from "@/utils/sendFormAction"
-import { redirect } from "next/navigation"
+import {
+  IMAGE_FORMAT_ALLOW_LIST as allowedImages
+} from "@/constants"
+import createItem from "@/features/routes/create/createItem"
 
 const UploadItemsForm = ({
   children,
@@ -12,25 +13,14 @@ const UploadItemsForm = ({
   const className = "mx-auto flex flex-col h-full min-h-[calc(64px*8+76px+56px)] justify-around Y-tab:grid Y-tab:grid-cols-2 Y-tab:gap-4"
   const uploadImageText = "アップロード画像を選択"
   const formId = "item-create"
+  const imageId = "item_image"
   return (
     <form
       autoComplete="off"
       className={ className }
       id={ formId }
       name={ formId }
-      action={
-        async formData => {
-          const endpoint = "items/create"
-          const requires = [keys.series, keys.character, keys.name, keys.category]
-
-          const result = await sendFormAction(formData, endpoint, requires)
-          if (!result) {// サーバーエラー・重複などで作成に失敗した場合
-            setError(true)
-          } else {
-            redirect("/")
-          }
-        }
-      }
+      onSubmit={ e => createItem(e, imageId) }
     >
       { children }
       <div>
@@ -41,9 +31,10 @@ const UploadItemsForm = ({
           { uploadImageText }
         </label>
         <input
-          accept="image/*"
+          accept={ allowedImages.join(",") }
           type="file"
           id={ formId }
+          name={ imageId }
           className="file:opacity-0 file:block file:bg-my-orange file:h-0 file:border-0 h-[40px] mx-auto rounded-[40px] pl-10 bg-my-orange leading-normal cursor-pointer w-60"
         />
       </div>

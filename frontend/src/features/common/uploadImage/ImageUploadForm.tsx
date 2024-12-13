@@ -2,8 +2,7 @@
 
 import { IMAGE_FORMAT_ALLOW_LIST as allowedImages } from "@/constants"
 import concatClassName from "@/utils/concatClassName"
-import uploadImage from "./uploadImage"
-
+import sendForm from "./sendForm"
 const ImageUploadForm = ({
   formId,
   children,
@@ -11,7 +10,7 @@ const ImageUploadForm = ({
   buttonText,
   addClass = "",
   imageId,
-  itemId,
+  itemId = "",
   endpoint,
 }: Readonly<{
   formId: string
@@ -31,7 +30,7 @@ const ImageUploadForm = ({
       className={ className }
       id={ formId }
       name={ formId }
-      action={ formData => uploadImage(formData, imageId, itemId, endpoint) }
+      onSubmit={ e => sendForm(e, imageId, itemId, endpoint) }
     >
       { children }
       <div>

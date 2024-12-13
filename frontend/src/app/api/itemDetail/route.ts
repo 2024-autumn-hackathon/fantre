@@ -1,6 +1,5 @@
 import {
-  BACKEND_UPDATE_ITEM_KEYS as keys,
-  TOKEN_PREFIX as pre
+  BACKEND_UPDATE_ITEM_KEYS as keys
 } from "@/constants"
 import makeToken from "@/utils/makeToken"
 import { NextRequest } from "next/server"
@@ -16,9 +15,8 @@ export async function GET(
   request: NextRequest,
 ) {
   const cookie = request.headers.get("cookie")
-  console.log(cookie)
   if (!cookie) return Response.error()
-  const token = `${ pre }${ cookie }`
+  const token = makeToken(cookie)
 
   const searchParams = request.nextUrl.searchParams
   const itemId = searchParams.get("itemId")
@@ -46,7 +44,7 @@ export async function GET(
 export async function POST(
   request: NextRequest,
 ) {
-  const cookie = request.headers.get("set-cookie")
+  const cookie = request.headers.get("cookie")
   if (!cookie) return Response.error()
   const token = makeToken(cookie)
   const formData = await request.formData()

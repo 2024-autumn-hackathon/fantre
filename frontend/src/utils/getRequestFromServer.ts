@@ -29,7 +29,7 @@ export const getRequestByPage = async (
   const baseURL = `${ apiBaseUrl }${ endpoint }`
   const searchParams = new URLSearchParams([["currentPage", "1"]])
   const requestUrl = `${ baseURL }?${ searchParams }`
-  const response = await fetch(requestUrl, {headers: {cookie: `fantre=${cookie.value}`}})
+  const response = await fetch(requestUrl, {headers: {cookie: cookie.value}})
   return response.status !== 200 ? null : response.json()
 }
 
@@ -56,6 +56,6 @@ export const getCollectionList = async () => {
   const cookie = (await cookies()).get("fantre")
   if (!cookie) return Response.error()
   const requestUrl = `${ apiBaseUrl }lists`
-  const response = await fetch(requestUrl, {headers: {cookie: `fantre=${cookie.value}`}})
+  const response = await fetch(requestUrl, {headers: {cookie: cookie.value}})
   return response.status !== 200 ? null : response.json()
 }
