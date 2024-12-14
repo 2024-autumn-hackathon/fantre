@@ -27,6 +27,7 @@ const ItemList = ({
       >
         <TextLinkButton
           href={`items/${ obj.id }`}
+          addClass="w-[calc(100%-168px)]"
         >
           { obj.item_name }
         </TextLinkButton>

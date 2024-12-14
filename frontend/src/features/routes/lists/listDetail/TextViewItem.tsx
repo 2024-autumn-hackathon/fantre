@@ -17,6 +17,7 @@ const TextViewItem = ({
     <>
       <TextLinkButton
         href={ `/items/${ itemId }` }
+        addClass="w-full"
       >
         { itemName }
       </TextLinkButton>

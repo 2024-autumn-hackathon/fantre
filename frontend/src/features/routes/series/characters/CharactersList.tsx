@@ -19,6 +19,7 @@ const CharactersList = ({
       >
         <TextLinkButton
           href={ `/items?seriesName=${ seriesName }&characterName=${ character.character_name }` }
+          addClass="w-full"
         >
           { character.character_name }
         </TextLinkButton>

@@ -26,7 +26,10 @@ const ListsPage = ({
       const [key, value] = Object.entries(collection)[0]
       collectionListItems.push(
         <PagenationListItem key={ key }>
-          <TextLinkButton href={ `/lists/${ key }` }>
+          <TextLinkButton
+            href={ `/lists/${ key }` }
+            addClass="w-full"
+          >
             { value }
           </TextLinkButton>
           <button

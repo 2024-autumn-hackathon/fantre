@@ -16,6 +16,7 @@ const SeriesList = ({
       >
         <TextLinkButton
           href={`series/${ series.id }?seriesName=${ series.series_name }`}
+          addClass="w-full"
         >
           { series.series_name }
         </TextLinkButton>
