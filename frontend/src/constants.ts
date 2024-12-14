@@ -90,3 +90,10 @@ export const ERROR_MESSAGES = {
   ITEM_CREATION_FAILED: "グッズの作成に失敗しました。\n再度お試しください。",
   CREATED_BUT_FAILED_TO_UPLOAD_IMAGE: "グッズは作成できましたが、画像の登録に失敗しました。\n再度お試しください。",
 }
+
+export const PLACEHOLDER_TEXT = {
+  isPartialMatch: "部分一致検索",
+  isListFormat: "小カンマ(,)で複数の指定",
+  isDigits: "8桁 or 13桁の半角数字",
+  noDuplication: "既存の名前と重複不可",
+}

@@ -3,7 +3,7 @@
 import InputButton from "@/components/InputButton"
 import MonitorLayout from "@/components/MonitorLayout"
 import TopButton from "@/components/TopButton"
-import { BACKEND_ITEM_KEYS as keys } from "@/constants"
+import { BACKEND_ITEM_KEYS as keys, PLACEHOLDER_TEXT } from "@/constants"
 import ErrorModal from "@/features/common/errorModal/ErrorModal"
 import UploadItemsForm from "@/features/common/UploadItemsForm"
 import ClickAndInputButton from "@/features/routes/create/components/ClickAndInputButton"
@@ -37,7 +37,7 @@ const ItemCreatePage = () => {
                 state={ seriesList }
                 handleSetState={ setSeriesList }
                 inputName={ keys.series }
-                labelValue="作品名"
+                labelValue="作品名(必須)"
                 charactersList={ charactersList }
                 handleSetCharactersList={ setChractersList }
               />
@@ -47,20 +47,43 @@ const ItemCreatePage = () => {
                 handleSetState={ setChractersList }
                 inputName={ keys.character }
                 seriesList={ seriesList }
-                labelValue="キャラ名"
+                labelValue="キャラ名(必須)"
               />
-              <InputButton inputName={ keys.name } labelValue="商品名" required/>
-              <InputButton inputName={ keys.tags } labelValue="タグ"/>
+              <InputButton
+                inputName={ keys.name }
+                labelValue="商品名(必須)"
+                required
+                placeholder={ PLACEHOLDER_TEXT.noDuplication }
+              />
+              <InputButton
+                inputName={ keys.tags }
+                labelValue="タグ"
+                placeholder={ PLACEHOLDER_TEXT.isListFormat }
+              />
               <ClickAndInputButton
                 endpoint="category"
                 state={ categoriesList }
                 handleSetState={ setCategoriesList }
                 inputName={ keys.category }
-                labelValue="グッズカテゴリー"
+                labelValue="グッズカテゴリー(必須)"
               />
-              <InputButton inputName={ keys.janCode } pattern="[a-zA-Z0-9]*" labelValue="JANコード"/>
-              <InputButton inputName={ keys.releaseDate } type="date" labelValue="発売日"/>
-              <InputButton inputName={ keys.retailers } labelValue="購入場所"/>
+              <InputButton
+                inputName={ keys.janCode }
+                type="number"
+                pattern="[a-zA-Z0-9]*"
+                labelValue="JANコード(修正不可)"
+                placeholder={ PLACEHOLDER_TEXT.isDigits }
+              />
+              <InputButton
+                inputName={ keys.releaseDate }
+                type="date"
+                labelValue="発売日(修正不可)"
+              />
+              <InputButton
+                inputName={ keys.retailers }
+                labelValue="購入場所"
+                placeholder={ PLACEHOLDER_TEXT.isListFormat }
+              />
             </UploadItemsForm>
           </>
         }

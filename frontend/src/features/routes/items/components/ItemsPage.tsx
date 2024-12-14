@@ -8,6 +8,7 @@ import TopButton from "@/components/TopButton"
 import {
   KeyTypeIsStringObject,
   LOADING_IMAGE_URL as loading,
+  PLACEHOLDER_TEXT,
   SEARCH_INPUT_KEYS as searchKeys,
 } from "@/constants"
 import PagenationListContainer from "@/features/common/pagenation/components/PagenationListContainer"
@@ -118,42 +119,48 @@ const ItemsPage = ({
               type="search"
               inputName={ searchKeys[0] }
               labelValue="作品名"
+              placeholder={ PLACEHOLDER_TEXT.isPartialMatch }
             />
             <InputButton
               defaultValue={ characterName || "" }
               type="search"
               inputName={ searchKeys[1] }
               labelValue="キャラ名"
+              placeholder={ PLACEHOLDER_TEXT.isPartialMatch }
             />
             <InputButton
               type="search"
               inputName={ searchKeys[2] }
               labelValue="商品名"
+              placeholder={ PLACEHOLDER_TEXT.isPartialMatch }
             />
             <InputButton
               type="search"
               inputName={ searchKeys[3] }
               labelValue="タグ"
+              placeholder={ PLACEHOLDER_TEXT.isListFormat }
             />
             <CategorySelectButton
               inputName={ searchKeys[4] }
               categoryListObject={ categoryListObject }
             />
             <InputButton
-              type="search"
+              type="number"
               inputName={ searchKeys[5] }
               pattern="[a-zA-Z0-9]*"
               labelValue="JANコード"
+              maxLength={ 13 }
             />
             <InputButton
               type="date"
               inputName={ searchKeys[6] }
-              labelValue="発売日"
+              labelValue="発売日(以前検索)"
             />
             <InputButton
               type="search"
               inputName={ searchKeys[7] }
               labelValue="購入場所"
+              placeholder={ PLACEHOLDER_TEXT.isListFormat }
             />
             <SubmitButton>検索する！</SubmitButton>
           </ItemsSearchForm>

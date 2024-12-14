@@ -10,6 +10,8 @@ const InputButton = ({
   required = false,
   formId,
   inputId,
+  placeholder = "",
+  maxLength = 30,
 }: Readonly<{
   addClass?: string
   labelValue?: string
@@ -20,6 +22,8 @@ const InputButton = ({
   required?: boolean
   formId?: string
   inputId?: string
+  placeholder?: string
+  maxLength?: number
 }>) => {
   const baseClass = "block bg-my-light-green w-60 h-[40px] rounded-3xl text-center py-2 hover:opacity-80"
   const className = concatClassName(baseClass, addClass)
@@ -33,12 +37,12 @@ const InputButton = ({
       </label>
       <input
         className={ className }
-        // placeholder={ placeholder }
+        placeholder={ placeholder }
         name={ inputName }
         type={ type }
         defaultValue={ defaultValue }
         pattern={ pattern || undefined }
-        maxLength={30}
+        maxLength={ maxLength }
         required={ required }
         form={ formId }
         id={ inputId }

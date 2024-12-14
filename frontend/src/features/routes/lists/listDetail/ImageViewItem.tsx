@@ -1,3 +1,4 @@
+import ToolChip from "@/features/common/ToolChip"
 import Image from "next/image"
 import Link from "next/link"
 
@@ -20,7 +21,7 @@ const ImageViewItem = ({
           height={300}
           className="hover:opacity-80"
         />
-        <span className="tooltip-text">{ `${ itemName }の詳細を見る` }</span>
+        <ToolChip>{ `${ itemName }の詳細を見る` }</ToolChip>
       </Link>
     </li>
   )
