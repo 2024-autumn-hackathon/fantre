@@ -6,9 +6,11 @@ const updateSearchInput = (
   e.preventDefault()
   const formData = new FormData(e.currentTarget)
   const searchParams = new URLSearchParams()
-  formData.forEach((value, key) => {
-    if (value !== "") searchParams.append(key, value.toString())
-  })
+  for (const [key, value] of formData.entries()) {
+    if (value === "") continue
+    if (key === "category_id" && value === "default") continue
+    searchParams.append(key, value.toString())
+  }
 
   handleSetSearchInput(searchParams)
 }

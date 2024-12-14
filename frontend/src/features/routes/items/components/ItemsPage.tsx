@@ -16,6 +16,7 @@ import PageState from "@/features/common/pagenation/PageState"
 import { useEffect, useRef, useState } from "react"
 import addItemsToCollectionList from "../addItemsToCollectionList"
 import getItemsByQuery from "../getItemsByQuery"
+import CategorySelectButton from "./CategorySelectButton"
 import ItemList from "./ItemList"
 import ItemListType from "./ItemListType"
 import ItemsSearchForm from "./ItemsSearchForm"
@@ -29,6 +30,7 @@ const ItemsPage = ({
   characterName,
   collectionLists,
   initialImageUrlList,
+  categoryListObject,
 }: Readonly<{
   initialSearchInput: URLSearchParams
   initialItemList: ItemListType[]
@@ -37,6 +39,7 @@ const ItemsPage = ({
   characterName: string
   collectionLists: KeyTypeIsStringObject[]
   initialImageUrlList: string[]
+  categoryListObject: KeyTypeIsStringObject
 }>) => {
   const isFirstRender = useRef(true)
   const [itemList, setItemList] = useState<ItemListType[]>(initialItemList)
@@ -132,10 +135,9 @@ const ItemsPage = ({
               inputName={ searchKeys[3] }
               labelValue="タグ"
             />
-            <InputButton
-              type="search"
+            <CategorySelectButton
               inputName={ searchKeys[4] }
-              labelValue="グッズカテゴリー"
+              categoryListObject={ categoryListObject }
             />
             <InputButton
               type="search"

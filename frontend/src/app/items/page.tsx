@@ -1,5 +1,6 @@
 import { LOADING_IMAGE_URL as loading } from "@/constants"
 import ItemsPage from "@/features/routes/items/components/ItemsPage"
+import getCategoryList from "@/features/routes/items/getCategoryList"
 import getItemsByQuery from "@/features/routes/items/getItemsByQuery"
 import { getRequestItems } from "@/utils/getRequest"
 import { getImageUrl } from "@/utils/getRequestFromServer"
@@ -34,6 +35,7 @@ const initialFetchedItemsPage = async ({
   const initialItemList = response.items
   initialPageState.maxPage = response.maxPage
 
+  const categoryListObject = await getCategoryList(cookie.value)
   const collectionLists = await getRequestItems("lists", new URLSearchParams(), 1, cookieString)
 
   const initialImageUrlList: string[] = Array(10).fill(loading)
@@ -53,6 +55,7 @@ const initialFetchedItemsPage = async ({
     characterName={ characterName }
     collectionLists={ collectionLists }
     initialImageUrlList={ initialImageUrlList }
+    categoryListObject={ categoryListObject }
   />
 }
 
