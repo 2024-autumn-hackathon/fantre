@@ -10,7 +10,7 @@ const PagenationListItem = ({
 }>) => {
   return (
     <li
-      className="flex items-center mt-2 gap-2"
+      className="flex items-center justify-center mt-2 gap-2"
     >
       { children }
     </li>

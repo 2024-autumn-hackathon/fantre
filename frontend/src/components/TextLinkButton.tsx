@@ -10,7 +10,7 @@ const TextLinkButton = ({
   return (
     <Link
       href={ href }
-      className="w-full min-h-[40px] bg-my-light-green pl-1 py-1 flex items-center justify-center rounded-3xl hover:opacity-80"
+      className="w-full max-w-[640px] min-h-[40px] bg-my-light-green pl-1 py-1 flex items-center justify-center rounded-3xl hover:opacity-80"
     >
       <p>
         { children }

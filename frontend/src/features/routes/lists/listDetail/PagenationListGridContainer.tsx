@@ -5,7 +5,7 @@ const PagenationListGridContainer = ({
 }>) => {
   return (
     <ul
-      className="h-[calc(100%-24px)] grid grid-cols-3 gap-2 p-2"
+      className="h-[calc(100%-24px)] grid grid-cols-3 gap-2 p-2 overflow-y-auto"
     >
       { children }
     </ul>

@@ -10,7 +10,7 @@ const UploadItemsForm = ({
   children: React.ReactNode
   setError: React.Dispatch<React.SetStateAction<boolean>>
 }>) => {
-  const className = "mx-auto flex flex-col h-full min-h-[calc(64px*8+76px+56px)] justify-around Y-tab:grid Y-tab:grid-cols-2 Y-tab:gap-4"
+  const className = "mx-auto flex flex-col h-full min-h-[calc(64px*8+76px+56px)] justify-around Y-tab:grid Y-tab:grid-cols-2 Y-tab:gap-4 Y-tab:min-h-[calc(64px*5+20px)]"
   const uploadImageText = "アップロード画像を選択"
   const formId = "item-create"
   const imageId = "item_image"

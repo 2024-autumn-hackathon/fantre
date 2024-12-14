@@ -105,24 +105,61 @@ const ItemsPage = ({
   const naviContent = () => {
     return (
       <>
-        <div className="h-full Y-tab:grid Y-tab:grid-cols-2 Y-tab:gap-4">
+        <div className="h-full">
           <ItemsSearchForm
             handleSetSearchInput={ setSearchInput }
           >
-            <InputButton defaultValue={ seriesName || "" } type="search" inputName={ searchKeys[0] } labelValue="作品名"/>
-            <InputButton defaultValue={ characterName || "" } type="search" inputName={ searchKeys[1] } labelValue="キャラ名"/>
-            <InputButton type="search" inputName={ searchKeys[2] } labelValue="商品名"/>
-            <InputButton type="search" inputName={ searchKeys[3] } labelValue="タグ"/>
-            <InputButton type="search" inputName={ searchKeys[4] } labelValue="グッズカテゴリー"/>
-            <InputButton type="search" inputName={ searchKeys[5] } pattern="[a-zA-Z0-9]*" labelValue="JANコード"/>
-            <InputButton type="date" inputName={ searchKeys[6] } labelValue="発売日"/>
-            <InputButton type="search" inputName={ searchKeys[7] } labelValue="購入場所"/>
+            <InputButton
+              addClass="Y-tab:col-start-2"
+              defaultValue={ seriesName || "" }
+              type="search"
+              inputName={ searchKeys[0] }
+              labelValue="作品名"
+            />
+            <InputButton
+              defaultValue={ characterName || "" }
+              type="search"
+              inputName={ searchKeys[1] }
+              labelValue="キャラ名"
+            />
+            <InputButton
+              type="search"
+              inputName={ searchKeys[2] }
+              labelValue="商品名"
+            />
+            <InputButton
+              type="search"
+              inputName={ searchKeys[3] }
+              labelValue="タグ"
+            />
+            <InputButton
+              type="search"
+              inputName={ searchKeys[4] }
+              labelValue="グッズカテゴリー"
+            />
+            <InputButton
+              type="search"
+              inputName={ searchKeys[5] }
+              pattern="[a-zA-Z0-9]*"
+              labelValue="JANコード"
+            />
+            <InputButton
+              type="date"
+              inputName={ searchKeys[6] }
+              labelValue="発売日"
+            />
+            <InputButton
+              type="search"
+              inputName={ searchKeys[7] }
+              labelValue="購入場所"
+            />
             <SubmitButton>検索する！</SubmitButton>
           </ItemsSearchForm>
-          <div className="min-h-[calc(56px*3)] flex flex-col h-[calc(100%*3/12)]">
+          <div className="min-h-[calc(56px*3)] flex flex-col h-[calc(100%*3/12)] Y-tab:flex-row Y-tab:min-h-[56px] Y-tab:h-[calc(100%/6)]">
             <LinkButton href="/lists" addClass="mt-4 w-60">コレクションリスト作成</LinkButton>
             <form
               onSubmit={ (e) => addItemsToCollectionList(e, itemsToAddToCollectionList, setItemsToAddToCollectionList, setSelectList) }
+              className="Y-tab:mx-auto Y-tab:translate-y-[-50%] Y-tab:h-[200%] Y-tab:grid Y-tab:grid-rows-2"
             >
               <SelectCollectionListButton
                 collectionLists={ collectionLists }
