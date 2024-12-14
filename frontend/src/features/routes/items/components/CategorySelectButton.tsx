@@ -1,4 +1,4 @@
-import { KeyTypeIsStringObject } from '@/constants'
+import { KeyTypeIsStringObject } from "@/constants"
 
 const CategorySelectButton = ({
   inputName,

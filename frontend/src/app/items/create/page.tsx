@@ -30,9 +30,7 @@ const ItemCreatePage = () => {
         viewContent={ <NavigationBorad /> }
         naviContent={
           <>
-            <UploadItemsForm
-              setError={ setError }
-            >
+            <UploadItemsForm>
               <ClickAndInputButton
                 endpoint="series"
                 state={ seriesList }

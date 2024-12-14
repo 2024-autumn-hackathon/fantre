@@ -12,7 +12,7 @@ export const removeItemsFromList = async (
     credentials: "include",
     "Content-Type": "application/json",
   })
-  const response = await fetch("/api/list-items", {
+  await fetch("/api/list-items", {
     method: "DELETE",
     headers,
     body: JSON.stringify({ listId: listId, listItems: itemsToRemove }),

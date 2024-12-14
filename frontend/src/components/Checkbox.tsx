@@ -15,7 +15,7 @@ const Checkbox = ({
       className="block h-8 aspect-square"
       checked={ itemsToAddToCollectionList.includes(itemId) }
       onChange={
-        (e) => {
+        () => {
           if (itemsToAddToCollectionList.includes(itemId)) {
             setItemsToAddToCollectionList(itemsToAddToCollectionList.filter((id) => id !== itemId))
           } else {

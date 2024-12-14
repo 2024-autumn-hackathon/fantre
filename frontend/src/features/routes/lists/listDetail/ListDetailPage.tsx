@@ -66,19 +66,19 @@ const ListDetailPage = ({
     })
     return (
       isImageView ?
-      <>
-        <ImageViewPagenationContainer
-          pageState={ pageState }
-          handleSetPageState={ setPageState }
-          itemImageIdList={ itemImageIdList }
-          itemImageUrlList={ itemImageUrlList }
-        />
-      </> :
-      <>
-        <PagenationListContainer>
-          { collectionListItems }
-        </PagenationListContainer>
-      </>
+        <>
+          <ImageViewPagenationContainer
+            pageState={ pageState }
+            handleSetPageState={ setPageState }
+            itemImageIdList={ itemImageIdList }
+            itemImageUrlList={ itemImageUrlList }
+          />
+        </> :
+        <>
+          <PagenationListContainer>
+            { collectionListItems }
+          </PagenationListContainer>
+        </>
     )
   }
 
@@ -89,11 +89,11 @@ const ListDetailPage = ({
           <TextViewButton >コレクション一覧を表示中...</TextViewButton>
           {
             isImageView ? null :
-            <OnClickButton
-              handleClick={ () => removeItemsFromList(listId, itemsToRemoveToCollectionList, setItemsToRemoveToCollectionList, listItems, setListItems) }
-            >
-              チェック項目をリストから削除
-            </OnClickButton>
+              <OnClickButton
+                handleClick={ () => removeItemsFromList(listId, itemsToRemoveToCollectionList, setItemsToRemoveToCollectionList, listItems, setListItems) }
+              >
+                チェック項目をリストから削除
+              </OnClickButton>
           }
           <OnClickButton
             handleClick={ () => setIsImageView(!isImageView) }
