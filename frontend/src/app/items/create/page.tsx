@@ -10,6 +10,7 @@ import ClickAndInputButton from "@/features/routes/create/components/ClickAndInp
 import CreateForm from "@/features/routes/create/components/CreateCategoryForm"
 import CreateCharacterForm from "@/features/routes/create/components/CreateCharacterForm"
 import CreateSeriesAndCharacterForm from "@/features/routes/create/components/CreateSeriesAndCharacterForm"
+import NavigationBorad from "@/features/routes/create/components/NavigationBorad"
 import SelectModal from "@/features/routes/create/components/SelectModal"
 import ModalData from "@/features/routes/create/ModalData"
 import { useState } from "react"
@@ -26,7 +27,7 @@ const ItemCreatePage = () => {
     <>
       <MonitorLayout
         headerContent={ <TopButton/> }
-        viewContent
+        viewContent={ <NavigationBorad /> }
         naviContent={
           <>
             <UploadItemsForm
