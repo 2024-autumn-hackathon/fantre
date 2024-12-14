@@ -42,7 +42,6 @@ export async function POST(
     imageFile.size >= 2**20
   ) return Response.error()
   const requestUrl = `${ backendUrl }${ apiEndpoint }`
-  console.log(formData, requestUrl)
   const response = await fetch(
     requestUrl,
     {

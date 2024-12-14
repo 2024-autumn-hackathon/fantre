@@ -18,7 +18,6 @@ export const removeItemsFromList = async (
     body: JSON.stringify({ listId: listId, listItems: itemsToRemove }),
   }).then(res => {
     if (res.status === 200) {
-      console.log(res)
       const newListItems = listItems.filter(
         (item) => {
           const [key] = Object.entries(item)[0]

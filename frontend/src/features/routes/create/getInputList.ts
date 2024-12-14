@@ -26,7 +26,6 @@ const getInputList = async (
   }
 
   const response = await getRequestItemsCreate(endpoint, seriesList?.choiced)
-  // console.log(response)
 
   const result = processDataInputList(response)
   handleSetState(result)

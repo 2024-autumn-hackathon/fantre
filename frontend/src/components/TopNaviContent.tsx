@@ -10,8 +10,8 @@ const TopNaviContent = () => {
         <LinkButton href="/items/create">グッズ登録</LinkButton>
         <LinkButton href="/series">タイトル一覧</LinkButton>
         <LinkButton href="/lists">コレクションリスト</LinkButton>
-        <LinkButton href="">カレンダー</LinkButton>
-        <LinkButton href="">個別チャット</LinkButton>
+        <LinkButton href="">カレンダー(未実装)</LinkButton>
+        <LinkButton href="">個別チャット(未実装)</LinkButton>
       </LinkSet>
       <div className="flex flex-col h-[calc((100vh-150px)*4/9*2/8)] min-h-[calc(56px*2+20px)] Y-tab:h-[calc(((100vh-100px)*4/9-20px)*1/4)] Y-tab:min-h-[76px]">
         <ImageUploadForm

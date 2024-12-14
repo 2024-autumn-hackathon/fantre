@@ -44,7 +44,6 @@ export async function POST(
   request: NextRequest,
 ) {
   const cookie = request.headers.get("cookie")
-  console.log(cookie)
   if (!cookie) return Response.error()
   const token = makeToken(cookie)
 

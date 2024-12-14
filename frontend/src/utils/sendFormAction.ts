@@ -8,8 +8,6 @@ const sendFormAction = async (
   endpoint: string,
   requires: string[],
 ): Promise<{category_id: string, category_name: string, character_id: string, series_id: string, access_token: string} | void> => {
-  console.log("--------------------", requires)
-  console.log("--------------------", formData)
   // 空白パラメータは除去 & 必須項目が空白の場合リクエスト中止
   const newFormData = new FormData()
   for (const query of formData.entries()) {
