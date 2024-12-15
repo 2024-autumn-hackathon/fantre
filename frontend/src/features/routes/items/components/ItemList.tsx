@@ -2,16 +2,24 @@ import Checkbox from "@/components/Checkbox"
 import TextLinkButton from "@/components/TextLinkButton"
 import PagenationListItem from "@/features/common/pagenation/components/PagenationListItem"
 
+import { Dispatch, SetStateAction } from "react"
+import ItemImageViewer from "./ItemImageViewer"
 import ItemListType from "./ItemListType"
-import ShowItemImageButton from "./ShowItemImageButton"
 
 const ItemList = ({
   itemList,
+  itemsToAddToCollectionList,
+  setItemsToAddToCollectionList,
+  currentImageUrlList,
 }: Readonly<{
   itemList: ItemListType[]
+  itemsToAddToCollectionList: string[]
+  setItemsToAddToCollectionList: Dispatch<SetStateAction<string[]>>
+  currentImageUrlList: string[]
 }>) => {
   const itemListResult = itemList.map((
-    obj: ItemListType
+    obj: ItemListType,
+    idx: number,
   ) => {
     return (obj.id === "" ? null :
       <PagenationListItem
@@ -19,11 +27,18 @@ const ItemList = ({
       >
         <TextLinkButton
           href={`items/${ obj.id }`}
+          addClass="w-[calc(100%-168px)]"
         >
           { obj.item_name }
         </TextLinkButton>
-        <Checkbox/>
-        <ShowItemImageButton/>
+        <Checkbox
+          itemsToAddToCollectionList={ itemsToAddToCollectionList }
+          setItemsToAddToCollectionList={ setItemsToAddToCollectionList }
+          itemId={ obj.id }
+        />
+        <ItemImageViewer
+          imageUrl={ currentImageUrlList[idx] }
+        />
       </PagenationListItem>
     )
   })

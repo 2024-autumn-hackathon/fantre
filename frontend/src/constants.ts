@@ -1,5 +1,17 @@
 
 // 検索
+export const SEARCH_INPUT_KEYS = [
+  "series_name",
+  "character_name",
+  "item_name",
+  "tags",
+  "category_id",
+  "jan_code",
+  "release_date",
+  "retailers",
+]
+
+// 作成
 export const BACKEND_ITEM_KEYS = {
   series: "item_series",
   character: "item_character",
@@ -30,10 +42,6 @@ export const BACKEND_AUTH_KEYS = {
   pass2: "password2",
 }
 
-// https://developer.mozilla.org/ja/docs/Web/HTTP/Headers/Set-Cookie
-// cookieの設定 バックエンドが発行したJWTを値にしたcookieを保存します
-// フロントエンドで値の有効性はチェックしないのですが、
-// 使用するときは結局バックエンドに送るので一応今回は問題ないと思います
 export const COOKIE_OPTIONS = {
   // maxAge: 60*60*24,
   maxAge: 1000000,
@@ -73,4 +81,19 @@ export const DummyModalDataResponse = {
 // 型対策
 export interface KeyTypeIsStringObject {
   [key: string]: string
+}
+
+export const LOADING_IMAGE_URL = "/no-image.svg"
+
+export const ERROR_MESSAGES = {
+  IMAGE_SIZE_TOO_LARGE: "画像のサイズが大きすぎます。\n1MB未満にしてください。",
+  ITEM_CREATION_FAILED: "グッズの作成に失敗しました。\n再度お試しください。",
+  CREATED_BUT_FAILED_TO_UPLOAD_IMAGE: "グッズは作成できましたが、画像の登録に失敗しました。\n再度お試しください。",
+}
+
+export const PLACEHOLDER_TEXT = {
+  isPartialMatch: "部分一致検索",
+  isListFormat: "小カンマ(,)で複数の指定",
+  isDigits: "8桁 or 13桁の半角数字",
+  noDuplication: "既存の名前と重複不可",
 }

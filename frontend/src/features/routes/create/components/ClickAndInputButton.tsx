@@ -22,7 +22,7 @@ const ClickAndInputButton = ({
 }>) => {
   const naviChara = state.data[state.choiced]
   return (
-    <>
+    <div>
       <label
         htmlFor={ labelValue }
         className="h-5 mt-1"
@@ -44,7 +44,7 @@ const ClickAndInputButton = ({
         />
         { naviChara }
       </button>
-    </>
+    </div>
   )
 }
 

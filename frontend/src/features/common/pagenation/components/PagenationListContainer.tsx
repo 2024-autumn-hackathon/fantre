@@ -10,7 +10,7 @@ const PagenationListContainer = ({
 }>) => {
   return (
     <ul
-      className="h-[calc(100%-24px)] overflow-auto"
+      className="h-[calc(100%-24px)] p-2 flex flex-col justify-around overflow-auto"
     >
       { children }
     </ul>

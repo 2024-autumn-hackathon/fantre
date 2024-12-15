@@ -1,4 +1,4 @@
-import ItemSearchResponse from "./ItemSearchResponse"
+import ItemSearchResponse from "../items/ItemSearchResponse"
 
 // 受け取ったデータを加工する、もしくは受け取らなかった場合はからデータを返す
 const processData = (

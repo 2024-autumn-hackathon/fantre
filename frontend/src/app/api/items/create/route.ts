@@ -1,3 +1,4 @@
+import formToJson from "@/utils/formToJson"
 import makeToken from "@/utils/makeToken"
 import { NextRequest } from "next/server"
 
@@ -42,13 +43,13 @@ export async function GET(
 export async function POST(
   request: NextRequest,
 ) {
-  const cookie = request.headers.get("set-cookie")
+  const cookie = request.headers.get("cookie")
   if (!cookie) return Response.error()
   const token = makeToken(cookie)
 
   const formData = await request.formData()
   const requestUrl = `${ backendUrl }items`
-  const json = JSON.stringify(Object.fromEntries(formData.entries()))
+  const json = formToJson(formData)
 
   const response = await fetch(
     requestUrl,

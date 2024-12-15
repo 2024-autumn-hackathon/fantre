@@ -11,6 +11,7 @@ const BackgroundImageViewer = ({
       src={ imageSrc }
       alt="背景として表示する画像です"
       style={{objectFit:"contain"}}
+      priority
     />
   return image
 }

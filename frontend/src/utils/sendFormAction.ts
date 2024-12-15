@@ -8,8 +8,6 @@ const sendFormAction = async (
   endpoint: string,
   requires: string[],
 ): Promise<{category_id: string, category_name: string, character_id: string, series_id: string, access_token: string} | void> => {
-  console.log("--------------------", requires)
-  console.log("--------------------", formData)
   // 空白パラメータは除去 & 必須項目が空白の場合リクエスト中止
   const newFormData = new FormData()
   for (const query of formData.entries()) {
@@ -33,11 +31,8 @@ const sendFormAction = async (
   const cookieStore = cookies()
   const cookie = (await cookieStore).get("fantre")
   if (!cookie) return
-  const cookieKey = cookie.name
-  const cookieValue = cookie.value
-  if (cookieKey !== "fantre") return
 
-  const header = new Headers({"Set-Cookie": `${ cookieKey }=${ cookieValue }`})
+  const header = new Headers({"Cookie": cookie.value})
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
   const requestUrl = `${ apiBaseUrl }${ endpoint }`
   

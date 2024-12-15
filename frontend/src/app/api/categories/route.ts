@@ -11,7 +11,7 @@ const backendUrl = process.env.BACKEND_API_URL
 export async function POST(
   request: NextRequest,
 ) {
-  const cookie = request.headers.get("set-cookie")
+  const cookie = request.headers.get("cookie")
   if (!cookie) return Response.error()
   const token = makeToken(cookie)
 
